@@ -20,6 +20,7 @@ import com.google.auto.value.AutoValue;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
+import java.sql.Connection;
 import java.util.List;
 
 /** Executor for the extract action. */
@@ -29,7 +30,7 @@ public interface ExtractExecutor {
   @AutoValue
   abstract class Arguments {
     /** The JDBC address of the database to which to connect. */
-    public abstract String dbAddress();
+    public abstract Connection dbConnection();
 
     /** The path to which to write the output. Must be a directory. */
     public abstract Path outputPath();
@@ -52,7 +53,7 @@ public interface ExtractExecutor {
 
     @AutoValue.Builder
     public abstract static class Builder {
-      public abstract Builder setDbAddress(String dbAddress);
+      public abstract Builder setDbConnection(Connection dbConnection);
 
       public abstract Builder setOutputPath(Path path);
 

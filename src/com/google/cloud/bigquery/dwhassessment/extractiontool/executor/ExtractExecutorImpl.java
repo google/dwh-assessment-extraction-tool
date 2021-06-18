@@ -34,17 +34,14 @@ import java.util.function.Function;
 /** Default implementation of the extract executor. */
 public final class ExtractExecutorImpl implements ExtractExecutor {
 
-  private final Function<String, Connection> connectionFactory;
   private final SchemaManager schemaManager;
   private final ScriptManager scriptManager;
   private final Function<Path, DataEntityManager> dataEntityManagerFactory;
 
   public ExtractExecutorImpl(
-      Function<String, Connection> connectionFactory,
       SchemaManager schemaManager,
       ScriptManager scriptManager,
       Function<Path, DataEntityManager> dataEntityManagerFactory) {
-    this.connectionFactory = connectionFactory;
     this.scriptManager = scriptManager;
     this.dataEntityManagerFactory = dataEntityManagerFactory;
     this.schemaManager = schemaManager;
@@ -52,7 +49,7 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
   @Override
   public int run(Arguments arguments) {
-    Connection connection = connectionFactory.apply(arguments.dbAddress());
+    Connection connection = arguments.dbConnection();
     DataEntityManager dataEntityManager = dataEntityManagerFactory.apply(arguments.outputPath());
 
     for (String scriptName : getScriptNames(arguments)) {

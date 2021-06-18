@@ -25,7 +25,8 @@ maven_install(
         "info.picocli:picocli:4.6.1",
         "javax.inject:javax.inject:1",
         "junit:junit:4.13.2",
-        "org.mockito:mockito-all:1.10.19",
+        "org.hsqldb:hsqldb:2.6.0",
+        "org.mockito:mockito-core:3.11.1",
     ],
     fetch_sources = True,
     repositories = [

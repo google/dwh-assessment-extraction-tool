@@ -27,7 +27,6 @@ import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import java.nio.file.Path;
-import java.sql.Connection;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import javax.inject.Provider;
@@ -39,24 +38,16 @@ public final class BaseModule extends AbstractModule {
   @Provides
   @Singleton
   ExtractExecutor extractExecutor(
-      Function<String, Connection> connectionFactory,
       SchemaManager schemaManager,
       ScriptManager scriptManager,
       Function<Path, DataEntityManager> dataEntityManagerFactory) {
-    return new ExtractExecutorImpl(
-        connectionFactory, schemaManager, scriptManager, dataEntityManagerFactory);
+    return new ExtractExecutorImpl(schemaManager, scriptManager, dataEntityManagerFactory);
   }
 
   @Provides
   @Singleton
   ExtractSubcommand extractSubcommand(Provider<ExtractExecutor> extractExecutorProvider) {
     return new ExtractSubcommand(extractExecutorProvider::get);
-  }
-
-  @Provides
-  @Singleton
-  Function<String, Connection> connectionFactory() {
-    throw new IllegalStateException("Connection factory is not yet implemented.");
   }
 
   @Provides
@@ -83,5 +74,4 @@ public final class BaseModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), new TypeLiteral<Callable<Integer>>() {});
     subcommandBinder.addBinding().to(new Key<ExtractSubcommand>() {});
   }
-
 }

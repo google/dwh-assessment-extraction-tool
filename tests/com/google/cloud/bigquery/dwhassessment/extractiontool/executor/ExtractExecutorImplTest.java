@@ -49,13 +49,11 @@ public final class ExtractExecutorImplTest {
 
   @Before
   public void setUp() {
-    connection = mock(Connection.class);
     schemaManager = mock(SchemaManager.class);
     scriptManager = mock(ScriptManager.class);
+    connection = mock(Connection.class);
     dataEntityManager = mock(DataEntityManager.class);
-    executor =
-        new ExtractExecutorImpl(
-            address -> connection, schemaManager, scriptManager, path -> dataEntityManager);
+    executor = new ExtractExecutorImpl(schemaManager, scriptManager, path -> dataEntityManager);
   }
 
   @Test
@@ -66,7 +64,7 @@ public final class ExtractExecutorImplTest {
     assertThat(
             executor.run(
                 ExtractExecutor.Arguments.builder()
-                    .setDbAddress("jdbc:fake")
+                    .setDbConnection(connection)
                     .setOutputPath(Paths.get("/tmp"))
                     .build()))
         .isEqualTo(0);
@@ -86,7 +84,7 @@ public final class ExtractExecutorImplTest {
     assertThat(
             executor.run(
                 ExtractExecutor.Arguments.builder()
-                    .setDbAddress("jdbc:fake")
+                    .setDbConnection(connection)
                     .setOutputPath(Paths.get("/tmp"))
                     .setSqlScripts(ImmutableList.of("one", "three"))
                     .build()))
@@ -106,7 +104,7 @@ public final class ExtractExecutorImplTest {
     assertThat(
             executor.run(
                 ExtractExecutor.Arguments.builder()
-                    .setDbAddress("jdbc:fake")
+                    .setDbConnection(connection)
                     .setOutputPath(Paths.get("/tmp"))
                     .setSkipSqlScripts(ImmutableList.of("one", "three"))
                     .build()))
@@ -128,7 +126,7 @@ public final class ExtractExecutorImplTest {
             () ->
                 executor.run(
                     ExtractExecutor.Arguments.builder()
-                        .setDbAddress("jdbc:fake")
+                        .setDbConnection(connection)
                         .setOutputPath(Paths.get("/tmp"))
                         .setSqlScripts(ImmutableList.of("four", "five"))
                         .build()));
@@ -147,7 +145,7 @@ public final class ExtractExecutorImplTest {
     assertThat(
             executor.run(
                 ExtractExecutor.Arguments.builder()
-                    .setDbAddress("jdbc:fake")
+                    .setDbConnection(connection)
                     .setOutputPath(Paths.get("/tmp"))
                     .setSchemaFilters(filters)
                     .build()))
@@ -172,7 +170,7 @@ public final class ExtractExecutorImplTest {
             () ->
                 executor.run(
                     ExtractExecutor.Arguments.builder()
-                        .setDbAddress("jdbc:fake")
+                        .setDbConnection(connection)
                         .setOutputPath(Paths.get("/tmp"))
                         .setSkipSqlScripts(ImmutableList.of("four", "five"))
                         .build()));

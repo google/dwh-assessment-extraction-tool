@@ -21,6 +21,8 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractEx
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
@@ -52,9 +54,13 @@ public final class ExtractSubcommand implements Callable<Integer> {
         "JDBC address of the Teradata data warehouse.",
         "Example: jdbc:teradata://storage.my-animalclinic.example"
       })
-  void setDbAddress(String dbAddress) {
-    argumentsBuilder.setDbAddress(dbAddress);
-  }
+  private String dbAddress;
+
+  @Option(names = "--db-user", description = "The user name for the database.")
+  private String dbUserName;
+
+  @Option(names = "--db-password", description = "The passowrd for the database.")
+  private String dbPassword;
 
   @Option(
       names = {"--output", "-o"},
@@ -119,6 +125,16 @@ public final class ExtractSubcommand implements Callable<Integer> {
   }
 
   private ExtractExecutor.Arguments getValidatedArguments() {
+    try {
+      argumentsBuilder.setDbConnection(
+          DriverManager.getConnection(dbAddress, dbUserName, dbPassword));
+    } catch (SQLException e) {
+      throw new ParameterException(
+          spec.commandLine(),
+          String.format("Unable to connect to '%s': %s", dbAddress, e.getMessage()),
+          e);
+    }
+
     ExtractExecutor.Arguments arguments = argumentsBuilder.build();
     if (!arguments.sqlScripts().isEmpty() && !arguments.skipSqlScripts().isEmpty()) {
       throw new ParameterException(

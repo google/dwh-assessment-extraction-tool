@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import picocli.CommandLine;
 
@@ -54,7 +55,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:teradata://storage.my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
                 "--output",
                 outputPath.toString()))
         .isEqualTo(0);
@@ -64,7 +65,6 @@ public final class ExtractSubcommandTest {
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
 
-    assertThat(arguments.dbAddress()).isEqualTo("jdbc:teradata://storage.my-animalclinic.example");
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.sqlScripts()).isEmpty();
     assertThat(arguments.skipSqlScripts()).isEmpty();
@@ -78,7 +78,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:teradata://storage.my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
                 "--output",
                 outputPath.toString(),
                 "--sql-scripts",
@@ -90,7 +90,6 @@ public final class ExtractSubcommandTest {
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
 
-    assertThat(arguments.dbAddress()).isEqualTo("jdbc:teradata://storage.my-animalclinic.example");
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.sqlScripts()).containsExactly("one", "two", "three").inOrder();
     assertThat(arguments.skipSqlScripts()).isEmpty();
@@ -105,7 +104,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:teradata://storage.my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
                 "--output",
                 outputPath.toString(),
                 "--skip-sql-scripts",
@@ -117,7 +116,6 @@ public final class ExtractSubcommandTest {
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
 
-    assertThat(arguments.dbAddress()).isEqualTo("jdbc:teradata://storage.my-animalclinic.example");
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.sqlScripts()).isEmpty();
     assertThat(arguments.skipSqlScripts()).containsExactly("one", "two", "three").inOrder();
@@ -134,7 +132,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:teradata://storage.my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
                 "--output",
                 outputPath.toString(),
                 "--schema-filter",
@@ -146,7 +144,6 @@ public final class ExtractSubcommandTest {
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
 
-    assertThat(arguments.dbAddress()).isEqualTo("jdbc:teradata://storage.my-animalclinic.example");
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.sqlScripts()).isEmpty();
     assertThat(arguments.skipSqlScripts()).isEmpty();
@@ -165,7 +162,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:teradata://storage.my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
                 "--output",
                 outputPath.toString(),
                 "--sql-scripts",
@@ -187,14 +184,13 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:teradata://storage.my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
                 "--output",
                 outputPath.toString(),
                 "--sql-scripts",
                 "one,,two"))
         .isEqualTo(2);
-    assertThat(writer.toString())
-        .contains("SQL script names must not be blank.");
+    assertThat(writer.toString()).contains("SQL script names must not be blank.");
   }
 
   @Test
@@ -207,14 +203,13 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:teradata://storage.my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
                 "--output",
                 outputPath.toString(),
                 "--skip-sql-scripts",
                 "one,,two"))
         .isEqualTo(2);
-    assertThat(writer.toString())
-        .contains("SQL script names must not be blank.");
+    assertThat(writer.toString()).contains("SQL script names must not be blank.");
   }
 
   @Test
@@ -238,11 +233,25 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:teradata://storage.my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
                 "--output",
                 "/does/not/exist"))
         .isEqualTo(2);
     assertThat(writer.toString())
         .contains("--output must specify a directory, but '/does/not/exist' is not a directory.");
+  }
+
+  @Test
+  public void call_failOnInvalidJdbcUrl() {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    StringWriter writer = new StringWriter();
+    cmd.setErr(new PrintWriter(writer));
+
+    assertThat(
+            cmd.execute(
+                "--db-address", "jdbc:fake:doesNotExist", "--output", outputPath.toString()))
+        .isEqualTo(2);
+    assertThat(writer.toString()).contains("Unable to connect to 'jdbc:fake:doesNotExist'");
   }
 }

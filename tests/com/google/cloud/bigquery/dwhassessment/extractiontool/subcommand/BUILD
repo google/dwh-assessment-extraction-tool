@@ -24,7 +24,8 @@ java_library(
         "@maven//:com_google_truth_truth",
         "@maven//:info_picocli_picocli",
         "@maven//:junit_junit",
-        "@maven//:org_mockito_mockito_all",
+        "@maven//:org_hsqldb_hsqldb",
+        "@maven//:org_mockito_mockito_core",
     ],
 )
 
