@@ -12,14 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * package com.google.cloud.bigquery.dwhassessment.extractiontool.config;
  */
+
 package com.google.cloud.bigquery.dwhassessment.extractiontool.dumper;
 
+import java.io.Closeable;
 import java.io.OutputStream;
 
 /** Interface to manage data entity, e.g. AVRO files. */
-public interface DataEntityManager {
+public interface DataEntityManager extends Closeable {
 
   /**
    * Get the output stream for an entity.
