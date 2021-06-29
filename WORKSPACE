@@ -25,6 +25,7 @@ maven_install(
         "info.picocli:picocli:4.6.1",
         "javax.inject:javax.inject:1",
         "junit:junit:4.13.2",
+        "org.apache.avro:avro:1.10.2",
         "org.hsqldb:hsqldb:2.6.0",
         "org.hsqldb:sqltool:2.6.0",
         "org.mockito:mockito-core:3.11.1",

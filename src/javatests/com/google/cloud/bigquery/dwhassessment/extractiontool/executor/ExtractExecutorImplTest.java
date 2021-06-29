@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.re2j.Pattern;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.sql.SQLException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,7 +57,7 @@ public final class ExtractExecutorImplTest {
   }
 
   @Test
-  public void run_allScripts_success() {
+  public void run_allScripts_success() throws Exception, SQLException {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
     when(schemaManager.getSchemaKeys(connection, ImmutableList.of())).thenReturn(ImmutableSet.of());
 
@@ -76,7 +77,7 @@ public final class ExtractExecutorImplTest {
   }
 
   @Test
-  public void run_selectSomeScripts_success() {
+  public void run_selectSomeScripts_success() throws Exception, SQLException {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
     when(schemaManager.getSchemaKeys(connection, ImmutableList.of())).thenReturn(ImmutableSet.of());
 
@@ -96,7 +97,7 @@ public final class ExtractExecutorImplTest {
   }
 
   @Test
-  public void run_skipSomeScripts_success() {
+  public void run_skipSomeScripts_success() throws Exception, SQLException {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
     when(schemaManager.getSchemaKeys(connection, ImmutableList.of())).thenReturn(ImmutableSet.of());
 
@@ -115,7 +116,7 @@ public final class ExtractExecutorImplTest {
   }
 
   @Test
-  public void run_failOnUnknownScripts() {
+  public void run_failOnUnknownScripts() throws Exception, SQLException {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
     when(schemaManager.getSchemaKeys(connection, ImmutableList.of())).thenReturn(ImmutableSet.of());
 
@@ -133,7 +134,7 @@ public final class ExtractExecutorImplTest {
   }
 
   @Test
-  public void run_filterScripts_success() {
+  public void run_filterScripts_success() throws Exception, SQLException {
     ImmutableList<SchemaFilter> filters =
         ImmutableList.of(SchemaFilter.builder().setDatabaseName(Pattern.compile("foo")).build());
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of());
@@ -159,7 +160,7 @@ public final class ExtractExecutorImplTest {
   }
 
   @Test
-  public void run_failOnUnknownSkipScripts() {
+  public void run_failOnUnknownSkipScripts() throws Exception, SQLException {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
     when(schemaManager.getSchemaKeys(connection, ImmutableList.of())).thenReturn(ImmutableSet.of());
 

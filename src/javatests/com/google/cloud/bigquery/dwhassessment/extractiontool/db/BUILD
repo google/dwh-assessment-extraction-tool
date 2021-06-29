@@ -18,9 +18,15 @@ java_library(
     srcs = glob(["*.java"]),
     deps = [
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
+        "//src/javatests/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper:dumpertesting",
+        "@maven//:com_google_guava_guava_30_1_1_jre",
         "@maven//:com_google_re2j_re2j",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
+        "@maven//:org_apache_avro_avro",
+        "@maven//:org_mockito_mockito_core",
     ],
 )
 
@@ -30,5 +36,25 @@ java_test(
     test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFiltersTest",
     runtime_deps = [
         ":tests",
+    ],
+)
+
+java_test(
+    name = "ScriptManagerImplTest",
+    size = "small",
+    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManagerImplTest",
+    runtime_deps = [
+        ":tests",
+        "@maven//:org_hsqldb_hsqldb",
+    ],
+)
+
+java_test(
+    name = "ScriptRunnerImplTest",
+    size = "small",
+    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptRunnerImplTest",
+    runtime_deps = [
+        ":tests",
+        "@maven//:org_hsqldb_hsqldb",
     ],
 )

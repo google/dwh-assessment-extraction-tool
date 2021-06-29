@@ -28,6 +28,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.function.Function;
 
 /** Default implementation of the extract executor. */
@@ -47,7 +49,7 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
   }
 
   @Override
-  public int run(Arguments arguments) {
+  public int run(Arguments arguments) throws SQLException, IOException {
     Connection connection = arguments.dbConnection();
     DataEntityManager dataEntityManager = dataEntityManagerFactory.apply(arguments.outputPath());
 

@@ -18,8 +18,10 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.executor;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.common.collect.ImmutableList;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /** Executor for the extract action. */
@@ -67,5 +69,5 @@ public interface ExtractExecutor {
   }
 
   /** Run the extract executor. */
-  int run(Arguments arguments);
+  int run(Arguments arguments) throws SQLException, IOException;
 }

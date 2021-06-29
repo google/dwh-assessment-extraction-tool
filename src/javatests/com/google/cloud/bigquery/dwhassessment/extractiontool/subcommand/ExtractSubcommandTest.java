@@ -27,6 +27,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +48,7 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
-  public void call_success() {
+  public void call_success() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
 
@@ -70,7 +71,7 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
-  public void call_successWithSqlScripts() {
+  public void call_successWithSqlScripts() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
 
@@ -96,7 +97,7 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
-  public void call_successWithSkipSqlScripts() {
+  public void call_successWithSkipSqlScripts() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
 
@@ -122,7 +123,7 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
-  public void call_successWithSchemaFilters() {
+  public void call_successWithSchemaFilters() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd =
         new CommandLine(new ExtractSubcommand(() -> executor))
@@ -152,7 +153,7 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
-  public void call_failOnDefiningSqlScriptsAndSkipSqlScripts() {
+  public void call_failOnDefiningSqlScriptsAndSkipSqlScripts() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
     StringWriter writer = new StringWriter();

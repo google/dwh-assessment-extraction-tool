@@ -17,6 +17,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -58,7 +59,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
   @Option(names = "--db-user", description = "The user name for the database.")
   private String dbUserName;
 
-  @Option(names = "--db-password", description = "The passowrd for the database.")
+  @Option(names = "--db-password", description = "The password for the database.")
   private String dbPassword;
 
   @Option(
@@ -144,7 +145,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
   }
 
   @Override
-  public Integer call() {
+  public Integer call() throws IOException, SQLException {
     return executorSupplier.get().run(getValidatedArguments());
   }
 }

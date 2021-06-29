@@ -13,9 +13,22 @@
 # limitations under the License.
 load("@rules_java//java:defs.bzl", "java_library", "java_test")
 
+package(default_visibility = ["//src:internal"])
+
+java_library(
+    name = "dumpertesting",
+    srcs = glob(
+        include = ["*.java"],
+        exclude = ["*Test.java"],
+    ),
+    deps = [
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
+    ],
+)
+
 java_library(
     name = "tests",
-    srcs = glob(["*.java"]),
+    srcs = glob(["*Test.java"]),
     deps = [
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
         "@maven//:com_google_truth_truth",

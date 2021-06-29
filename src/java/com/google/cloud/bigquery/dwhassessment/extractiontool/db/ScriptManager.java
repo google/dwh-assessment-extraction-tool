@@ -17,7 +17,9 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.common.collect.ImmutableSet;
+import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 /** Interface to manage SQL scripts. */
 public interface ScriptManager {
@@ -31,7 +33,8 @@ public interface ScriptManager {
    *     a schema definition file).
    * @param dataEntityManager The data entity manager to use to write the output.
    */
-  void executeScript(Connection connection, String scriptName, DataEntityManager dataEntityManager);
+  void executeScript(Connection connection, String scriptName, DataEntityManager dataEntityManager)
+      throws SQLException, IOException;
 
   /** Gets a list of names of all available scripts. */
   ImmutableSet<String> getAllScriptNames();

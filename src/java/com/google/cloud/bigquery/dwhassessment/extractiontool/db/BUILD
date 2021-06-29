@@ -25,5 +25,6 @@ java_library(
         "@maven//:com_google_auto_value_auto_value_annotations",
         "@maven//:com_google_guava_guava_30_1_1_jre",
         "@maven//:com_google_re2j_re2j",
+        "@maven//:org_apache_avro_avro",
     ],
 )
