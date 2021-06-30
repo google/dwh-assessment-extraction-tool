@@ -17,17 +17,22 @@ java_library(
     name = "tests",
     srcs = glob(["*.java"]),
     deps = [
-        "//src/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/subcommand",
+        "@maven//:com_google_re2j_re2j",
         "@maven//:com_google_truth_truth",
+        "@maven//:info_picocli_picocli",
         "@maven//:junit_junit",
+        "@maven//:org_hsqldb_hsqldb",
         "@maven//:org_mockito_mockito_core",
     ],
 )
 
 java_test(
-    name = "DataEntityManagerZipImplTest",
+    name = "ExtractSubcommandTest",
     size = "small",
-    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerZipImplTest",
+    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand.ExtractSubcommandTest",
     runtime_deps = [
         ":tests",
     ],

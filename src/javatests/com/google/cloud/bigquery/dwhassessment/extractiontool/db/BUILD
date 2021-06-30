@@ -17,22 +17,17 @@ java_library(
     name = "tests",
     srcs = glob(["*.java"]),
     deps = [
-        "//src/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
-        "//src/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
-        "//src/com/google/cloud/bigquery/dwhassessment/extractiontool/subcommand",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
         "@maven//:com_google_re2j_re2j",
         "@maven//:com_google_truth_truth",
-        "@maven//:info_picocli_picocli",
         "@maven//:junit_junit",
-        "@maven//:org_hsqldb_hsqldb",
-        "@maven//:org_mockito_mockito_core",
     ],
 )
 
 java_test(
-    name = "ExtractSubcommandTest",
+    name = "SchemaFiltersTest",
     size = "small",
-    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand.ExtractSubcommandTest",
+    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFiltersTest",
     runtime_deps = [
         ":tests",
     ],

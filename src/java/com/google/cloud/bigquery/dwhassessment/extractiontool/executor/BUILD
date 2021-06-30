@@ -16,11 +16,14 @@ load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
 package(default_visibility = ["//src:internal"])
 
 java_library(
-    name = "subcommand",
+    name = "executor",
     srcs = glob(["*.java"]),
     deps = [
-        "//src/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
-        "//src/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
-        "@maven//:info_picocli_picocli",
+        "//src:auto_value_plugin",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
+        "@maven//:com_google_auto_value_auto_value",
+        "@maven//:com_google_auto_value_auto_value_annotations",
+        "@maven//:com_google_guava_guava_30_1_1_jre",
     ],
 )

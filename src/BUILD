@@ -17,7 +17,6 @@ package_group(
     name = "internal",
     packages = [
         "//src/...",
-        "//tests/...",
     ],
 )
 

@@ -11,24 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-load("@rules_java//java:defs.bzl", "java_library", "java_test")
+load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
+
+package(default_visibility = ["//src:internal"])
 
 java_library(
-    name = "tests",
+    name = "extraction_tool",
     srcs = glob(["*.java"]),
     deps = [
-        "//src/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
-        "@maven//:com_google_re2j_re2j",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/config",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
+        "@maven//:com_google_inject_guice",
+        "@maven//:info_picocli_picocli",
+        "@maven//:javax_inject_javax_inject_1",
     ],
 )
 
-java_test(
-    name = "SchemaFiltersTest",
-    size = "small",
-    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFiltersTest",
+java_binary(
+    name = "ExtractionTool",
+    main_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.ExtractionTool",
     runtime_deps = [
-        ":tests",
+        ":extraction_tool",
     ],
 )

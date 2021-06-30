@@ -16,21 +16,14 @@ load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
 package(default_visibility = ["//src:internal"])
 
 java_library(
-    name = "extraction_tool",
+    name = "config",
     srcs = glob(["*.java"]),
     deps = [
-        "//src/com/google/cloud/bigquery/dwhassessment/extractiontool/config",
-        "//src/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/subcommand",
         "@maven//:com_google_inject_guice",
-        "@maven//:info_picocli_picocli",
         "@maven//:javax_inject_javax_inject_1",
-    ],
-)
-
-java_binary(
-    name = "ExtractionTool",
-    main_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.ExtractionTool",
-    runtime_deps = [
-        ":extraction_tool",
     ],
 )
