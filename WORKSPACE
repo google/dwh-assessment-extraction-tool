@@ -26,6 +26,7 @@ maven_install(
         "javax.inject:javax.inject:1",
         "junit:junit:4.13.2",
         "org.hsqldb:hsqldb:2.6.0",
+        "org.hsqldb:sqltool:2.6.0",
         "org.mockito:mockito-core:3.11.1",
     ],
     fetch_sources = True,
