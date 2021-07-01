@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.function.Supplier;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
@@ -46,8 +47,8 @@ public final class ScriptManagerImplTest {
   private DataEntityManager dataEntityManager;
   private ByteArrayOutputStream outputStream;
   private ScriptRunner scriptRunner;
-  private final ImmutableMap<String, String> scriptsMap =
-      ImmutableMap.of("default", "SELECT * FROM TestTable");
+  private final ImmutableMap<String, Supplier<String>> scriptsMap =
+      ImmutableMap.of("default", () -> "SELECT * FROM TestTable");
 
   @Before
   public void setUp() throws Exception {

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumWriter;
@@ -37,11 +38,13 @@ import org.apache.avro.io.EncoderFactory;
  */
 public class ScriptManagerImpl implements ScriptManager {
 
-  private final ImmutableMap<String, String> scriptsMap;
-  private final ScriptRunner scriptRunner;
-  private static Logger logger = Logger.getLogger(ScriptManagerImpl.class.getName());
+  private static final Logger logger = Logger.getLogger(ScriptManagerImpl.class.getName());
 
-  public ScriptManagerImpl(ScriptRunner scriptRunner, ImmutableMap<String, String> scriptsMap) {
+  private final ImmutableMap<String, Supplier<String>> scriptsMap;
+  private final ScriptRunner scriptRunner;
+
+  public ScriptManagerImpl(ScriptRunner scriptRunner,
+      ImmutableMap<String, Supplier<String>> scriptsMap) {
     this.scriptRunner = scriptRunner;
     this.scriptsMap = scriptsMap;
   }
@@ -54,14 +57,15 @@ public class ScriptManagerImpl implements ScriptManager {
         scriptsMap.containsKey(scriptName),
         String.format("Script name %s is not available.", scriptName));
     /* TODO(xshang): figure out how to set schema name and namespace in the schema extraction. */
+    String script = scriptsMap.get(scriptName).get();
     Schema schema =
         scriptRunner.extractSchema(
             connection,
-            scriptsMap.get(scriptName),
+            script,
             /*schemaName= */ scriptName,
             /*namespace= */ "namespace");
     ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, scriptsMap.get(scriptName), schema);
+        scriptRunner.executeScriptToAvro(connection, script, schema);
     dumpResults(records, dataEntityManager.getEntityOutputStream(scriptName), schema);
   }
 
