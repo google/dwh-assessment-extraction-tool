@@ -15,6 +15,8 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.faketd;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,15 +36,14 @@ public class TeradataSimulatorTest {
   public void populate_success() throws SQLException, IOException {
     try (Connection connection = getFakeTeradataConnection()) {
       try (Statement statement = connection.createStatement()) {
-        ResultSet rs = statement.executeQuery(
-            "SELECT" +
-                "  DatabaseName," +
-                "  TableName," +
-                "  LastAccessTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE " +
-                "FROM DBC.TablesV");
-        while (rs.next()) {
-          System.out.printf("DB: %s, table: %s%n", rs.getString("DatabaseName"),
-              rs.getString("TableName"));
+        try (ResultSet rs =
+            statement.executeQuery(
+                "SELECT"
+                    + "  DatabaseName,"
+                    + "  TableName,"
+                    + "  LastAccessTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE "
+                    + "FROM DBC.TablesV")) {
+          assertThat(rs.next()).isFalse();
         }
       }
     }
