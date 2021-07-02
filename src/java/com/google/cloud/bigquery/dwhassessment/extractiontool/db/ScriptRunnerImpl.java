@@ -31,7 +31,6 @@ import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
 
-
 /**
  * Implementation of ScriptRunner. Executes SQL script and converts query results to desired format,
  * i.e. Avro.
@@ -39,8 +38,8 @@ import org.apache.avro.generic.GenericRecordBuilder;
 public class ScriptRunnerImpl implements ScriptRunner {
 
   private static void convertColumnTypeToAvroType(
-      SchemaBuilder.FieldBuilder<Schema> fieldBuilder, ResultSetMetaData metaData,
-      int columnIndex) throws SQLException {
+      SchemaBuilder.FieldBuilder<Schema> fieldBuilder, ResultSetMetaData metaData, int columnIndex)
+      throws SQLException {
     switch (metaData.getColumnType(columnIndex)) {
       case Types.CHAR:
       case Types.LONGVARCHAR:
@@ -54,22 +53,27 @@ public class ScriptRunnerImpl implements ScriptRunner {
       case Types.BIGINT:
         fieldBuilder.type().optional().longType();
         break;
-      case Types.DECIMAL: {
-        Schema bigintType = LogicalTypes
-            .decimal(metaData.getPrecision(columnIndex), metaData.getScale(columnIndex))
-            .addToSchema(Schema.create(Type.BYTES));
-        fieldBuilder.type().optional().type(bigintType);
-        break;
-      }
+      case Types.DECIMAL:
+        {
+          Schema bigintType =
+              LogicalTypes.decimal(
+                      metaData.getPrecision(columnIndex), metaData.getScale(columnIndex))
+                  .addToSchema(Schema.create(Type.BYTES));
+          fieldBuilder.type().optional().type(bigintType);
+          break;
+        }
       case Types.TIMESTAMP:
-      case Types.TIMESTAMP_WITH_TIMEZONE: {
-        Schema timestampType = LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG));
-        fieldBuilder.type().optional().type(timestampType);
-        break;
-      }
+      case Types.TIMESTAMP_WITH_TIMEZONE:
+        {
+          Schema timestampType =
+              LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG));
+          fieldBuilder.type().optional().type(timestampType);
+          break;
+        }
       case Types.BINARY:
         fieldBuilder.type().optional().bytesType();
         break;
+      case Types.FLOAT:
       case Types.DOUBLE:
         fieldBuilder.type().optional().doubleType();
         break;
@@ -82,8 +86,7 @@ public class ScriptRunnerImpl implements ScriptRunner {
 
   @Override
   public ImmutableList<GenericRecord> executeScriptToAvro(
-      Connection connection, String sqlScript, Schema schema)
-      throws SQLException {
+      Connection connection, String sqlScript, Schema schema) throws SQLException {
     ImmutableList.Builder<GenericRecord> recordsBuilder = ImmutableList.builder();
     ResultSet resultSet = connection.createStatement().executeQuery(sqlScript);
     while (resultSet.next()) {
@@ -93,16 +96,16 @@ public class ScriptRunnerImpl implements ScriptRunner {
   }
 
   @Override
-  public Schema extractSchema(Connection connection, String sqlScript, String schemaName,
-      String namespace)
+  public Schema extractSchema(
+      Connection connection, String sqlScript, String schemaName, String namespace)
       throws SQLException {
     ResultSetMetaData metaData = connection.createStatement().executeQuery(sqlScript).getMetaData();
-    SchemaBuilder.FieldAssembler<Schema> schemaAssembler = SchemaBuilder.record(schemaName)
-        .namespace(namespace).fields();
+    SchemaBuilder.FieldAssembler<Schema> schemaAssembler =
+        SchemaBuilder.record(schemaName).namespace(namespace).fields();
 
     for (int columnIndex = 1; columnIndex <= metaData.getColumnCount(); columnIndex++) {
-      SchemaBuilder.FieldBuilder<Schema> fieldBuilder = schemaAssembler
-          .name(metaData.getColumnName(columnIndex));
+      SchemaBuilder.FieldBuilder<Schema> fieldBuilder =
+          schemaAssembler.name(metaData.getColumnName(columnIndex));
       convertColumnTypeToAvroType(fieldBuilder, metaData, columnIndex);
     }
     return schemaAssembler.endRecord();
@@ -112,8 +115,8 @@ public class ScriptRunnerImpl implements ScriptRunner {
     GenericRecordBuilder recordBuilder = new GenericRecordBuilder(schema);
     ResultSetMetaData metaData = row.getMetaData();
     for (int columnIndex = 1; columnIndex <= row.getMetaData().getColumnCount(); columnIndex++) {
-      recordBuilder
-          .set(metaData.getColumnName(columnIndex), getRowObject(metaData, row, columnIndex));
+      recordBuilder.set(
+          metaData.getColumnName(columnIndex), getRowObject(metaData, row, columnIndex));
     }
     return recordBuilder.build();
   }
@@ -121,15 +124,26 @@ public class ScriptRunnerImpl implements ScriptRunner {
   private Object getRowObject(ResultSetMetaData metaData, ResultSet row, int columnIndex)
       throws SQLException {
     switch (metaData.getColumnType(columnIndex)) {
-      case Types.DECIMAL: {
-        BigDecimal bigDecimal = row.getBigDecimal(columnIndex);
-        return bigDecimal == null ? null : ByteBuffer.wrap(bigDecimal.toBigInteger().toByteArray());
-      }
+      case Types.DECIMAL:
+        {
+          BigDecimal bigDecimal = row.getBigDecimal(columnIndex);
+          return bigDecimal == null
+              ? null
+              : ByteBuffer.wrap(bigDecimal.toBigInteger().toByteArray());
+        }
       case Types.TIMESTAMP:
-      case Types.TIMESTAMP_WITH_TIMEZONE: {
-        Timestamp timestamp = row.getTimestamp(columnIndex);
-        return timestamp == null ? null : timestamp.toInstant().toEpochMilli();
-      }
+      case Types.TIMESTAMP_WITH_TIMEZONE:
+        {
+          Timestamp timestamp = row.getTimestamp(columnIndex);
+          return timestamp == null ? null : timestamp.toInstant().toEpochMilli();
+        }
+      case Types.BINARY:
+        {
+          byte[] blob = row.getBytes(columnIndex);
+          return blob == null ? null : ByteBuffer.wrap(blob);
+        }
+      case Types.FLOAT:
+        return Float.valueOf(row.getFloat(columnIndex));
       default:
         return row.getObject(columnIndex);
     }

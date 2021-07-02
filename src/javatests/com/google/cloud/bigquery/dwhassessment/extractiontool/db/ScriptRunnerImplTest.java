@@ -67,11 +67,11 @@ public final class ScriptRunnerImplTest {
 
     Schema testSchema = new Schema.Parser().parse(TEST_SCHEMA);
     String sqlScript = "SELECT * FROM T0";
-    ImmutableList<GenericRecord> records = scriptRunner
-        .executeScriptToAvro(connection, sqlScript, testSchema);
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, sqlScript, testSchema);
 
-    GenericRecord expectedRecord = new GenericRecordBuilder(testSchema)
-        .set("ID", 0).set("NAME", "name_0").build();
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(testSchema).set("ID", 0).set("NAME", "name_0").build();
     assertThat(records).containsExactly(expectedRecord);
   }
 
@@ -85,13 +85,12 @@ public final class ScriptRunnerImplTest {
     connection.commit();
 
     String sqlScript = "SELECT * FROM T0";
-    Schema testSchema = scriptRunner
-        .extractSchema(connection, sqlScript, "testName", "namespace");
-    ImmutableList<GenericRecord> records = scriptRunner
-        .executeScriptToAvro(connection, sqlScript, testSchema);
+    Schema testSchema = scriptRunner.extractSchema(connection, sqlScript, "testName", "namespace");
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, sqlScript, testSchema);
 
-    GenericRecord expectedRecord = new GenericRecordBuilder(testSchema)
-        .set("ID", 0).set("NAME", "name_0").build();
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(testSchema).set("ID", 0).set("NAME", "name_0").build();
     assertThat(records).containsExactly(expectedRecord);
   }
 
@@ -108,15 +107,15 @@ public final class ScriptRunnerImplTest {
 
     Schema testSchema = new Schema.Parser().parse(TEST_SCHEMA);
     String sqlScript = "SELECT * FROM T1";
-    ImmutableList<GenericRecord> records = scriptRunner
-        .executeScriptToAvro(connection, sqlScript, testSchema);
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, sqlScript, testSchema);
 
-    GenericRecord expectedRecord0 = new GenericRecordBuilder(testSchema)
-        .set("ID", 0).set("NAME", "name_0").build();
-    GenericRecord expectedRecord1 = new GenericRecordBuilder(testSchema)
-        .set("ID", 1).set("NAME", null).build();
-    GenericRecord expectedRecord2 = new GenericRecordBuilder(testSchema)
-        .set("ID", null).set("NAME", "name_2").build();
+    GenericRecord expectedRecord0 =
+        new GenericRecordBuilder(testSchema).set("ID", 0).set("NAME", "name_0").build();
+    GenericRecord expectedRecord1 =
+        new GenericRecordBuilder(testSchema).set("ID", 1).set("NAME", null).build();
+    GenericRecord expectedRecord2 =
+        new GenericRecordBuilder(testSchema).set("ID", null).set("NAME", "name_2").build();
     assertThat(records).containsExactly(expectedRecord0, expectedRecord1, expectedRecord2);
   }
 
@@ -129,22 +128,68 @@ public final class ScriptRunnerImplTest {
       }
       connection.commit();
 
-      Schema schema = SchemaBuilder.record("DecimalRecord").fields()
-          .name("ID").type().optional().intType()
-          .name("VALUE").type().optional().type(LogicalTypes
-              .decimal(5)
-              .addToSchema(Schema.create(Type.BYTES)))
-          .endRecord();
+      Schema schema =
+          SchemaBuilder.record("DecimalRecord")
+              .fields()
+              .name("ID")
+              .type()
+              .optional()
+              .intType()
+              .name("VALUE")
+              .type()
+              .optional()
+              .type(LogicalTypes.decimal(5).addToSchema(Schema.create(Type.BYTES)))
+              .endRecord();
 
-      ImmutableList<GenericRecord> records = scriptRunner
-          .executeScriptToAvro(connection, /*sqlScript=*/ "SELECT * FROM DecimalColumnTable",
-              schema);
+      ImmutableList<GenericRecord> records =
+          scriptRunner.executeScriptToAvro(
+              connection, /*sqlScript=*/ "SELECT * FROM DecimalColumnTable", schema);
 
-      assertThat(records).containsExactly(
-          new GenericRecordBuilder(schema).set("ID", 0)
-              .set("VALUE", ByteBuffer.wrap(BigInteger.valueOf(100).toByteArray())).build(),
-          new GenericRecordBuilder(schema).set("ID", 1)
-              .set("VALUE", ByteBuffer.wrap(BigInteger.valueOf(200).toByteArray())).build());
+      assertThat(records)
+          .containsExactly(
+              new GenericRecordBuilder(schema)
+                  .set("ID", 0)
+                  .set("VALUE", ByteBuffer.wrap(BigInteger.valueOf(100).toByteArray()))
+                  .build(),
+              new GenericRecordBuilder(schema)
+                  .set("ID", 1)
+                  .set("VALUE", ByteBuffer.wrap(BigInteger.valueOf(200).toByteArray()))
+                  .build());
+    }
+  }
+
+  @Test
+  public void executeScriptToAvro_ByteColumn_success() throws SQLException {
+    try (Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:test_db")) {
+      try (Statement baseStmt = connection.createStatement()) {
+        baseStmt.execute("CREATE TABLE ByteColumnTable (ID INTEGER, VALUE BINARY(5))");
+        baseStmt.execute("INSERT INTO ByteColumnTable VALUES (0, X'0A0B0C0D0E0F')");
+      }
+      connection.commit();
+
+      Schema schema =
+          SchemaBuilder.record("ByteRecord")
+              .fields()
+              .name("ID")
+              .type()
+              .optional()
+              .intType()
+              .name("VALUE")
+              .type()
+              .optional()
+              .bytesType()
+              .endRecord();
+
+      ImmutableList<GenericRecord> records =
+          scriptRunner.executeScriptToAvro(
+              connection, /*sqlScript=*/ "SELECT * FROM ByteColumnTable", schema);
+
+      assertThat(records)
+          .containsExactly(
+              new GenericRecordBuilder(schema)
+                  .set("ID", 0)
+                  .set("VALUE", ByteBuffer.wrap(new byte[] {10, 11, 12, 13, 14}))
+                  .build());
     }
   }
 
@@ -152,30 +197,78 @@ public final class ScriptRunnerImplTest {
   public void executeScriptToAvro_TimestampColumn_success() throws SQLException {
     try (Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:test_db")) {
       try (Statement baseStmt = connection.createStatement()) {
-        baseStmt.execute("CREATE TABLE TimestampColumnTable ("
-            + "ID INTEGER, "
-            + "VALUE TIMESTAMP(6) WITH TIME ZONE)");
-        baseStmt.execute("INSERT INTO TimestampColumnTable VALUES ("
-            + "(0, TIMESTAMP '2021-07-01 18:23:42' AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE), "
-            + "(1, TIMESTAMP '2021-07-02 18:23:42' AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE))");
+        baseStmt.execute(
+            "CREATE TABLE TimestampColumnTable ("
+                + "ID INTEGER, "
+                + "VALUE TIMESTAMP(6) WITH TIME ZONE)");
+        baseStmt.execute(
+            "INSERT INTO TimestampColumnTable VALUES (" //
+                + "(0,  TIMESTAMP '2021-07-01 18:23:42' AT TIME ZONE INTERVAL '0:00' HOUR TO"
+                + " MINUTE)," //
+                + "(1, TIMESTAMP '2021-07-02 18:23:42' AT TIME ZONE INTERVAL '0:00' HOUR TO"
+                + " MINUTE))");
       }
       connection.commit();
 
-      Schema schema = SchemaBuilder.record("TimestampRecord").fields()
-          .name("ID").type().optional().intType()
-          .name("VALUE").type().optional()
-          .type(LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG)))
-          .endRecord();
+      Schema schema =
+          SchemaBuilder.record("TimestampRecord")
+              .fields()
+              .name("ID")
+              .type()
+              .optional()
+              .intType()
+              .name("VALUE")
+              .type()
+              .optional()
+              .type(LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG)))
+              .endRecord();
 
-      ImmutableList<GenericRecord> records = scriptRunner
-          .executeScriptToAvro(connection, /*sqlScript=*/ "SELECT * FROM TimestampColumnTable",
-              schema);
+      ImmutableList<GenericRecord> records =
+          scriptRunner.executeScriptToAvro(
+              connection, /*sqlScript=*/ "SELECT * FROM TimestampColumnTable", schema);
 
-      assertThat(records).containsExactly(
-          new GenericRecordBuilder(schema).set("ID", 0)
-              .set("VALUE", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli()).build(),
-          new GenericRecordBuilder(schema).set("ID", 1)
-              .set("VALUE", Instant.parse("2021-07-02T18:23:42Z").toEpochMilli()).build());
+      assertThat(records)
+          .containsExactly(
+              new GenericRecordBuilder(schema)
+                  .set("ID", 0)
+                  .set("VALUE", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
+                  .build(),
+              new GenericRecordBuilder(schema)
+                  .set("ID", 1)
+                  .set("VALUE", Instant.parse("2021-07-02T18:23:42Z").toEpochMilli())
+                  .build());
+    }
+  }
+
+  @Test
+  public void executeScriptToAvro_FloatColumn_success() throws SQLException {
+    try (Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:test_db")) {
+      try (Statement baseStmt = connection.createStatement()) {
+        baseStmt.execute("CREATE TABLE FloatColumnTable (ID INTEGER, VALUE FLOAT)");
+        baseStmt.execute("INSERT INTO FloatColumnTable VALUES (0, 1.23)");
+      }
+      connection.commit();
+
+      Schema schema =
+          SchemaBuilder.record("FloatRecord")
+              .fields()
+              .name("ID")
+              .type()
+              .optional()
+              .intType()
+              .name("VALUE")
+              .type()
+              .optional()
+              .doubleType()
+              .endRecord();
+
+      ImmutableList<GenericRecord> records =
+          scriptRunner.executeScriptToAvro(
+              connection, /*sqlScript=*/ "SELECT * FROM FloatColumnTable", schema);
+
+      assertThat(records)
+          .containsExactly(
+              new GenericRecordBuilder(schema).set("ID", 0).set("VALUE", 1.23).build());
     }
   }
 }
