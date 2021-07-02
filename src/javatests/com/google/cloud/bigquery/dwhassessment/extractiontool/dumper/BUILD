@@ -13,7 +13,7 @@
 # limitations under the License.
 load("@rules_java//java:defs.bzl", "java_library", "java_test")
 
-package(default_visibility = ["//src:internal"])
+package(default_visibility = ["//src:tests"])
 
 java_library(
     name = "dumpertesting",

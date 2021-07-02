@@ -13,15 +13,18 @@
 # limitations under the License.
 load("@rules_java//java:defs.bzl", "java_library", "java_test")
 
+package(default_visibility = ["//src:tests"])
+
 java_library(
     name = "faketd",
     srcs = glob(
         include = ["*.java"],
         exclude = ["*Test.java"],
     ),
-    resources = glob([
-        "*.sql",
-    ]),
+    resources = glob(
+        include = ["*.sql"],
+        exclude = ["*_test.sql"],
+    ),
     deps = [
         "@maven//:org_hsqldb_sqltool",
     ],
@@ -30,6 +33,7 @@ java_library(
 java_library(
     name = "tests",
     srcs = glob(["*Test.java"]),
+    resources = glob(["*_test.sql"]),
     deps = [
         ":faketd",
         "@maven//:com_google_truth_truth",

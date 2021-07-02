@@ -16,6 +16,7 @@
 package com.google.cloud.bigquery.dwhassessment.extractiontool.faketd;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -23,6 +24,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -30,11 +32,11 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class TeradataSimulatorTest {
 
-  private static final String FAKE_TERADATA_URL = "jdbc:hsqldb:mem:faketd";
-
   @Test
-  public void populate_success() throws SQLException, IOException {
-    try (Connection connection = getFakeTeradataConnection()) {
+  public void createTablesAndViews_success() throws SQLException, IOException {
+    TeradataSimulator.createTablesAndViews("jdbc:hsqldb:mem:faketd");
+
+    try (Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:faketd")) {
       try (Statement statement = connection.createStatement()) {
         try (ResultSet rs =
             statement.executeQuery(
@@ -49,8 +51,27 @@ public class TeradataSimulatorTest {
     }
   }
 
-  private static Connection getFakeTeradataConnection() throws SQLException, IOException {
-    TeradataSimulator.populate(FAKE_TERADATA_URL);
-    return DriverManager.getConnection(FAKE_TERADATA_URL);
+  @Test
+  public void runSqlFile_success() throws SQLException, IOException {
+    TeradataSimulator.createTablesAndViews("jdbc:hsqldb:mem:insert");
+
+    try (Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:insert")) {
+      TeradataSimulator.runSqlFile("jdbc:hsqldb:mem:insert",
+          TeradataSimulatorTest.class.getResource("insert_test.sql"));
+
+      try (Statement statement = connection.createStatement()) {
+        try (ResultSet rs = statement.executeQuery("SELECT * FROM DBC.TablesV")) {
+          assertThat(rs.next()).isTrue();
+        }
+      }
+    }
+  }
+
+  @Test
+  public void runSqlFile_invalidSql_failure() throws SQLException, IOException {
+    IllegalStateException e = assertThrows(IllegalStateException.class, () -> TeradataSimulator
+        .runSqlFile("jdbc:hsqldb:mem:invalid",
+            TeradataSimulatorTest.class.getResource("invalid_test.sql")));
+    assertThat(e).hasMessageThat().contains("invalid sql syntax");
   }
 }

@@ -33,10 +33,18 @@ public class TeradataSimulator {
    *
    * @param dbUrl The address of the DB to populate.
    */
-  public static void populate(String dbUrl) throws SQLException, IOException {
+  public static void createTablesAndViews(String dbUrl) throws SQLException, IOException {
+    runSqlFile(dbUrl, TeradataSimulator.class.getResource("teradata_tables.sql"));
+  }
+
+  /**
+   * Execute a SQL file against the provided DB.
+   * @param dbUrl The address of the DB.
+   * @param sqlUrl The address of the SQL file.
+   */
+  public static void runSqlFile(String dbUrl, URL sqlUrl) throws SQLException, IOException {
     try (Connection connection = DriverManager.getConnection(dbUrl)) {
-      URL url = TeradataSimulator.class.getResource("teradata_tables.sql");
-      SqlFile sqlFile = new SqlFile(url);
+      SqlFile sqlFile = new SqlFile(sqlUrl);
       sqlFile.setConnection(connection);
       try {
         sqlFile.execute();

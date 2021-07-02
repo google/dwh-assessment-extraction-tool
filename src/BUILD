@@ -20,6 +20,13 @@ package_group(
     ],
 )
 
+package_group(
+    name = "tests",
+    packages = [
+        "//src/javatests/...",
+    ],
+)
+
 package(default_visibility = [":internal"])
 
 java_plugin(
