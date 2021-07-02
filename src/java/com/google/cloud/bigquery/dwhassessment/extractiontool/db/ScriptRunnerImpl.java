@@ -16,11 +16,17 @@
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import com.google.common.collect.ImmutableList;
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Type;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
@@ -31,6 +37,48 @@ import org.apache.avro.generic.GenericRecordBuilder;
  * i.e. Avro.
  */
 public class ScriptRunnerImpl implements ScriptRunner {
+
+  private static void convertColumnTypeToAvroType(
+      SchemaBuilder.FieldBuilder<Schema> fieldBuilder, ResultSetMetaData metaData,
+      int columnIndex) throws SQLException {
+    switch (metaData.getColumnType(columnIndex)) {
+      case Types.CHAR:
+      case Types.LONGVARCHAR:
+      case Types.VARCHAR:
+        fieldBuilder.type().optional().stringType();
+        break;
+      case Types.INTEGER:
+      case Types.SMALLINT:
+        fieldBuilder.type().optional().intType();
+        break;
+      case Types.BIGINT:
+        fieldBuilder.type().optional().longType();
+        break;
+      case Types.DECIMAL: {
+        Schema bigintType = LogicalTypes
+            .decimal(metaData.getPrecision(columnIndex), metaData.getScale(columnIndex))
+            .addToSchema(Schema.create(Type.BYTES));
+        fieldBuilder.type().optional().type(bigintType);
+        break;
+      }
+      case Types.TIMESTAMP:
+      case Types.TIMESTAMP_WITH_TIMEZONE: {
+        Schema timestampType = LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG));
+        fieldBuilder.type().optional().type(timestampType);
+        break;
+      }
+      case Types.BINARY:
+        fieldBuilder.type().optional().bytesType();
+        break;
+      case Types.DOUBLE:
+        fieldBuilder.type().optional().doubleType();
+        break;
+      default:
+        // TODO: support all other types specified in java.sql.Types.
+        throw new UnsupportedOperationException(
+            String.format("Type %s is not implemented yet.", metaData.getColumnType(columnIndex)));
+    }
+  }
 
   @Override
   public ImmutableList<GenericRecord> executeScriptToAvro(
@@ -55,7 +103,7 @@ public class ScriptRunnerImpl implements ScriptRunner {
     for (int columnIndex = 1; columnIndex <= metaData.getColumnCount(); columnIndex++) {
       SchemaBuilder.FieldBuilder<Schema> fieldBuilder = schemaAssembler
           .name(metaData.getColumnName(columnIndex));
-      convertColumnTypeToAvroType(fieldBuilder, metaData.getColumnType(columnIndex));
+      convertColumnTypeToAvroType(fieldBuilder, metaData, columnIndex);
     }
     return schemaAssembler.endRecord();
   }
@@ -64,24 +112,26 @@ public class ScriptRunnerImpl implements ScriptRunner {
     GenericRecordBuilder recordBuilder = new GenericRecordBuilder(schema);
     ResultSetMetaData metaData = row.getMetaData();
     for (int columnIndex = 1; columnIndex <= row.getMetaData().getColumnCount(); columnIndex++) {
-      recordBuilder.set(metaData.getColumnName(columnIndex), row.getObject(columnIndex));
+      recordBuilder
+          .set(metaData.getColumnName(columnIndex), getRowObject(metaData, row, columnIndex));
     }
     return recordBuilder.build();
   }
 
-  private static void convertColumnTypeToAvroType(
-      SchemaBuilder.FieldBuilder<Schema> fieldBuilder, int columnType) {
-    switch (columnType) {
-      case java.sql.Types.CHAR:
-      case java.sql.Types.VARCHAR:
-      case java.sql.Types.LONGVARCHAR:
-        fieldBuilder.type().optional().stringType();
-        break;
-      case java.sql.Types.INTEGER: {
-        fieldBuilder.type().optional().intType();
-        break;
-        // TODO: support all other types specified in java.sql.Types.
+  private Object getRowObject(ResultSetMetaData metaData, ResultSet row, int columnIndex)
+      throws SQLException {
+    switch (metaData.getColumnType(columnIndex)) {
+      case Types.DECIMAL: {
+        BigDecimal bigDecimal = row.getBigDecimal(columnIndex);
+        return bigDecimal == null ? null : ByteBuffer.wrap(bigDecimal.toBigInteger().toByteArray());
       }
+      case Types.TIMESTAMP:
+      case Types.TIMESTAMP_WITH_TIMEZONE: {
+        Timestamp timestamp = row.getTimestamp(columnIndex);
+        return timestamp == null ? null : timestamp.toInstant().toEpochMilli();
+      }
+      default:
+        return row.getObject(columnIndex);
     }
   }
 }

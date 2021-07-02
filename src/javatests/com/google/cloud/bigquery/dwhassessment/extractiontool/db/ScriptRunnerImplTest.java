@@ -19,11 +19,17 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Type;
+import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
 import org.junit.Before;
@@ -34,8 +40,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class ScriptRunnerImplTest {
 
-  private ScriptRunner scriptRunner;
-
   private final String TEST_SCHEMA =
       "{\"namespace\": \"test.schema\",\n"
           + " \"type\": \"record\",\n"
@@ -45,6 +49,7 @@ public final class ScriptRunnerImplTest {
           + "     {\"name\": \"NAME\", \"type\": [\"string\", \"null\"]}\n"
           + " ]\n"
           + "}";
+  private ScriptRunner scriptRunner;
 
   @Before
   public void setUp() {
@@ -52,10 +57,10 @@ public final class ScriptRunnerImplTest {
   }
 
   @Test
-  public void provided_schema_simple_script() throws SQLException, IOException {
+  public void executeScriptToAvro_providedSchemaSimpleScript() throws SQLException, IOException {
     Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_0");
     Statement baseStmt = connection.createStatement();
-    baseStmt.execute("CREATE TABLE T0 (" + "ID INTEGER," + "NAME VARCHAR(100)" + ")");
+    baseStmt.execute("CREATE TABLE T0 (ID INTEGER, NAME VARCHAR(100))");
     baseStmt.execute("INSERT INTO T0 VALUES (0, 'name_0')");
     baseStmt.close();
     connection.commit();
@@ -71,10 +76,10 @@ public final class ScriptRunnerImplTest {
   }
 
   @Test
-  public void extract_schema_simple_script() throws SQLException, IOException {
+  public void executeScriptToAvro_extractSchemaSimpleScript() throws SQLException, IOException {
     Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_1");
     Statement baseStmt = connection.createStatement();
-    baseStmt.execute("CREATE TABLE T0 (" + "ID INTEGER," + "NAME VARCHAR(100)" + ")");
+    baseStmt.execute("CREATE TABLE T0 (ID INTEGER, NAME VARCHAR(100))");
     baseStmt.execute("INSERT INTO T0 VALUES (0, 'name_0')");
     baseStmt.close();
     connection.commit();
@@ -91,10 +96,10 @@ public final class ScriptRunnerImplTest {
   }
 
   @Test
-  public void null_values_success() throws Exception, SQLException {
+  public void executeScriptToAvro_nullValues_success() throws SQLException {
     Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:test_db");
     Statement baseStmt = connection.createStatement();
-    baseStmt.execute("CREATE TABLE T1 (" + "ID INTEGER," + "NAME VARCHAR(100)" + ")");
+    baseStmt.execute("CREATE TABLE T1 (ID INTEGER, NAME VARCHAR(100))");
     baseStmt.execute("INSERT INTO T1 VALUES (0, 'name_0')");
     baseStmt.execute("INSERT INTO T1 VALUES (1, null)");
     baseStmt.execute("INSERT INTO T1 VALUES (null, 'name_2')");
@@ -113,5 +118,64 @@ public final class ScriptRunnerImplTest {
     GenericRecord expectedRecord2 = new GenericRecordBuilder(testSchema)
         .set("ID", null).set("NAME", "name_2").build();
     assertThat(records).containsExactly(expectedRecord0, expectedRecord1, expectedRecord2);
+  }
+
+  @Test
+  public void executeScriptToAvro_DecimalColumn_success() throws SQLException {
+    try (Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:test_db")) {
+      try (Statement baseStmt = connection.createStatement()) {
+        baseStmt.execute("CREATE TABLE DecimalColumnTable (ID INTEGER, VALUE DECIMAL(5,0))");
+        baseStmt.execute("INSERT INTO DecimalColumnTable VALUES ((0, 100), (1, 200))");
+      }
+      connection.commit();
+
+      Schema schema = SchemaBuilder.record("DecimalRecord").fields()
+          .name("ID").type().optional().intType()
+          .name("VALUE").type().optional().type(LogicalTypes
+              .decimal(5)
+              .addToSchema(Schema.create(Type.BYTES)))
+          .endRecord();
+
+      ImmutableList<GenericRecord> records = scriptRunner
+          .executeScriptToAvro(connection, /*sqlScript=*/ "SELECT * FROM DecimalColumnTable",
+              schema);
+
+      assertThat(records).containsExactly(
+          new GenericRecordBuilder(schema).set("ID", 0)
+              .set("VALUE", ByteBuffer.wrap(BigInteger.valueOf(100).toByteArray())).build(),
+          new GenericRecordBuilder(schema).set("ID", 1)
+              .set("VALUE", ByteBuffer.wrap(BigInteger.valueOf(200).toByteArray())).build());
+    }
+  }
+
+  @Test
+  public void executeScriptToAvro_TimestampColumn_success() throws SQLException {
+    try (Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:test_db")) {
+      try (Statement baseStmt = connection.createStatement()) {
+        baseStmt.execute("CREATE TABLE TimestampColumnTable ("
+            + "ID INTEGER, "
+            + "VALUE TIMESTAMP(6) WITH TIME ZONE)");
+        baseStmt.execute("INSERT INTO TimestampColumnTable VALUES ("
+            + "(0, TIMESTAMP '2021-07-01 18:23:42' AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE), "
+            + "(1, TIMESTAMP '2021-07-02 18:23:42' AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE))");
+      }
+      connection.commit();
+
+      Schema schema = SchemaBuilder.record("TimestampRecord").fields()
+          .name("ID").type().optional().intType()
+          .name("VALUE").type().optional()
+          .type(LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG)))
+          .endRecord();
+
+      ImmutableList<GenericRecord> records = scriptRunner
+          .executeScriptToAvro(connection, /*sqlScript=*/ "SELECT * FROM TimestampColumnTable",
+              schema);
+
+      assertThat(records).containsExactly(
+          new GenericRecordBuilder(schema).set("ID", 0)
+              .set("VALUE", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli()).build(),
+          new GenericRecordBuilder(schema).set("ID", 1)
+              .set("VALUE", Instant.parse("2021-07-02T18:23:42Z").toEpochMilli()).build());
+    }
   }
 }
