@@ -99,7 +99,7 @@ CREATE TABLE DBC.DiskSpaceV (
 CREATE TABLE DBC.QryLog (
   ProcID DECIMAL(5,0),
   CollectTimeStamp TIMESTAMP(6),
-  QueryID DECIMAL(18,2),
+  QueryID DECIMAL(18,0),
   UserID BINARY(4),
   UserName CHAR(30),
   DefaultDatabase CHAR(30),
