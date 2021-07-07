@@ -58,3 +58,13 @@ java_test(
         "@maven//:org_hsqldb_hsqldb",
     ],
 )
+
+java_test(
+    name = "SchemaManagerImplTest",
+    size = "small",
+    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManagerImplTest",
+    runtime_deps = [
+        ":tests",
+        "@maven//:org_hsqldb_hsqldb",
+    ],
+)
