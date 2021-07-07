@@ -23,6 +23,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
@@ -270,5 +271,114 @@ public final class ScriptRunnerImplTest {
           .containsExactly(
               new GenericRecordBuilder(schema).set("ID", 0).set("VALUE", 1.23).build());
     }
+  }
+
+  @Test
+  public void extractSchema_AllSupportedColumnTypes_success() throws Exception {
+    try (Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:test_db")) {
+      createTableWithAllTypes(connection, "AllSupportedColumnsTable");
+      String testScript = "SELECT * FROM AllSupportedColumnsTable";
+      Schema schema = scriptRunner.extractSchema(connection, testScript, "testName", "namespace");
+
+      Schema expectedSchema = SchemaBuilder.record("testName").namespace("namespace").fields()
+          .name("BOOLEAN_VAL").type().optional().booleanType()
+          .name("BIT_VAL").type().optional().booleanType()
+          .name("TINYINT_VAL").type().optional().intType()
+          .name("SMALLINT_VAL").type().optional().intType()
+          .name("INTEGER_VAL").type().optional().intType()
+          .name("BIGINT_VAL").type().optional().longType()
+          .name("DECIMAL_VAL").type().optional().type(
+              LogicalTypes.decimal(3, 1).addToSchema(Schema.create(Type.BYTES)))
+          .name("FLOAT_VAL").type().optional().doubleType()
+          .name("REAL_VAL").type().optional().doubleType()
+          .name("DOUBLE_VAL").type().optional().doubleType()
+          .name("CHAR_VAL").type().optional().stringType()
+          .name("VARCHAR_VAL").type().optional().stringType()
+          .name("LONGVARCHAR_VAL").type().optional().stringType()
+          .name("TIMESTAMP_VAL").type().optional().type(
+              LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG)))
+          .name("TIMESTAMP_WITH_TIMEZONE_VAL").type().optional().type(
+              LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG)))
+          .name("BINARY_VAL").type().optional().bytesType()
+          .endRecord();
+      assertThat(schema).isEqualTo(expectedSchema);
+
+      // Add a row in the table and verify result.
+      PreparedStatement statement =
+          connection.prepareStatement(
+              "INSERT INTO AllSupportedColumnsTable VALUES ("
+                  + "true, " // BOOLEAN_VAL
+                  + "1, " // BIT_VAL
+                  + "5, " // TINYINT_VAL
+                  + "5, " // SMALLINT_VAL
+                  + "10, " // INTEGER_VAL
+                  + "9000000000000000, " // BIGINT_VAL
+                  + "1, " // DECIMAL_VAL
+                  + "1.23, " // FLOAT_VAL
+                  + "1.23, " // REAL_VAL
+                  + "1.23, " // DOUBLE_VAL
+                  + "'char', " // CHAR_VAL
+                  + "'varchar', " // VARCHAR_VAL
+                  + "'longvarchar', " // LONGVARCHAR_VAL
+                  + "TIMESTAMP '2021-07-01 18:23:42', " // TIMESTAMP_VAL
+                  + "TIMESTAMP '2021-07-01 18:23:42' AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE, " // TIMESTAMP_WITH_TIMEZONE_VAL
+                  + "?" // BINARY_VAL
+                  + ")");
+      statement.setBytes(1, new byte[] {1});
+      statement.execute();
+      ImmutableList<GenericRecord> records =
+          scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ testScript, schema);
+      assertThat(records)
+          .containsExactly(
+              new GenericRecordBuilder(schema)
+                  .set("BOOLEAN_VAL", true)
+                  .set("BIT_VAL", true)
+                  .set("TINYINT_VAL", 5)
+                  .set("SMALLINT_VAL", 5)
+                  .set("INTEGER_VAL", 10)
+                  .set("BIGINT_VAL", 9_000_000_000_000_000L)
+                  .set("DECIMAL_VAL", ByteBuffer.wrap(BigInteger.valueOf(1).toByteArray()))
+                  .set("FLOAT_VAL", 1.23)
+                  .set("REAL_VAL", 1.23)
+                  .set("DOUBLE_VAL", 1.23)
+                  .set("CHAR_VAL", "char")
+                  .set("VARCHAR_VAL", "varchar")
+                  .set("LONGVARCHAR_VAL", "longvarchar")
+                  .set("TIMESTAMP_VAL", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
+                  .set(
+                      "TIMESTAMP_WITH_TIMEZONE_VAL",
+                      Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
+                  .set("BINARY_VAL", ByteBuffer.wrap(new byte[] {1}))
+                  .build());
+      connection.close();
+    }
+  }
+
+  private void createTableWithAllTypes(Connection connection, String tableName)
+      throws SQLException {
+    try (Statement baseStmt = connection.createStatement()) {
+      baseStmt.execute(
+          "CREATE TABLE "
+              + tableName
+              + "("
+              + "BOOLEAN_VAL BOOLEAN,"
+              + "BIT_VAL BIT,"
+              + "TINYINT_VAL TINYINT,"
+              + "SMALLINT_VAL SMALLINT,"
+              + "INTEGER_VAL INTEGER,"
+              + "BIGINT_VAL BIGINT,"
+              + "DECIMAL_VAL DECIMAL(3, 1),"
+              + "FLOAT_VAL FLOAT,"
+              + "REAL_VAL REAL,"
+              + "DOUBLE_VAL DOUBLE,"
+              + "CHAR_VAL CHAR(4),"
+              + "VARCHAR_VAL VARCHAR(10),"
+              + "LONGVARCHAR_VAL LONGVARCHAR(100),"
+              + "TIMESTAMP_VAL TIMESTAMP(6),"
+              + "TIMESTAMP_WITH_TIMEZONE_VAL TIMESTAMP(6) WITH TIME ZONE,"
+              + "BINARY_VAL BINARY(1),"
+              + ")");
+    }
+    connection.commit();
   }
 }

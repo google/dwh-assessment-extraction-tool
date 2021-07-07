@@ -41,13 +41,13 @@ public class ScriptRunnerImpl implements ScriptRunner {
       SchemaBuilder.FieldBuilder<Schema> fieldBuilder, ResultSetMetaData metaData, int columnIndex)
       throws SQLException {
     switch (metaData.getColumnType(columnIndex)) {
-      case Types.CHAR:
-      case Types.LONGVARCHAR:
-      case Types.VARCHAR:
-        fieldBuilder.type().optional().stringType();
+      case Types.BOOLEAN:
+      case Types.BIT:
+        fieldBuilder.type().optional().booleanType();
         break;
-      case Types.INTEGER:
+      case Types.TINYINT:
       case Types.SMALLINT:
+      case Types.INTEGER:
         fieldBuilder.type().optional().intType();
         break;
       case Types.BIGINT:
@@ -55,13 +55,23 @@ public class ScriptRunnerImpl implements ScriptRunner {
         break;
       case Types.DECIMAL:
         {
-          Schema bigintType =
+          Schema decimalType =
               LogicalTypes.decimal(
                       metaData.getPrecision(columnIndex), metaData.getScale(columnIndex))
                   .addToSchema(Schema.create(Type.BYTES));
-          fieldBuilder.type().optional().type(bigintType);
+          fieldBuilder.type().optional().type(decimalType);
           break;
         }
+      case Types.FLOAT:
+      case Types.REAL:
+      case Types.DOUBLE:
+        fieldBuilder.type().optional().doubleType();
+        break;
+      case Types.CHAR:
+      case Types.VARCHAR:
+      case Types.LONGVARCHAR:
+        fieldBuilder.type().optional().stringType();
+        break;
       case Types.TIMESTAMP:
       case Types.TIMESTAMP_WITH_TIMEZONE:
         {
@@ -72,10 +82,6 @@ public class ScriptRunnerImpl implements ScriptRunner {
         }
       case Types.BINARY:
         fieldBuilder.type().optional().bytesType();
-        break;
-      case Types.FLOAT:
-      case Types.DOUBLE:
-        fieldBuilder.type().optional().doubleType();
         break;
       default:
         // TODO: support all other types specified in java.sql.Types.
