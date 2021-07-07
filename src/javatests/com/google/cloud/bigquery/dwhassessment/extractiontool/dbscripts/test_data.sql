@@ -12,6 +12,55 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+INSERT INTO DBC.DiskSpaceV (
+  VProc,
+  DatabaseName,
+  AccountName,
+  MaxPerm,
+  MaxSpool,
+  MaxTemp,
+  CurrentPerm,
+  CurrentSpool,
+  CurrentPersistentSpool,
+  CurrentTemp,
+  PeakPerm,
+  PeakSpool,
+  PeakPersistentSpool,
+  PeakTemp,
+  MaxProfileSpool,
+  MaxProfileTemp,
+  AllocatedPerm,
+  AllocatedSpool,
+  AllocatedTemp,
+  PermSkew,
+  SpoolSkew,
+  TempSkew
+)
+VALUES (
+  100,
+  'db_name',
+  'account_name',
+  1100000,
+  1200000,
+  1300000,
+  1400000,
+  1500000,
+  1600000,
+  1700000,
+  1800000,
+  1900000,
+  2000000,
+  2100000,
+  2200000,
+  2300000,
+  2400000,
+  2500000,
+  2600000,
+  11,
+  12,
+  13
+);
+
 INSERT INTO DBC.QryLog (
   ProcID,
   CollectTimeStamp,

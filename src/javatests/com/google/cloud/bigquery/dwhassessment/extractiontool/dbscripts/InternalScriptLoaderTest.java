@@ -84,6 +84,69 @@ public class InternalScriptLoaderTest {
   }
 
   @Test
+  public void loadScripts_diskSpace() throws IOException, SQLException {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(
+        connection, "diskspace", new DataEntityManagerTesting(outputStream));
+
+    SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record("TimestampRecord").fields();
+    fields = fields.name("VPROC").type().intType().noDefault();
+    fields = fields.name("DATABASENAME").type().stringType().noDefault();
+    fields = fields.name("ACCOUNTNAME").type().optional().stringType();
+    fields = fields.name("MAXPERM").type().optional().longType();
+    fields = fields.name("MAXSPOOL").type().optional().longType();
+    fields = fields.name("MAXTEMP").type().optional().longType();
+    fields = fields.name("CURRENTPERM").type().optional().longType();
+    fields = fields.name("CURRENTSPOOL").type().optional().longType();
+    fields = fields.name("CURRENTPERSISTENTSPOOL").type().optional().longType();
+    fields = fields.name("CURRENTTEMP").type().optional().longType();
+    fields = fields.name("PEAKPERM").type().optional().longType();
+    fields = fields.name("PEAKSPOOL").type().optional().longType();
+    fields = fields.name("PEAKPERSISTENTSPOOL").type().optional().longType();
+    fields = fields.name("PEAKTEMP").type().optional().longType();
+    fields = fields.name("MAXPROFILESPOOL").type().optional().longType();
+    fields = fields.name("MAXPROFILETEMP").type().optional().longType();
+    fields = fields.name("ALLOCATEDPERM").type().optional().longType();
+    fields = fields.name("ALLOCATEDSPOOL").type().optional().longType();
+    fields = fields.name("ALLOCATEDTEMP").type().optional().longType();
+    fields = fields.name("PERMSKEW").type().optional().intType();
+    fields = fields.name("SPOOLSKEW").type().optional().intType();
+    fields = fields.name("TEMPSKEW").type().optional().intType();
+    Schema schema = fields.endRecord();
+
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(
+            connection, /*sqlScript=*/ "SELECT * FROM DBC.DiskSpaceV", schema);
+
+    assertThat(records)
+        .containsExactly(
+            new GenericRecordBuilder(schema)
+                .set("VPROC", 100)
+                .set("DATABASENAME", "db_name")
+                .set("ACCOUNTNAME", "account_name")
+                .set("MAXPERM", 1_100_000L)
+                .set("MAXSPOOL", 1_200_000L)
+                .set("MAXTEMP", 1_300_000L)
+                .set("CURRENTPERM", 1_400_000L)
+                .set("CURRENTSPOOL", 1_500_000L)
+                .set("CURRENTPERSISTENTSPOOL", 1_600_000L)
+                .set("CURRENTTEMP", 1_700_000L)
+                .set("PEAKPERM", 1_800_000L)
+                .set("PEAKSPOOL", 1_900_000L)
+                .set("PEAKPERSISTENTSPOOL", 2_000_000L)
+                .set("PEAKTEMP", 2_100_000L)
+                .set("MAXPROFILESPOOL", 2_200_000L)
+                .set("MAXPROFILETEMP", 2_300_000L)
+                .set("ALLOCATEDPERM", 2_400_000L)
+                .set("ALLOCATEDSPOOL", 2_500_000L)
+                .set("ALLOCATEDTEMP", 2_600_000L)
+                .set("PERMSKEW", 11)
+                .set("SPOOLSKEW", 12)
+                .set("TEMPSKEW", 13)
+                .build());
+  }
+
+  @Test
   public void loadScripts_queryLogs() throws IOException, SQLException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     scriptManager.executeScript(

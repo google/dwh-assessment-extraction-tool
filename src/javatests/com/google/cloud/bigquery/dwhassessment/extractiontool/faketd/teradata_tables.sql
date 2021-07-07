@@ -72,6 +72,7 @@ CREATE TABLE DBC.UsersV (
 );
 
 CREATE TABLE DBC.DiskSpaceV (
+  Vproc INT,
   DatabaseName VARCHAR(128),
   AccountName VARCHAR(128),
   MaxPerm BIGINT,
