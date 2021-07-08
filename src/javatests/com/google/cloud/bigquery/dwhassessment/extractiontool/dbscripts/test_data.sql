@@ -148,3 +148,21 @@ VALUES (
   10,
   'C'
 );
+
+INSERT INTO DBC.TableSizeV (
+  DataBaseName,
+  TableName,
+  CurrentPerm,
+  PeakPerm
+)
+VALUES (
+  'test_database',
+  'test_table',
+  1000,
+  2000
+),(
+  'dbc',
+  'test_table',
+  1000,
+  2000
+);

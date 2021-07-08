@@ -250,6 +250,29 @@ public class InternalScriptLoaderTest {
     assertThat(readOutputStreamToAvro(outputStream, schema)).isEqualTo(expectedRecord);
   }
 
+  @Test
+  public void loadScripts_tableSize() throws IOException, SQLException {
+    String scriptName = "tablesize";
+    String sqlScript = scriptManager.getScript(scriptName);
+    // Get schema and verify records.
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(schema)
+            .set("DATABASENAME", "test_database")
+            .set("TABLENAME", "test_table")
+            .set("CURRENTPERM", 1000L)
+            .set("PEAKPERM", 2000L)
+            .build();
+    assertThat(records).containsExactly(expectedRecord);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(readOutputStreamToAvro(outputStream, schema)).isEqualTo(expectedRecord);
+  }
+
   private Record readOutputStreamToAvro(ByteArrayOutputStream outputStream, Schema schema)
       throws IOException {
     GenericDatumReader<Record> reader = new GenericDatumReader<>(schema);
