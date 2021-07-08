@@ -58,7 +58,7 @@ public final class ScriptManagerImplTest {
   }
 
   @Test
-  public void simple_script_success() throws Exception, SQLException {
+  public void executeScript_simpleTable_success() throws Exception, SQLException {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap);
     Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_0");
     Statement baseStmt = connection.createStatement();
@@ -80,7 +80,7 @@ public final class ScriptManagerImplTest {
   }
 
   @Test
-  public void empty_table() throws Exception, SQLException {
+  public void executeScript_emptyTable_success() throws Exception, SQLException {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap);
     Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_1");
     Statement baseStmt = connection.createStatement();
@@ -96,7 +96,7 @@ public final class ScriptManagerImplTest {
   }
 
   @Test
-  public void not_available_script_name() throws Exception, SQLException {
+  public void getAllScriptNames_fail() throws Exception, SQLException {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap);
     Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_2");
     Statement baseStmt = connection.createStatement();
@@ -111,8 +111,21 @@ public final class ScriptManagerImplTest {
   }
 
   @Test
-  public void get_all_script_names() {
+  public void getAllScriptNames_success() {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap);
     assertThat(scriptManager.getAllScriptNames()).isEqualTo(ImmutableSet.of("default"));
+  }
+
+  @Test
+  public void getScript_success() {
+    scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap);
+    assertThat(scriptManager.getScript("default")).isEqualTo(scriptsMap.get("default").get());
+  }
+
+  @Test
+  public void getScript_fail() {
+    scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap);
+    assertThrows(
+        IllegalArgumentException.class, () -> scriptManager.getScript("not_available_name"));
   }
 }

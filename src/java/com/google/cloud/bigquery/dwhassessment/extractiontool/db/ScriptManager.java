@@ -38,4 +38,7 @@ public interface ScriptManager {
 
   /** Gets a list of names of all available scripts. */
   ImmutableSet<String> getAllScriptNames();
+
+  /** Gets a SQL script based on a script name. */
+  String getScript(String scriptName);
 }

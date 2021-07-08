@@ -37,8 +37,12 @@ import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.SchemaBuilder;
+import org.apache.avro.generic.GenericData.Record;
+import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
+import org.apache.avro.io.Decoder;
+import org.apache.avro.io.DecoderFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -150,5 +154,43 @@ public class InternalScriptLoaderTest {
                 .set("MAXSTEPMEMORY", 123.45)
                 .set("TOTALIOCOUNT", 1234.56)
                 .build());
+  }
+
+  @Test
+  public void loadScripts_tableInfo() throws IOException, SQLException {
+    String scriptName = "tableinfo";
+    String sqlScript = scriptManager.getScript(scriptName);
+    // Get schema and verify records.
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(schema)
+            .set("DATABASENAME", "test_database")
+            .set("TABLENAME", "test_table")
+            .set("ACCESSCOUNT", 100_000_000_000L)
+            .set("LASTACCESSTIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .set("LASTALTERTIMESTAMP", Instant.parse("2021-07-02T01:00:00Z").toEpochMilli())
+            .set("TABLEKIND", "V")
+            .set("CREATORNAME", "creator")
+            .set("CREATETIMESTAMP", Instant.parse("2021-07-02T00:00:00Z").toEpochMilli())
+            .set("PRIMARYKEYINDEXID", 10)
+            .set("PARENTCOUNT", 2)
+            .set("CHILDCOUNT", 10)
+            .set("COMMITOPT", "C")
+            .build();
+    assertThat(records).containsExactly(expectedRecord);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(readOutputStreamToAvro(outputStream, schema)).isEqualTo(expectedRecord);
+  }
+
+  private Record readOutputStreamToAvro(ByteArrayOutputStream outputStream, Schema schema)
+      throws IOException {
+    GenericDatumReader<Record> reader = new GenericDatumReader<>(schema);
+    Decoder decoder = DecoderFactory.get().binaryDecoder(outputStream.toByteArray(), null);
+    return reader.read(null, decoder);
   }
 }

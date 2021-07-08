@@ -70,3 +70,32 @@ VALUES (
   123.45,
   1234.56
 );
+
+INSERT INTO DBC.TablesV (
+  DatabaseName,
+  TableName,
+  AccessCount,
+  LastAccessTimeStamp,
+  LastAlterTimeStamp,
+  TableKind,
+  CreatorName,
+  CreateTimeStamp,
+  PrimaryKeyIndexId,
+  ParentCount,
+  ChildCount,
+  CommitOpt
+)
+VALUES (
+  'test_database',
+  'test_table',
+  100000000000,
+  TIMESTAMP '2021-07-02 02:00:00',
+  TIMESTAMP '2021-07-02 01:00:00',
+  'V',
+  'creator',
+  TIMESTAMP '2021-07-02 00:00:00',
+  10,
+  2,
+  10,
+  'C'
+);

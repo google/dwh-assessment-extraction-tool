@@ -17,7 +17,7 @@ CREATE SCHEMA DBC;
 CREATE TABLE DBC.TablesV (
   DatabaseName VARCHAR(128),
   TableName VARCHAR(128),
-  AccessCount INTEGER,
+  AccessCount BIGINT,
   LastAccessTimeStamp TIMESTAMP(0),
   LastAlterTimeStamp TIMESTAMP(0),
   TableKind CHAR(1),

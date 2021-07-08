@@ -53,11 +53,8 @@ public class ScriptManagerImpl implements ScriptManager {
   public void executeScript(
       Connection connection, String scriptName, DataEntityManager dataEntityManager)
       throws SQLException, IOException {
-    Preconditions.checkArgument(
-        scriptsMap.containsKey(scriptName),
-        String.format("Script name %s is not available.", scriptName));
+    String script = getScript(scriptName);
     /* TODO(xshang): figure out how to set schema name and namespace in the schema extraction. */
-    String script = scriptsMap.get(scriptName).get();
     Schema schema =
         scriptRunner.extractSchema(
             connection,
@@ -67,6 +64,14 @@ public class ScriptManagerImpl implements ScriptManager {
     ImmutableList<GenericRecord> records =
         scriptRunner.executeScriptToAvro(connection, script, schema);
     dumpResults(records, dataEntityManager.getEntityOutputStream(scriptName), schema);
+  }
+
+  @Override
+  public String getScript(String scriptName) {
+    Preconditions.checkArgument(
+        scriptsMap.containsKey(scriptName),
+        String.format("Script name %s is not available.", scriptName));
+    return scriptsMap.get(scriptName).get();
   }
 
   @Override
