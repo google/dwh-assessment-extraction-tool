@@ -68,3 +68,13 @@ java_test(
         "@maven//:org_hsqldb_hsqldb",
     ],
 )
+
+java_test(
+    name = "AvroHelperTest",
+    size = "small",
+    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelperTest",
+    runtime_deps = [
+        ":tests",
+        "@maven//:org_hsqldb_hsqldb",
+    ],
+)

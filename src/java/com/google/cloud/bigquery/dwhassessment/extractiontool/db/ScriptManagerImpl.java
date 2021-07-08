@@ -15,22 +15,20 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
+import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.dumpResults;
+
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.BinaryEncoder;
-import org.apache.avro.io.EncoderFactory;
 
 /**
  * Implementation of script manager. Manages mapping from script name to SQL script. Executes script
@@ -43,8 +41,8 @@ public class ScriptManagerImpl implements ScriptManager {
   private final ImmutableMap<String, Supplier<String>> scriptsMap;
   private final ScriptRunner scriptRunner;
 
-  public ScriptManagerImpl(ScriptRunner scriptRunner,
-      ImmutableMap<String, Supplier<String>> scriptsMap) {
+  public ScriptManagerImpl(
+      ScriptRunner scriptRunner, ImmutableMap<String, Supplier<String>> scriptsMap) {
     this.scriptRunner = scriptRunner;
     this.scriptsMap = scriptsMap;
   }
@@ -57,10 +55,7 @@ public class ScriptManagerImpl implements ScriptManager {
     /* TODO(xshang): figure out how to set schema name and namespace in the schema extraction. */
     Schema schema =
         scriptRunner.extractSchema(
-            connection,
-            script,
-            /*schemaName= */ scriptName,
-            /*namespace= */ "namespace");
+            connection, script, /*schemaName= */ scriptName, /*namespace= */ "namespace");
     ImmutableList<GenericRecord> records =
         scriptRunner.executeScriptToAvro(connection, script, schema);
     dumpResults(records, dataEntityManager.getEntityOutputStream(scriptName), schema);
@@ -77,25 +72,5 @@ public class ScriptManagerImpl implements ScriptManager {
   @Override
   public ImmutableSet<String> getAllScriptNames() {
     return scriptsMap.keySet();
-  }
-
-  private void dumpResults(
-      ImmutableList<GenericRecord> records, OutputStream outputStream, Schema schema)
-      throws IOException {
-    BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(outputStream, null);
-    GenericDatumWriter<GenericRecord> writer = new GenericDatumWriter<>(schema);
-    records.stream()
-        .forEach(
-            record -> {
-              try {
-                writer.write(record, encoder);
-              } catch (IOException e) {
-                throw new IllegalStateException(
-                    String.format(
-                        "Failed to encode query result %s to file with error message: %s",
-                        record.toString(), e.getMessage()));
-              }
-            });
-    encoder.flush();
   }
 }
