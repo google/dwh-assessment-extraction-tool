@@ -147,6 +147,19 @@ VALUES (
   2,
   10,
   'C'
+), (
+  'dbc',
+  'test_table',
+  100000000000,
+  TIMESTAMP '2021-07-02 02:00:00',
+  TIMESTAMP '2021-07-02 01:00:00',
+  'V',
+  'creator',
+  TIMESTAMP '2021-07-02 00:00:00',
+  10,
+  2,
+  10,
+  'C'
 );
 
 INSERT INTO DBC.TableSizeV (

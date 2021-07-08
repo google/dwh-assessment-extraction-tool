@@ -26,4 +26,11 @@ SELECT
   ChildCount,
   CommitOpt
 FROM DBC.TablesV
--- TODO(xshang): add conditions in a separate CL.
+WHERE
+  TableKind IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND
+  DatabaseName NOT IN (
+    'dbc', 'SYSJDBC', 'TD_SYSGPL', 'SYSLIB', 'SYSSPATIAL', 'TD_SYSXML',
+    'Crashdumps', 'viewpoint', 'Sys_Calendar', 'EXTUSER', 'SYSUIF', 'TDStats',
+    'LockLogShredder', 'External_AP', 'SysAdmin', 'dbcmngr', 'console',
+    'TD_SYSFNLIB', 'SQLJ', 'TDQCD', 'TD_SERVER_DB', 'TDMaps', 'SystemFe',
+    'TDPUSER', 'SYSUDTLIB', 'tdwm', 'SYSBAR');
