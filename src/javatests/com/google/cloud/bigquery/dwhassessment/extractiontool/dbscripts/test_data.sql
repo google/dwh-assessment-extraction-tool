@@ -166,3 +166,39 @@ VALUES (
   1000,
   2000
 );
+
+INSERT INTO DBC.ColumnsV (
+  DatabaseName,
+  TableName,
+  ColumnName,
+  ColumnFormat,
+  ColumnTitle,
+  ColumnLength,
+  ColumnType,
+  DefaultValue,
+  ColumnConstraint,
+  ConstraintCount
+)
+VALUES (
+  'test_database',
+  'test_table',
+  'test_column',
+  'test_format',
+  'test_title',
+  1000,
+  'I',
+  '0',
+  'test constraint',
+  1
+), (
+   'test_database',
+   'not_existing_table',
+   'test_column',
+   'test_format',
+   'test_title',
+   1000,
+   'I',
+   '0',
+   'test constraint',
+   1
+);

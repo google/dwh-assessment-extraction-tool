@@ -31,7 +31,7 @@ public class InternalScriptLoader implements ScriptLoader {
 
   @Override
   public ImmutableMap<String, Supplier<String>> loadScripts() {
-    return ImmutableList.of("diskspace", "querylogs", "tableinfo", "tablesize").stream()
+    return ImmutableList.of("columns", "diskspace", "querylogs", "tableinfo", "tablesize").stream()
         .collect(
             ImmutableMap.toImmutableMap(Functions.identity(), key -> scriptLoader(key + ".sql")));
   }
