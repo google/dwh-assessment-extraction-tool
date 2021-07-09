@@ -152,6 +152,7 @@ public class AvroHelper {
           break;
         }
       case Types.BINARY:
+      case Types.VARBINARY:
         fieldBuilder.type().optional().bytesType();
         break;
       default:
@@ -178,6 +179,7 @@ public class AvroHelper {
           return timestamp == null ? null : timestamp.toInstant().toEpochMilli();
         }
       case Types.BINARY:
+      case Types.VARBINARY:
         {
           byte[] blob = row.getBytes(columnIndex);
           return blob == null ? null : ByteBuffer.wrap(blob);

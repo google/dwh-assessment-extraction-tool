@@ -61,6 +61,56 @@ VALUES (
   13
 );
 
+INSERT INTO DBC.FunctionsV (
+  DatabaseName,
+  FunctionName,
+  SpecificName,
+  FunctionId,
+  NumParameters,
+  ParameterDataTypes,
+  FunctionType,
+  ExternalName,
+  SrcFileLanguage,
+  NoSQLDataAccess,
+  ParameterStyle,
+  DeterministicOpt,
+  NullCall,
+  PrepareCount,
+  ExecProtectionMode,
+  ExtFileReference,
+  CharacterType,
+  Platform,
+  InterimFldSize,
+  RoutineKind,
+  ParameterUDTIds,
+  MaxOutParameters,
+  RefQueryband
+) VALUES (
+  'db_name',
+  'function_name',
+  'specific_name',
+  X'010203040506',
+  3,
+  'I1BF',
+  'F',
+  'JSONGETVALUE',
+  'P',
+  'Y',
+  'I',
+  'Y',
+  'Y',
+  'N',
+  'S',
+  'SS!TD_GetFunctionContext!/var',
+  1,
+  'LINUX64',
+  0,
+  'C',
+  X'0000EC0C00C0300000C01600',
+  0,
+  'N'
+);
+
 INSERT INTO DBC.QryLog (
   ProcID,
   CollectTimeStamp,

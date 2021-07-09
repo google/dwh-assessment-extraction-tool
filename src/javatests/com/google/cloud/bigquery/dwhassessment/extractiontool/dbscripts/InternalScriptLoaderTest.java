@@ -147,6 +147,83 @@ public class InternalScriptLoaderTest {
   }
 
   @Test
+  public void loadScripts_functioninfo() throws IOException, SQLException {
+    String scriptName = "functioninfo";
+    String sqlScript = scriptManager.getScript(scriptName);
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+
+    SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record("TimestampRecord").fields();
+    fields = fields.name("DATABASENAME").type().optional().stringType();
+    fields = fields.name("FUNCTIONNAME").type().optional().stringType();
+    fields = fields.name("SPECIFICNAME").type().optional().stringType();
+    fields = fields.name("FUNCTIONID").type().optional().bytesType();
+    fields = fields.name("NUMPARAMETERS").type().optional().intType();
+    fields = fields.name("PARAMETERDATATYPES").type().optional().stringType();
+    fields = fields.name("FUNCTIONTYPE").type().optional().stringType();
+    fields = fields.name("EXTERNALNAME").type().optional().stringType();
+    fields = fields.name("SRCFILELANGUAGE").type().optional().stringType();
+    fields = fields.name("NOSQLDATAACCESS").type().optional().stringType();
+    fields = fields.name("PARAMETERSTYLE").type().optional().stringType();
+    fields = fields.name("DETERMINISTICOPT").type().optional().stringType();
+    fields = fields.name("NULLCALL").type().optional().stringType();
+    fields = fields.name("PREPARECOUNT").type().optional().stringType();
+    fields = fields.name("EXECPROTECTIONMODE").type().optional().stringType();
+    fields = fields.name("EXTFILEREFERENCE").type().optional().stringType();
+    fields = fields.name("CHARACTERTYPE").type().optional().intType();
+    fields = fields.name("PLATFORM").type().optional().stringType();
+    fields = fields.name("INTERIMFLDSIZE").type().optional().intType();
+    fields = fields.name("ROUTINEKIND").type().optional().stringType();
+    fields = fields.name("PARAMETERUDTIDS").type().optional().bytesType();
+    fields = fields.name("MAXOUTPARAMETERS").type().optional().intType();
+    fields = fields.name("GLOPSETDATABASENAME").type().optional().stringType();
+    fields = fields.name("GLOPSETMEMBERNAME").type().optional().stringType();
+    fields = fields.name("REFQUERYBAND").type().optional().stringType();
+    fields = fields.name("EXECMAPNAME").type().optional().stringType();
+    fields = fields.name("EXECMAPCOLOCNAME").type().optional().stringType();
+    Schema schema = fields.endRecord();
+
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(schema)
+            .set("DATABASENAME", "db_name")
+            .set("FUNCTIONNAME", "function_name")
+            .set("SPECIFICNAME", "specific_name")
+            .set("FUNCTIONID", ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6}))
+            .set("NUMPARAMETERS", 3)
+            .set("PARAMETERDATATYPES", "I1BF")
+            .set("FUNCTIONTYPE", "F")
+            .set("EXTERNALNAME", Strings.padEnd("JSONGETVALUE", 30, ' '))
+            .set("SRCFILELANGUAGE", "P")
+            .set("NOSQLDATAACCESS", "Y")
+            .set("PARAMETERSTYLE", "I")
+            .set("DETERMINISTICOPT", "Y")
+            .set("NULLCALL", "Y")
+            .set("PREPARECOUNT", "N")
+            .set("EXECPROTECTIONMODE", "S")
+            .set("EXTFILEREFERENCE", "SS!TD_GetFunctionContext!/var")
+            .set("CHARACTERTYPE", 1)
+            .set("PLATFORM", "LINUX64 ")
+            .set("INTERIMFLDSIZE", 0)
+            .set("ROUTINEKIND", "C")
+            .set(
+                "PARAMETERUDTIDS",
+                ByteBuffer.wrap(
+                    new byte[] {
+                      0, 0, (byte) 0xEC, 0xC, 0, (byte) 0xC0, 0x30, 0, 0, (byte) 0xC0, 0x16, 0
+                    }))
+            .set("MAXOUTPARAMETERS", 0)
+            .set("REFQUERYBAND", "N")
+            .build();
+
+    assertThat(records).containsExactly(expectedRecord);
+    assertThat(readOutputStreamToAvro(outputStream, schema)).isEqualTo(expectedRecord);
+  }
+
+  @Test
   public void loadScripts_queryLogs() throws IOException, SQLException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     scriptManager.executeScript(

@@ -155,3 +155,34 @@ CREATE TABLE DBC.All_RI_ParentsV (
   CreatorName VARCHAR(128),
   CreateTimeStamp TIMESTAMP(0)
 );
+
+CREATE TABLE DBC.FunctionsV (
+  DatabaseName VARCHAR(128) NOT NULL,
+  FunctionName VARCHAR(128) NOT NULL,
+  SpecificName VARCHAR(128),
+  FunctionId BINARY(6) NOT NULL,
+  NumParameters SMALLINT NOT NULL,
+  ParameterDataTypes VARCHAR(256),
+  FunctionType VARCHAR(5),
+  ExternalName CHAR(30) NOT NULL,
+  SrcFileLanguage CHAR(1) NOT NULL,
+  NoSQLDataAccess CHAR(1) NOT NULL,
+  ParameterStyle CHAR(1) NOT NULL,
+  DeterministicOpt CHAR(1) NOT NULL,
+  NullCall CHAR(1) NOT NULL,
+  PrepareCount CHAR(1),
+  ExecProtectionMode CHAR(1) NOT NULL,
+  ExtFileReference VARCHAR(1000),
+  CharacterType SMALLINT NOT NULL,
+  Platform CHAR(8) NOT NULL,
+  InterimFldSize INTEGER NOT NULL,
+  RoutineKind CHAR(1) NOT NULL,
+  ParameterUDTIds VARBINARY(512),
+  MaxOutParameters SMALLINT NOT NULL,
+  GLOPSetDatabaseName VARCHAR(128),
+  GLOPSetMemberName VARCHAR(128),
+  RefQueryband CHAR(1),
+  ExecMapName VARCHAR(128),
+  ExecMapColocName VARCHAR(128),
+  PRIMARY KEY (FunctionId)
+);
