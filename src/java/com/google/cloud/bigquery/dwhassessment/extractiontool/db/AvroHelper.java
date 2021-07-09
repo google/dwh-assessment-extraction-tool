@@ -82,6 +82,7 @@ public class AvroHelper {
                         record.toString(), e.getMessage()));
               }
             });
+    outputStream.close();
     encoder.flush();
   }
 

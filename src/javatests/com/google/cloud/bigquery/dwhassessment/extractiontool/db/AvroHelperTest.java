@@ -111,14 +111,12 @@ public final class AvroHelperTest {
 
   @Test
   public void getAvroSchema_emptySchemaName() throws Exception {
-    assertThrows(
-        IllegalArgumentException.class, () -> getAvroSchema("", "namespace", metaData));
+    assertThrows(IllegalArgumentException.class, () -> getAvroSchema("", "namespace", metaData));
   }
 
   @Test
   public void getAvroSchema_emptyNamespace() throws Exception {
-    assertThrows(
-        IllegalArgumentException.class, () -> getAvroSchema("schemaName", "", metaData));
+    assertThrows(IllegalArgumentException.class, () -> getAvroSchema("schemaName", "", metaData));
   }
 
   @Test
