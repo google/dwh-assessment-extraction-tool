@@ -57,6 +57,8 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
       scriptManager.executeScript(connection, scriptName, dataEntityManager);
     }
 
+    // TODO(b/193563006): the retrieve schema is not working in the e2e workflow when connected to
+    //  an actual teradata instance.
     for (SchemaKey schemaKey : schemaManager.getSchemaKeys(connection, arguments.schemaFilters())) {
       schemaManager.retrieveSchema(connection, schemaKey, dataEntityManager);
     }
