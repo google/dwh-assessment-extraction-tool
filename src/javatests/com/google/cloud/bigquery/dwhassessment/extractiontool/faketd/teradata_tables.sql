@@ -57,8 +57,10 @@ CREATE TABLE DBC.IndicesV (
   TableName VARCHAR(128),
   IndexNumber SMALLINT,
   IndexType CHAR(1),
+  IndexName VARCHAR(128),
   ColumnName VARCHAR(128),
   ColumnPosition SMALLINT,
+  AccessCount BIGINT,
   UniqueFlag CHAR(1),
   PRIMARY KEY (DatabaseName, TableName)
 );

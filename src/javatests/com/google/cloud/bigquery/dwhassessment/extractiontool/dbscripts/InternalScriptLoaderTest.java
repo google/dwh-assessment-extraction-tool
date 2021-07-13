@@ -224,6 +224,34 @@ public class InternalScriptLoaderTest {
   }
 
   @Test
+  public void loadScripts_indices() throws IOException, SQLException {
+    String scriptName = "indices";
+    String sqlScript = scriptManager.getScript(scriptName);
+    // Get schema and verify records.
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(schema)
+            .set("DATABASENAME", "test_database")
+            .set("TABLENAME", "test_table")
+            .set("INDEXNUMBER", 1)
+            .set("INDEXTYPE", "P")
+            .set("INDEXNAME", "index_name")
+            .set("COLUMNNAME", "column_name")
+            .set("COLUMNPOSITION", 2)
+            .set("ACCESSCOUNT", (long) 100000)
+            .set("UNIQUEFLAG", "U")
+            .build();
+    assertThat(records).containsExactly(expectedRecord);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(readOutputStreamToAvro(outputStream, schema)).isEqualTo(expectedRecord);
+  }
+
+  @Test
   public void loadScripts_queryLogs() throws IOException, SQLException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     scriptManager.executeScript(

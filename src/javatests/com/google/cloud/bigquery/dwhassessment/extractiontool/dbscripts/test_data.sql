@@ -111,6 +111,29 @@ INSERT INTO DBC.FunctionsV (
   'N'
 );
 
+INSERT INTO DBC.IndicesV (
+  DatabaseName,
+  TableName,
+  IndexNumber,
+  IndexType,
+  IndexName,
+  ColumnName,
+  ColumnPosition,
+  AccessCount,
+  UniqueFlag
+)
+VALUES (
+  'test_database',
+  'test_table',
+  1,
+  'P',
+  'index_name',
+  'column_name',
+  2,
+  100000,
+  'U'
+);
+
 INSERT INTO DBC.QryLog (
   ProcID,
   CollectTimeStamp,
