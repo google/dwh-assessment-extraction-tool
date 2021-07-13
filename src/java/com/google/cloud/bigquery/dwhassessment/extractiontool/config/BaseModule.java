@@ -16,11 +16,18 @@
 package com.google.cloud.bigquery.dwhassessment.extractiontool.config;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManagerImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManagerImpl;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptRunner;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptRunnerImpl;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.dbscripts.InternalScriptLoader;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.dbscripts.ScriptLoader;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutorImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand.ExtractSubcommand;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.Provides;
@@ -29,6 +36,7 @@ import com.google.inject.multibindings.Multibinder;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
@@ -53,19 +61,36 @@ public final class BaseModule extends AbstractModule {
   @Provides
   @Singleton
   SchemaManager schemaManager() {
-    throw new IllegalStateException("Schema manager is not yet implemented.");
+    return new SchemaManagerImpl();
   }
 
   @Provides
   @Singleton
-  ScriptManager scriptManager() {
-    throw new IllegalStateException("Script manager is not yet implemented.");
+  ScriptManager scriptManager(
+      ScriptRunner scriptRunner, ImmutableMap<String, Supplier<String>> scriptsMap) {
+    return new ScriptManagerImpl(scriptRunner, scriptsMap);
   }
 
-  @Provides
-  @Singleton
   Function<Path, DataEntityManager> dataEntityManagerFactory() {
     throw new IllegalStateException("Data entity manager factory is not yet implemented.");
+  }
+
+  @Provides
+  @Singleton
+  ScriptRunner scriptRunner() {
+    return new ScriptRunnerImpl();
+  }
+
+  @Provides
+  @Singleton
+  ScriptLoader scriptLoader() {
+    return new InternalScriptLoader();
+  }
+
+  @Provides
+  @Singleton
+  ImmutableMap<String, Supplier<String>> getScriptsMap(ScriptLoader scriptLoader) {
+    return scriptLoader.loadScripts();
   }
 
   @Override

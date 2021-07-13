@@ -20,9 +20,11 @@ java_library(
     srcs = glob(["*.java"]),
     deps = [
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dbscripts",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/subcommand",
+        "@maven//:com_google_guava_guava_30_1_1_jre",
         "@maven//:com_google_inject_guice",
         "@maven//:javax_inject_javax_inject_1",
     ],
