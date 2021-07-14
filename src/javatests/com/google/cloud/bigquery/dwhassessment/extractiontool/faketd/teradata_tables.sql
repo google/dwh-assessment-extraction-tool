@@ -73,6 +73,15 @@ CREATE TABLE DBC.UsersV (
   PRIMARY KEY (UserName)
 );
 
+CREATE TABLE DBC.RoleMembersV (
+  RoleName VARCHAR(128),
+  Grantor VARCHAR(128),
+  Grantee VARCHAR(128),
+  WhenGranted TIMESTAMP(0),
+  DefaultRole VARCHAR(1),
+  WithAdmin CHAR(1)
+);
+
 CREATE TABLE DBC.DiskSpaceV (
   Vproc INT,
   DatabaseName VARCHAR(128),

@@ -288,3 +288,52 @@ VALUES (
    'test constraint',
    1
 );
+
+INSERT INTO DBC.UsersV (
+  UserName,
+  CreatorName,
+  DefaultDatabase,
+  CreateTimeStamp
+)
+VALUES (
+  'user_1',
+  'user_0',
+  'test_database',
+  TIMESTAMP '2021-07-02 02:00:00'
+),(
+    'user_2',
+    'user_0',
+    null,
+    TIMESTAMP '2021-07-02 02:00:00'
+);
+
+INSERT INTO DBC.RoleMembersV (
+  RoleName,
+  Grantee,
+  Grantor,
+  WhenGranted,
+  DefaultRole,
+  WithAdmin
+)
+VALUES (
+  'test_role_1',
+  'user_1',
+  'user_0',
+  TIMESTAMP '2021-07-02 02:00:00',
+  'Y',
+  'N'
+),(
+    'test_role_2',
+    'user_1',
+    'user_0',
+    TIMESTAMP '2021-07-02 02:00:00',
+    'N',
+    'Y'
+),(
+    'test_role_1',
+    'user_2',
+    'user_0',
+    TIMESTAMP '2021-07-02 02:00:00',
+    'N',
+    'N'
+);

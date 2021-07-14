@@ -407,10 +407,54 @@ public class InternalScriptLoaderTest {
     assertThat(readOutputStreamToAvro(outputStream, schema)).isEqualTo(expectedRecord);
   }
 
+  @Test
+  public void loadScripts_users() throws IOException, SQLException {
+    String scriptName = "users";
+    String sqlScript = scriptManager.getScript(scriptName);
+    // Get schema and verify records.
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    GenericRecord expectedRecordUser1 =
+        new GenericRecordBuilder(schema)
+            .set("USERNAME", "user_1")
+            .set("CREATORNAME", "user_0")
+            .set("DEFAULTDATABASE", "test_database")
+            .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .set("ROLES", "test_role_1,test_role_2")
+            .build();
+    GenericRecord expectedRecordUser2 =
+        new GenericRecordBuilder(schema)
+            .set("USERNAME", "user_2")
+            .set("CREATORNAME", "user_0")
+            .set("DEFAULTDATABASE", null)
+            .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .set("ROLES", "test_role_1")
+            .build();
+    assertThat(records).containsExactly(expectedRecordUser1, expectedRecordUser2);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(readOutputStreamToAvro(outputStream, schema, 2))
+        .containsExactly(expectedRecordUser1, expectedRecordUser2);
+  }
+
   private Record readOutputStreamToAvro(ByteArrayOutputStream outputStream, Schema schema)
       throws IOException {
     GenericDatumReader<Record> reader = new GenericDatumReader<>(schema);
     Decoder decoder = DecoderFactory.get().binaryDecoder(outputStream.toByteArray(), null);
     return reader.read(null, decoder);
+  }
+
+  private ImmutableList<Record> readOutputStreamToAvro(
+      ByteArrayOutputStream outputStream, Schema schema, int recordNum) throws IOException {
+    GenericDatumReader<Record> reader = new GenericDatumReader<>(schema);
+    Decoder decoder = DecoderFactory.get().binaryDecoder(outputStream.toByteArray(), null);
+    ImmutableList.Builder<Record> result = ImmutableList.builder();
+    for (int i = 0; i < recordNum; i++) {
+      result.add(reader.read(null, decoder));
+    }
+    return result.build();
   }
 }

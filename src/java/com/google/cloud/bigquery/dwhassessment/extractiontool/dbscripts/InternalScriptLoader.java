@@ -38,7 +38,8 @@ public class InternalScriptLoader implements ScriptLoader {
             "indices",
             "querylogs",
             "tableinfo",
-            "tablesize")
+            "tablesize",
+            "users")
         .stream()
         .collect(
             ImmutableMap.toImmutableMap(Functions.identity(), key -> scriptLoader(key + ".sql")));
