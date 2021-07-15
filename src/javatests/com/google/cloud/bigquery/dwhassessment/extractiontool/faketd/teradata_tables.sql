@@ -140,7 +140,7 @@ CREATE TABLE DBC.QryLog (
 );
 
 CREATE TABLE DBC.All_RI_ChildrenV (
-  ReferenceIdx SMALLINT,
+  IndexId SMALLINT,
   IndexName VARCHAR(128),
   ChildDB VARCHAR(128),
   ChildTable VARCHAR(128),
@@ -154,7 +154,7 @@ CREATE TABLE DBC.All_RI_ChildrenV (
 );
 
 CREATE TABLE DBC.All_RI_ParentsV (
-  ReferenceIdx SMALLINT,
+  IndexId SMALLINT,
   IndexName VARCHAR(128),
   ChildDB VARCHAR(128),
   ChildTable VARCHAR(128),

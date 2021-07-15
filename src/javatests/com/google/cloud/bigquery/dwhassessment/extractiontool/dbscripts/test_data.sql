@@ -337,3 +337,79 @@ VALUES (
     'N',
     'N'
 );
+INSERT INTO DBC.All_RI_ChildrenV (
+  IndexId,
+  IndexName,
+  ChildDB,
+  ChildTable,
+  ChildKeyColumn,
+  ParentDB,
+  ParentTable,
+  ParentKeyColumn,
+  InconsistentFlag,
+  CreatorName,
+  CreateTimeStamp
+)
+VALUES (
+  0,
+  'index_name_0',
+  'child_db_0',
+  'child_table_0',
+  'child_key_column_0',
+  'parent_db_0',
+  'parent_table_0',
+  'parent_key_column_0',
+  'Y',
+  'creator_0',
+  TIMESTAMP '2021-07-02 02:00:00'
+), (
+     1,
+     'index_name_1',
+     'child_db_1',
+     'child_table_1',
+     'child_key_column_1',
+     'parent_db_0',
+     'parent_table_0',
+     'parent_key_column_0',
+     'Y',
+     'creator_1',
+     TIMESTAMP '2021-07-02 02:00:00'
+);
+INSERT INTO DBC.All_RI_ParentsV (
+  IndexId,
+  IndexName,
+  ChildDB,
+  ChildTable,
+  ChildKeyColumn,
+  ParentDB,
+  ParentTable,
+  ParentKeyColumn,
+  InconsistentFlag,
+  CreatorName,
+  CreateTimeStamp
+)
+VALUES (
+  0,
+  'index_name_0',
+  'child_db_0',
+  'child_table_0',
+  'child_key_column_0',
+  'parent_db_0',
+  'parent_table_0',
+  'parent_key_column_0',
+  'Y',
+  'creator_0',
+  TIMESTAMP '2021-07-02 02:00:00'
+), (
+     1,
+     'index_name_1',
+     'child_db_1',
+     'child_table_1',
+     'child_key_column_1',
+     'parent_db_0',
+     'parent_table_0',
+     'parent_key_column_0',
+     'Y',
+     'creator_1',
+     TIMESTAMP '2021-07-02 02:00:00'
+);

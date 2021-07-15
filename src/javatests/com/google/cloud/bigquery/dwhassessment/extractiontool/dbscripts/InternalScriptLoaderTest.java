@@ -440,6 +440,96 @@ public class InternalScriptLoaderTest {
         .containsExactly(expectedRecordUser1, expectedRecordUser2);
   }
 
+  @Test
+  public void loadScripts_all_ri_children() throws IOException, SQLException {
+    String scriptName = "all_ri_children";
+    String sqlScript = scriptManager.getScript(scriptName);
+    // Get schema and verify records.
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    GenericRecord expectedRecord1 =
+        new GenericRecordBuilder(schema)
+            .set("INDEXID", 0)
+            .set("INDEXNAME", "index_name_0")
+            .set("CHILDDB", "child_db_0")
+            .set("CHILDTABLE", "child_table_0")
+            .set("CHILDKEYCOLUMN", "child_key_column_0")
+            .set("PARENTDB", "parent_db_0")
+            .set("PARENTTABLE", "parent_table_0")
+            .set("PARENTKEYCOLUMN", "parent_key_column_0")
+            .set("INCONSISTENTFLAG", "Y")
+            .set("CREATORNAME", "creator_0")
+            .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .build();
+    GenericRecord expectedRecord2 =
+        new GenericRecordBuilder(schema)
+            .set("INDEXID", 1)
+            .set("INDEXNAME", "index_name_1")
+            .set("CHILDDB", "child_db_1")
+            .set("CHILDTABLE", "child_table_1")
+            .set("CHILDKEYCOLUMN", "child_key_column_1")
+            .set("PARENTDB", "parent_db_0")
+            .set("PARENTTABLE", "parent_table_0")
+            .set("PARENTKEYCOLUMN", "parent_key_column_0")
+            .set("INCONSISTENTFLAG", "Y")
+            .set("CREATORNAME", "creator_1")
+            .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .build();
+    assertThat(records).containsExactly(expectedRecord1, expectedRecord2);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(readOutputStreamToAvro(outputStream, schema, 2))
+        .containsExactly(expectedRecord1, expectedRecord2);
+  }
+
+  @Test
+  public void loadScripts_all_ri_parents() throws IOException, SQLException {
+    String scriptName = "all_ri_parents";
+    String sqlScript = scriptManager.getScript(scriptName);
+    // Get schema and verify records.
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    GenericRecord expectedRecord1 =
+        new GenericRecordBuilder(schema)
+            .set("INDEXID", 0)
+            .set("INDEXNAME", "index_name_0")
+            .set("CHILDDB", "child_db_0")
+            .set("CHILDTABLE", "child_table_0")
+            .set("CHILDKEYCOLUMN", "child_key_column_0")
+            .set("PARENTDB", "parent_db_0")
+            .set("PARENTTABLE", "parent_table_0")
+            .set("PARENTKEYCOLUMN", "parent_key_column_0")
+            .set("INCONSISTENTFLAG", "Y")
+            .set("CREATORNAME", "creator_0")
+            .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .build();
+    GenericRecord expectedRecord2 =
+        new GenericRecordBuilder(schema)
+            .set("INDEXID", 1)
+            .set("INDEXNAME", "index_name_1")
+            .set("CHILDDB", "child_db_1")
+            .set("CHILDTABLE", "child_table_1")
+            .set("CHILDKEYCOLUMN", "child_key_column_1")
+            .set("PARENTDB", "parent_db_0")
+            .set("PARENTTABLE", "parent_table_0")
+            .set("PARENTKEYCOLUMN", "parent_key_column_0")
+            .set("INCONSISTENTFLAG", "Y")
+            .set("CREATORNAME", "creator_1")
+            .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .build();
+    assertThat(records).containsExactly(expectedRecord1, expectedRecord2);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(readOutputStreamToAvro(outputStream, schema, 2))
+        .containsExactly(expectedRecord1, expectedRecord2);
+  }
+
   private Record readOutputStreamToAvro(ByteArrayOutputStream outputStream, Schema schema)
       throws IOException {
     GenericDatumReader<Record> reader = new GenericDatumReader<>(schema);

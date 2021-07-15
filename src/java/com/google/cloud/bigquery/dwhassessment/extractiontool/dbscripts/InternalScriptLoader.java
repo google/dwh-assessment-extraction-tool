@@ -32,6 +32,8 @@ public class InternalScriptLoader implements ScriptLoader {
   @Override
   public ImmutableMap<String, Supplier<String>> loadScripts() {
     return ImmutableList.of(
+            "all_ri_children",
+            "all_ri_parents",
             "columns",
             "diskspace",
             "functioninfo",
