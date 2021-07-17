@@ -14,7 +14,7 @@
 
 SELECT
   ProcID,
-  CollectTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE,
+  CollectTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS CollectTimeStamp,
   QueryID,
   UserID,
   UserName,

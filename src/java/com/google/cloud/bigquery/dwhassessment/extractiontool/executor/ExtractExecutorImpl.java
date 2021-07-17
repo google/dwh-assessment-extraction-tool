@@ -26,9 +26,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.function.Function;
 

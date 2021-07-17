@@ -37,12 +37,13 @@ import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.SchemaBuilder;
+import org.apache.avro.file.DataFileReader;
+import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.avro.io.Decoder;
-import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.DatumReader;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -62,6 +63,8 @@ public class InternalScriptLoaderTest {
 
   private static final Schema TIMESTAMP_MILLIS_TYPE =
       LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG));
+
+  private static final String SCHEMA_NAMESPACE = "namespace";
 
   private static Connection connection;
 
@@ -154,7 +157,8 @@ public class InternalScriptLoaderTest {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
 
-    SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record("TimestampRecord").fields();
+    SchemaBuilder.FieldAssembler<Schema> fields =
+        SchemaBuilder.record(scriptName).namespace(SCHEMA_NAMESPACE).fields();
     fields = fields.name("DATABASENAME").type().optional().stringType();
     fields = fields.name("FUNCTIONNAME").type().optional().stringType();
     fields = fields.name("SPECIFICNAME").type().optional().stringType();
@@ -220,7 +224,7 @@ public class InternalScriptLoaderTest {
             .build();
 
     assertThat(records).containsExactly(expectedRecord);
-    assertThat(readOutputStreamToAvro(outputStream, schema)).isEqualTo(expectedRecord);
+    assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
@@ -248,16 +252,15 @@ public class InternalScriptLoaderTest {
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
-    assertThat(readOutputStreamToAvro(outputStream, schema)).isEqualTo(expectedRecord);
+    assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
   public void loadScripts_queryLogs() throws IOException, SQLException {
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(
-        connection, "querylogs", new DataEntityManagerTesting(outputStream));
+    String scriptName = "querylogs";
 
-    SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record("TimestampRecord").fields();
+    SchemaBuilder.FieldAssembler<Schema> fields =
+        SchemaBuilder.record(scriptName).namespace(SCHEMA_NAMESPACE).fields();
     fields = fields.name("PROCID").type().optional().type(DECIMAL_5_TYPE);
     fields = fields.name("COLLECTTIMESTAMP").type().optional().type(TIMESTAMP_MILLIS_TYPE);
     fields = fields.name("QUERYID").type().optional().type(DECIMAL_18_TYPE);
@@ -291,37 +294,43 @@ public class InternalScriptLoaderTest {
         scriptRunner.executeScriptToAvro(
             connection, /*sqlScript=*/ "SELECT * FROM DBC.QryLog", schema);
 
-    assertThat(records)
-        .containsExactly(
-            new GenericRecordBuilder(schema)
-                .set("PROCID", ByteBuffer.wrap(BigInteger.ONE.toByteArray()))
-                .set("COLLECTTIMESTAMP", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
-                .set("QUERYID", ByteBuffer.wrap(BigInteger.valueOf(123).toByteArray()))
-                .set("USERID", ByteBuffer.wrap(new byte[] {10, 11, 12, 13}))
-                .set("USERNAME", Strings.padEnd("the_user", 30, ' '))
-                .set("DEFAULTDATABASE", Strings.padEnd("default_db", 30, ' '))
-                .set("ACCTSTRING", Strings.padEnd("account", 30, ' '))
-                .set("EXPANDACCTSTRING", Strings.padEnd("expand account", 30, ' '))
-                .set("SESSIONID", 9)
-                .set("LOGICALHOSTID", 2)
-                .set("LOGONDATETIME", Instant.parse("2021-07-01T18:05:06Z").toEpochMilli())
-                .set("LOGONSOURCE", Strings.padEnd("logon source", 128, ' '))
-                .set("APPID", Strings.padEnd("app_id", 30, ' '))
-                .set("CLIENTID", Strings.padEnd("client_id", 30, ' '))
-                .set("CLIENTADDR", Strings.padEnd("client_address", 45, ' '))
-                .set("QUERYTEXT", "SELECT * FROM MyTable; SELECT * FROM YourTable;")
-                .set("STATEMENTTYPE", Strings.padEnd("Select", 20, ' '))
-                .set("STATEMENTGROUP", "Select")
-                .set("STARTTIME", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
-                .set("FIRSTRESPTIME", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
-                .set("FIRSTSTEPTIME", Instant.parse("2021-07-01T18:15:09Z").toEpochMilli())
-                .set("NUMRESULTROWS", 65.0)
-                .set("AMPCPUTIME", 1.23)
-                .set("AMPCPUTIMENORM", 0.123)
-                .set("NUMOFACTIVEAMPS", 2)
-                .set("MAXSTEPMEMORY", 123.45)
-                .set("TOTALIOCOUNT", 1234.56)
-                .build());
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(schema)
+            .set("PROCID", ByteBuffer.wrap(BigInteger.ONE.toByteArray()))
+            .set("COLLECTTIMESTAMP", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
+            .set("QUERYID", ByteBuffer.wrap(BigInteger.valueOf(123).toByteArray()))
+            .set("USERID", ByteBuffer.wrap(new byte[] {10, 11, 12, 13}))
+            .set("USERNAME", Strings.padEnd("the_user", 30, ' '))
+            .set("DEFAULTDATABASE", Strings.padEnd("default_db", 30, ' '))
+            .set("ACCTSTRING", Strings.padEnd("account", 30, ' '))
+            .set("EXPANDACCTSTRING", Strings.padEnd("expand account", 30, ' '))
+            .set("SESSIONID", 9)
+            .set("LOGICALHOSTID", 2)
+            .set("LOGONDATETIME", Instant.parse("2021-07-01T18:05:06Z").toEpochMilli())
+            .set("LOGONSOURCE", Strings.padEnd("logon source", 128, ' '))
+            .set("APPID", Strings.padEnd("app_id", 30, ' '))
+            .set("CLIENTID", Strings.padEnd("client_id", 30, ' '))
+            .set("CLIENTADDR", Strings.padEnd("client_address", 45, ' '))
+            .set("QUERYTEXT", "SELECT * FROM MyTable; SELECT * FROM YourTable;")
+            .set("STATEMENTTYPE", Strings.padEnd("Select", 20, ' '))
+            .set("STATEMENTGROUP", "Select")
+            .set("STARTTIME", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
+            .set("FIRSTRESPTIME", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
+            .set("FIRSTSTEPTIME", Instant.parse("2021-07-01T18:15:09Z").toEpochMilli())
+            .set("NUMRESULTROWS", 65.0)
+            .set("AMPCPUTIME", 1.23)
+            .set("AMPCPUTIMENORM", 0.123)
+            .set("NUMOFACTIVEAMPS", 2)
+            .set("MAXSTEPMEMORY", 123.45)
+            .set("TOTALIOCOUNT", 1234.56)
+            .build();
+
+    assertThat(records).containsExactly(expectedRecord);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
@@ -352,7 +361,7 @@ public class InternalScriptLoaderTest {
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
-    assertThat(readOutputStreamToAvro(outputStream, schema)).isEqualTo(expectedRecord);
+    assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
@@ -375,7 +384,7 @@ public class InternalScriptLoaderTest {
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
-    assertThat(readOutputStreamToAvro(outputStream, schema)).isEqualTo(expectedRecord);
+    assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
@@ -404,7 +413,7 @@ public class InternalScriptLoaderTest {
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
-    assertThat(readOutputStreamToAvro(outputStream, schema)).isEqualTo(expectedRecord);
+    assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
@@ -436,7 +445,7 @@ public class InternalScriptLoaderTest {
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
-    assertThat(readOutputStreamToAvro(outputStream, schema, 2))
+    assertThat(readOutputStreamToAvro(outputStream, 2))
         .containsExactly(expectedRecordUser1, expectedRecordUser2);
   }
 
@@ -481,7 +490,7 @@ public class InternalScriptLoaderTest {
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
-    assertThat(readOutputStreamToAvro(outputStream, schema, 2))
+    assertThat(readOutputStreamToAvro(outputStream, 2))
         .containsExactly(expectedRecord1, expectedRecord2);
   }
 
@@ -526,25 +535,24 @@ public class InternalScriptLoaderTest {
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
-    assertThat(readOutputStreamToAvro(outputStream, schema, 2))
+    assertThat(readOutputStreamToAvro(outputStream, 2))
         .containsExactly(expectedRecord1, expectedRecord2);
   }
 
-  private Record readOutputStreamToAvro(ByteArrayOutputStream outputStream, Schema schema)
-      throws IOException {
-    GenericDatumReader<Record> reader = new GenericDatumReader<>(schema);
-    Decoder decoder = DecoderFactory.get().binaryDecoder(outputStream.toByteArray(), null);
-    return reader.read(null, decoder);
-  }
-
   private ImmutableList<Record> readOutputStreamToAvro(
-      ByteArrayOutputStream outputStream, Schema schema, int recordNum) throws IOException {
-    GenericDatumReader<Record> reader = new GenericDatumReader<>(schema);
-    Decoder decoder = DecoderFactory.get().binaryDecoder(outputStream.toByteArray(), null);
+      ByteArrayOutputStream outputStream, int recordNum) throws IOException {
+    DataFileReader<Record> reader = getAvroDataOutputReader(outputStream);
     ImmutableList.Builder<Record> result = ImmutableList.builder();
     for (int i = 0; i < recordNum; i++) {
-      result.add(reader.read(null, decoder));
+      result.add(reader.next());
     }
     return result.build();
+  }
+
+  private DataFileReader<Record> getAvroDataOutputReader(ByteArrayOutputStream outputStream)
+      throws IOException {
+    DatumReader<Record> datumReader = new GenericDatumReader<>();
+    return new DataFileReader<Record>(
+        new SeekableByteArrayInput(outputStream.toByteArray()), datumReader);
   }
 }

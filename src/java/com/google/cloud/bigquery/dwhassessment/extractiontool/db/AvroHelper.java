@@ -30,11 +30,10 @@ import java.sql.Types;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
+import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.avro.io.BinaryEncoder;
-import org.apache.avro.io.EncoderFactory;
 
 /** A helper to convert sql result set to avro format and dump the avro result to output stream. */
 public class AvroHelper {
@@ -68,13 +67,15 @@ public class AvroHelper {
   public static void dumpResults(
       ImmutableList<GenericRecord> records, OutputStream outputStream, Schema schema)
       throws IOException {
-    BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(outputStream, null);
     GenericDatumWriter<GenericRecord> writer = new GenericDatumWriter<>(schema);
+    DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<>(writer);
+    dataFileWriter.create(schema, outputStream);
+
     records.stream()
         .forEach(
             record -> {
               try {
-                writer.write(record, encoder);
+                dataFileWriter.append(record);
               } catch (IOException e) {
                 throw new IllegalStateException(
                     String.format(
@@ -82,8 +83,8 @@ public class AvroHelper {
                         record.toString(), e.getMessage()));
               }
             });
+    dataFileWriter.close();
     outputStream.close();
-    encoder.flush();
   }
 
   /**

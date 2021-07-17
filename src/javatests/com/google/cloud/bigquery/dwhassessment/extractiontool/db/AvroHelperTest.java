@@ -30,12 +30,13 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileReader;
+import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.avro.io.Decoder;
-import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.DatumReader;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -144,11 +145,10 @@ public final class AvroHelperTest {
 
     dumpResults(records, outputStream, schema);
 
-    GenericDatumReader<Record> reader = new GenericDatumReader<>(schema);
-    Decoder decoder = DecoderFactory.get().binaryDecoder(outputStream.toByteArray(), null);
-    Record result = reader.read(null, decoder);
-    GenericRecord expectedRecord =
-        new GenericRecordBuilder(schema).set("ID", 0).set("NAME", "name_0").build();
-    assertThat(result).isEqualTo(expectedRecord);
+    DatumReader<Record> datumReader = new GenericDatumReader<>();
+    DataFileReader<Record> reader =
+        new DataFileReader<>(new SeekableByteArrayInput(outputStream.toByteArray()), datumReader);
+    assertThat(reader.next())
+        .isEqualTo(new GenericRecordBuilder(schema).set("ID", 0).set("NAME", "name_0").build());
   }
 }

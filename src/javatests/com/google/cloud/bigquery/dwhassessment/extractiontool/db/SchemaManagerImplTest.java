@@ -25,17 +25,18 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.re2j.Pattern;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.NoSuchElementException;
 import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileReader;
+import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.avro.io.Decoder;
-import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.DatumReader;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -161,9 +162,11 @@ public final class SchemaManagerImplTest {
             + "{\"name\":\"IS_GENERATEDCOLUMN\",\"type\":[\"null\",\"string\"],\"default\":null}"
             + "]}\n";
     Schema schema = new Schema.Parser().parse(expectedSchema);
-    GenericDatumReader<Record> reader = new GenericDatumReader<>(schema);
-    Decoder decoder = DecoderFactory.get().binaryDecoder(outputStream.toByteArray(), null);
-    Record result = reader.read(null, decoder);
+
+    DatumReader<Record> datumReader = new GenericDatumReader<>();
+    DataFileReader<Record> reader =
+        new DataFileReader<>(new SeekableByteArrayInput(outputStream.toByteArray()), datumReader);
+    Record result = reader.next();
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
             .set("TABLE_CAT", "PUBLIC")
@@ -192,7 +195,7 @@ public final class SchemaManagerImplTest {
             .set("SQL_DATA_TYPE", 4)
             .build();
     assertThat(result).isEqualTo(expectedRecord);
-    Record secondResult = reader.read(null, decoder);
+    Record secondResult = reader.next();
     GenericRecord expectedSecondRecord =
         new GenericRecordBuilder(schema)
             .set("TABLE_CAT", "PUBLIC")
@@ -221,6 +224,6 @@ public final class SchemaManagerImplTest {
             .set("SQL_DATA_TYPE", 12)
             .build();
     assertThat(secondResult).isEqualTo(expectedSecondRecord);
-    assertThrows(IOException.class, () -> reader.read(null, decoder));
+    assertThrows(NoSuchElementException.class, () -> reader.next());
   }
 }

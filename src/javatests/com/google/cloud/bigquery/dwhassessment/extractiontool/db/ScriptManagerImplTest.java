@@ -27,14 +27,15 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileReader;
+import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.avro.io.Decoder;
-import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.DatumReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,13 +71,13 @@ public final class ScriptManagerImplTest {
 
     String sqlScript = "SELECT * FROM TestTable";
     Schema testSchema =
-        scriptRunner.extractSchema(connection, sqlScript, "schemaName", "namespace");
-    GenericDatumReader<Record> reader = new GenericDatumReader<>(testSchema);
-    Decoder decoder = DecoderFactory.get().binaryDecoder(outputStream.toByteArray(), null);
-    Record result = reader.read(null, decoder);
-    GenericRecord expectedRecord =
-        new GenericRecordBuilder(testSchema).set("ID", 0).set("NAME", "name_0").build();
-    assertThat(result).isEqualTo(expectedRecord);
+        scriptRunner.extractSchema(connection, sqlScript, "default", "namespace");
+
+    DatumReader<Record> datumReader = new GenericDatumReader<>();
+    DataFileReader<Record> reader =
+        new DataFileReader<>(new SeekableByteArrayInput(outputStream.toByteArray()), datumReader);
+    assertThat(reader.next())
+        .isEqualTo(new GenericRecordBuilder(testSchema).set("ID", 0).set("NAME", "name_0").build());
   }
 
   @Test
@@ -91,8 +92,12 @@ public final class ScriptManagerImplTest {
 
     String sqlScript = "SELECT * FROM TestTable";
     Schema testSchema =
-        scriptRunner.extractSchema(connection, sqlScript, "schemaName", "namespace");
-    assertThat(outputStream.toByteArray().length).isEqualTo(0);
+        scriptRunner.extractSchema(connection, sqlScript, "default", "namespace");
+
+    DatumReader<Record> datumReader = new GenericDatumReader<>();
+    DataFileReader<Record> reader =
+        new DataFileReader<>(new SeekableByteArrayInput(outputStream.toByteArray()), datumReader);
+    assertThrows(NoSuchElementException.class, () -> reader.next());
   }
 
   @Test
