@@ -21,6 +21,8 @@ java_library(
     deps = [
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
+        "@maven//:com_google_guava_guava_30_1_1_jre",
+        "@maven//:com_google_re2j_re2j",
         "@maven//:info_picocli_picocli",
     ],
 )

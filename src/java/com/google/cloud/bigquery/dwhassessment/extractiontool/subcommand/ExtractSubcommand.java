@@ -17,6 +17,8 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor;
+import com.google.common.collect.ImmutableList;
+import com.google.re2j.Pattern;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -122,6 +124,15 @@ public final class ExtractSubcommand implements Callable<Integer> {
         "has to match (i.e. AND logic)."
       })
   void setSchemaFilters(List<SchemaFilter> schemaFilters) {
+    if (schemaFilters == null | schemaFilters.isEmpty()) {
+      argumentsBuilder.setSchemaFilters(
+          ImmutableList.of(
+              SchemaFilter.builder()
+                  .setTableName(Pattern.compile(".*"))
+                  .setDatabaseName(Pattern.compile(".*"))
+                  .build()));
+      return;
+    }
     argumentsBuilder.setSchemaFilters(schemaFilters);
   }
 

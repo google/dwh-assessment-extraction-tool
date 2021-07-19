@@ -15,6 +15,7 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
+import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.getAvroSchema;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
@@ -53,7 +54,7 @@ public final class SchemaManagerImplTest {
     schemaManager = new SchemaManagerImpl();
     connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_0");
     Statement baseStmt = connection.createStatement();
-    baseStmt.execute("CREATE TABLE FOO (ID INTEGER, NAME VARCHAR(100))");
+    baseStmt.execute("CREATE TABLE FOO (ID VARCHAR(1), NAME VARCHAR(100))");
     baseStmt.execute("CREATE TABLE FOOBAR (ID INTEGER, NAME VARCHAR(100))");
     baseStmt.execute("CREATE TABLE BAR (ID INTEGER, NAME VARCHAR(100))");
     baseStmt.close();
@@ -131,37 +132,18 @@ public final class SchemaManagerImplTest {
     schemaManager.retrieveSchema(
         connection, SchemaKey.create(databaseName, tableName), dataEntityManager);
 
-    // Using a string instead of using AvroHelper.getAvroSchema() because DECIMAL_DIGITS has
-    // type INTEGER but requires type long in AVRO, else it would give
-    // "org.apache.avro.UnresolvedUnionException: Not in union [“null”,“int”]" error.
-    String expectedSchema =
-        "{\"type\":\"record\",\"name\":\"FOO\",\"namespace\":\"HSQL Database Engine\",\"fields\":["
-            + "{\"name\":\"TABLE_CAT\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"TABLE_SCHEM\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"TABLE_NAME\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"COLUMN_NAME\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"DATA_TYPE\",\"type\":[\"null\",\"int\"],\"default\":null},"
-            + "{\"name\":\"TYPE_NAME\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"COLUMN_SIZE\",\"type\":[\"null\",\"int\"],\"default\":null},"
-            + "{\"name\":\"BUFFER_LENGTH\",\"type\":[\"null\",\"int\"],\"default\":null},"
-            + "{\"name\":\"DECIMAL_DIGITS\",\"type\":[\"null\",\"long\"],\"default\":null},"
-            + "{\"name\":\"NUM_PREC_RADIX\",\"type\":[\"null\",\"int\"],\"default\":null},"
-            + "{\"name\":\"NULLABLE\",\"type\":[\"null\",\"int\"],\"default\":null},"
-            + "{\"name\":\"REMARKS\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"COLUMN_DEF\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"SQL_DATA_TYPE\",\"type\":[\"null\",\"int\"],\"default\":null},"
-            + "{\"name\":\"SQL_DATETIME_SUB\",\"type\":[\"null\",\"int\"],\"default\":null},"
-            + "{\"name\":\"CHAR_OCTET_LENGTH\",\"type\":[\"null\",\"int\"],\"default\":null},"
-            + "{\"name\":\"ORDINAL_POSITION\",\"type\":[\"null\",\"int\"],\"default\":null},"
-            + "{\"name\":\"IS_NULLABLE\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"SCOPE_CATALOG\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"SCOPE_SCHEMA\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"SCOPE_TABLE\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"SOURCE_DATA_TYPE\",\"type\":[\"null\",\"int\"],\"default\":null},"
-            + "{\"name\":\"IS_AUTOINCREMENT\",\"type\":[\"null\",\"string\"],\"default\":null},"
-            + "{\"name\":\"IS_GENERATEDCOLUMN\",\"type\":[\"null\",\"string\"],\"default\":null}"
-            + "]}\n";
-    Schema schema = new Schema.Parser().parse(expectedSchema);
+    Schema schema =
+        getAvroSchema(
+            tableName,
+            databaseName,
+            connection
+                .getMetaData()
+                .getColumns(
+                    /*catalog =*/ null,
+                    /*schemaPattern =*/ null,
+                    /*tableNamePattern =*/ tableName,
+                    /*columnNamePattern =*/ null)
+                .getMetaData());
 
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     DataFileReader<Record> reader =
@@ -173,17 +155,17 @@ public final class SchemaManagerImplTest {
             .set("TABLE_SCHEM", "PUBLIC")
             .set("TABLE_NAME", "FOO")
             .set("COLUMN_NAME", "ID")
-            .set("DATA_TYPE", 4)
-            .set("TYPE_NAME", "INTEGER")
-            .set("COLUMN_SIZE", 32)
+            .set("DATA_TYPE", 12)
+            .set("TYPE_NAME", "VARCHAR")
+            .set("COLUMN_SIZE", 1)
             .set("BUFFER_LENGTH", null)
-            .set("DECIMAL_DIGITS", (long) 0)
-            .set("NUM_PREC_RADIX", 2)
+            .set("DECIMAL_DIGITS", null)
+            .set("NUM_PREC_RADIX", null)
             .set("NULLABLE", 1)
             .set("REMARKS", null)
             .set("COLUMN_DEF", null)
             .set("SQL_DATETIME_SUB", null)
-            .set("CHAR_OCTET_LENGTH", 0)
+            .set("CHAR_OCTET_LENGTH", 1)
             .set("ORDINAL_POSITION", 1)
             .set("IS_NULLABLE", "YES")
             .set("SCOPE_CATALOG", null)
@@ -192,7 +174,7 @@ public final class SchemaManagerImplTest {
             .set("SOURCE_DATA_TYPE", null)
             .set("IS_AUTOINCREMENT", "NO")
             .set("IS_GENERATEDCOLUMN", "NO")
-            .set("SQL_DATA_TYPE", 4)
+            .set("SQL_DATA_TYPE", 12)
             .build();
     assertThat(result).isEqualTo(expectedRecord);
     Record secondResult = reader.next();

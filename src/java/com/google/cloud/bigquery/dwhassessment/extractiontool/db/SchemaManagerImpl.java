@@ -17,6 +17,7 @@
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.dumpResults;
+import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.getAvroSchema;
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.parseRowToAvro;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
@@ -34,38 +35,6 @@ import org.apache.avro.generic.GenericRecord;
 
 /** Implementation of SchemaManager interface to manage database schemas. */
 public class SchemaManagerImpl implements SchemaManager {
-  // Using a static string instead of using AvroHelper.getAvroSchema() because DECIMAL_DIGITS has
-  // type INTEGER but requires type long in AVRO, else it would give
-  // "org.apache.avro.UnresolvedUnionException: Not in union [“null”,“int”]" error.
-  private static final String SCHEMA_JSON =
-      "{\"type\":\"record\","
-          + "\"name\":\"%s\","
-          + "\"namespace\":\"%s\","
-          + "\"fields\":["
-          + "{\"name\":\"TABLE_CAT\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"TABLE_SCHEM\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"TABLE_NAME\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"COLUMN_NAME\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"DATA_TYPE\",\"type\":[\"null\",\"int\"],\"default\":null},"
-          + "{\"name\":\"TYPE_NAME\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"COLUMN_SIZE\",\"type\":[\"null\",\"int\"],\"default\":null},"
-          + "{\"name\":\"BUFFER_LENGTH\",\"type\":[\"null\",\"int\"],\"default\":null},"
-          + "{\"name\":\"DECIMAL_DIGITS\",\"type\":[\"null\",\"long\"],\"default\":null},"
-          + "{\"name\":\"NUM_PREC_RADIX\",\"type\":[\"null\",\"int\"],\"default\":null},"
-          + "{\"name\":\"NULLABLE\",\"type\":[\"null\",\"int\"],\"default\":null},"
-          + "{\"name\":\"REMARKS\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"COLUMN_DEF\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"SQL_DATA_TYPE\",\"type\":[\"null\",\"int\"],\"default\":null},"
-          + "{\"name\":\"SQL_DATETIME_SUB\",\"type\":[\"null\",\"int\"],\"default\":null},"
-          + "{\"name\":\"CHAR_OCTET_LENGTH\",\"type\":[\"null\",\"int\"],\"default\":null},"
-          + "{\"name\":\"ORDINAL_POSITION\",\"type\":[\"null\",\"int\"],\"default\":null},"
-          + "{\"name\":\"IS_NULLABLE\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"SCOPE_CATALOG\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"SCOPE_SCHEMA\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"SCOPE_TABLE\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"SOURCE_DATA_TYPE\",\"type\":[\"null\",\"int\"],\"default\":null},"
-          + "{\"name\":\"IS_AUTOINCREMENT\",\"type\":[\"null\",\"string\"],\"default\":null},"
-          + "{\"name\":\"IS_GENERATEDCOLUMN\",\"type\":[\"null\",\"string\"],\"default\":null}]}\n";
 
   @Override
   public void retrieveSchema(
@@ -81,15 +50,13 @@ public class SchemaManagerImpl implements SchemaManager {
                   /*tableNamePattern =*/ schemaKey.tableName(),
                   /*columnNamePattern =*/ null)) {
         Schema columnResultSchema =
-            new Schema.Parser()
-                .parse(String.format(SCHEMA_JSON, schemaKey.tableName(), schemaKey.databaseName()));
-        ;
+            getAvroSchema(
+                schemaKey.tableName(), schemaKey.databaseName(), columnResult.getMetaData());
         while (columnResult.next()) {
           recordsBuilder.add(parseRowToAvro(columnResult, columnResultSchema));
         }
         OutputStream outputStream =
-            dataEntityManager.getEntityOutputStream(
-                schemaKey.databaseName() + "_" + schemaKey.tableName());
+            dataEntityManager.getEntityOutputStream(schemaKey.tableName() + "_schema.avro");
         dumpResults(recordsBuilder.build(), outputStream, columnResultSchema);
       }
     } catch (SQLException | IOException e) {
