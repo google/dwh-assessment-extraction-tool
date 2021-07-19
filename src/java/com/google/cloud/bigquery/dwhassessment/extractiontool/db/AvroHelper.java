@@ -186,8 +186,6 @@ public class AvroHelper {
           byte[] blob = row.getBytes(columnIndex);
           return blob == null ? null : ByteBuffer.wrap(blob);
         }
-      case Types.FLOAT:
-        return Float.valueOf(row.getFloat(columnIndex));
       default:
         return row.getObject(columnIndex);
     }

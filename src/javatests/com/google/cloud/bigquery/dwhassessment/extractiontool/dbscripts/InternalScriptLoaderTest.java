@@ -317,12 +317,12 @@ public class InternalScriptLoaderTest {
             .set("STARTTIME", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
             .set("FIRSTRESPTIME", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
             .set("FIRSTSTEPTIME", Instant.parse("2021-07-01T18:15:09Z").toEpochMilli())
-            .set("NUMRESULTROWS", 65.0)
-            .set("AMPCPUTIME", 1.23)
-            .set("AMPCPUTIMENORM", 0.123)
+            .set("NUMRESULTROWS", (double) 65.0)
+            .set("AMPCPUTIME", (double) 1.23)
+            .set("AMPCPUTIMENORM", (double) 0.123)
             .set("NUMOFACTIVEAMPS", 2)
-            .set("MAXSTEPMEMORY", 123.45)
-            .set("TOTALIOCOUNT", 1234.56)
+            .set("MAXSTEPMEMORY", (double) 123.45)
+            .set("TOTALIOCOUNT", (double) 1234.56)
             .build();
 
     assertThat(records).containsExactly(expectedRecord);
