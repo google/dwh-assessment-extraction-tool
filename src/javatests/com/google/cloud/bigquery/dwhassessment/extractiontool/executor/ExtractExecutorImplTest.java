@@ -17,6 +17,8 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.executor;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -33,6 +35,7 @@ import com.google.re2j.Pattern;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,84 +44,99 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class ExtractExecutorImplTest {
 
-  private Connection connection;
   private SchemaManager schemaManager;
   private ScriptManager scriptManager;
   private DataEntityManager dataEntityManager;
   private ExtractExecutorImpl executor;
+  private Properties properties;
 
   @Before
   public void setUp() {
     schemaManager = mock(SchemaManager.class);
     scriptManager = mock(ScriptManager.class);
-    connection = mock(Connection.class);
     dataEntityManager = mock(DataEntityManager.class);
     executor = new ExtractExecutorImpl(schemaManager, scriptManager, path -> dataEntityManager);
+    properties = new Properties();
+    properties.put("user", "");
+    properties.put("password", "");
   }
 
   @Test
-  public void run_allScripts_success() throws Exception, SQLException {
+  public void run_allScripts_success() throws Exception {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
-    when(schemaManager.getSchemaKeys(connection, ImmutableList.of())).thenReturn(ImmutableSet.of());
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
 
     assertThat(
             executor.run(
                 ExtractExecutor.Arguments.builder()
-                    .setDbConnection(connection)
+                    .setDbConnectionProperties(properties)
+                    .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
                     .setOutputPath(Paths.get("/tmp"))
                     .build()))
         .isEqualTo(0);
 
     verify(scriptManager).getAllScriptNames();
-    verify(scriptManager).executeScript(connection, /*scriptName=*/ "one", dataEntityManager);
-    verify(scriptManager).executeScript(connection, /*scriptName=*/ "two", dataEntityManager);
-    verify(scriptManager).executeScript(connection, /*scriptName=*/ "three", dataEntityManager);
+    verify(scriptManager)
+        .executeScript(any(Connection.class), /*scriptName=*/ eq("one"), eq(dataEntityManager));
+    verify(scriptManager)
+        .executeScript(any(Connection.class), /*scriptName=*/ eq("two"), eq(dataEntityManager));
+    verify(scriptManager)
+        .executeScript(any(Connection.class), /*scriptName=*/ eq("three"), eq(dataEntityManager));
     verifyNoMoreInteractions(scriptManager);
   }
 
   @Test
   public void run_selectSomeScripts_success() throws Exception, SQLException {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
-    when(schemaManager.getSchemaKeys(connection, ImmutableList.of())).thenReturn(ImmutableSet.of());
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
 
     assertThat(
             executor.run(
                 ExtractExecutor.Arguments.builder()
-                    .setDbConnection(connection)
+                    .setDbConnectionProperties(properties)
+                    .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
                     .setOutputPath(Paths.get("/tmp"))
                     .setSqlScripts(ImmutableList.of("one", "three"))
                     .build()))
         .isEqualTo(0);
 
     verify(scriptManager).getAllScriptNames();
-    verify(scriptManager).executeScript(connection, /*scriptName=*/ "one", dataEntityManager);
-    verify(scriptManager).executeScript(connection, /*scriptName=*/ "three", dataEntityManager);
+    verify(scriptManager)
+        .executeScript(any(Connection.class), /*scriptName=*/ eq("one"), eq(dataEntityManager));
+    verify(scriptManager)
+        .executeScript(any(Connection.class), /*scriptName=*/ eq("three"), eq(dataEntityManager));
     verifyNoMoreInteractions(scriptManager);
   }
 
   @Test
   public void run_skipSomeScripts_success() throws Exception, SQLException {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
-    when(schemaManager.getSchemaKeys(connection, ImmutableList.of())).thenReturn(ImmutableSet.of());
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
 
     assertThat(
             executor.run(
                 ExtractExecutor.Arguments.builder()
-                    .setDbConnection(connection)
+                    .setDbConnectionProperties(properties)
+                    .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
                     .setOutputPath(Paths.get("/tmp"))
                     .setSkipSqlScripts(ImmutableList.of("one", "three"))
                     .build()))
         .isEqualTo(0);
 
     verify(scriptManager).getAllScriptNames();
-    verify(scriptManager).executeScript(connection, /*scriptName=*/ "two", dataEntityManager);
+    verify(scriptManager)
+        .executeScript(any(Connection.class), /*scriptName=*/ eq("two"), eq(dataEntityManager));
     verifyNoMoreInteractions(scriptManager);
   }
 
   @Test
   public void run_failOnUnknownScripts() throws Exception, SQLException {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
-    when(schemaManager.getSchemaKeys(connection, ImmutableList.of())).thenReturn(ImmutableSet.of());
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
 
     IllegalStateException e =
         assertThrows(
@@ -126,7 +144,8 @@ public final class ExtractExecutorImplTest {
             () ->
                 executor.run(
                     ExtractExecutor.Arguments.builder()
-                        .setDbConnection(connection)
+                        .setDbConnectionProperties(properties)
+                        .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
                         .setOutputPath(Paths.get("/tmp"))
                         .setSqlScripts(ImmutableList.of("four", "five"))
                         .build()));
@@ -138,31 +157,35 @@ public final class ExtractExecutorImplTest {
     ImmutableList<SchemaFilter> filters =
         ImmutableList.of(SchemaFilter.builder().setDatabaseName(Pattern.compile("foo")).build());
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of());
-    when(schemaManager.getSchemaKeys(connection, filters))
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(filters)))
         .thenReturn(
             ImmutableSet.of(SchemaKey.create("foo", "bar"), SchemaKey.create("foo", "baz")));
 
     assertThat(
             executor.run(
                 ExtractExecutor.Arguments.builder()
-                    .setDbConnection(connection)
+                    .setDbConnectionProperties(properties)
+                    .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
                     .setOutputPath(Paths.get("/tmp"))
                     .setSchemaFilters(filters)
                     .build()))
         .isEqualTo(0);
 
-    verify(schemaManager).getSchemaKeys(connection, filters);
+    verify(schemaManager).getSchemaKeys(any(Connection.class), eq(filters));
     verify(schemaManager)
-        .retrieveSchema(connection, SchemaKey.create("foo", "bar"), dataEntityManager);
+        .retrieveSchema(
+            any(Connection.class), eq(SchemaKey.create("foo", "bar")), eq(dataEntityManager));
     verify(schemaManager)
-        .retrieveSchema(connection, SchemaKey.create("foo", "baz"), dataEntityManager);
+        .retrieveSchema(
+            any(Connection.class), eq(SchemaKey.create("foo", "baz")), eq(dataEntityManager));
     verifyNoMoreInteractions(schemaManager);
   }
 
   @Test
   public void run_failOnUnknownSkipScripts() throws Exception, SQLException {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
-    when(schemaManager.getSchemaKeys(connection, ImmutableList.of())).thenReturn(ImmutableSet.of());
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
 
     IllegalStateException e =
         assertThrows(
@@ -170,7 +193,8 @@ public final class ExtractExecutorImplTest {
             () ->
                 executor.run(
                     ExtractExecutor.Arguments.builder()
-                        .setDbConnection(connection)
+                        .setDbConnectionProperties(properties)
+                        .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
                         .setOutputPath(Paths.get("/tmp"))
                         .setSkipSqlScripts(ImmutableList.of("four", "five"))
                         .build()));

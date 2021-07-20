@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.function.Function;
 
@@ -50,18 +51,25 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
   @Override
   public int run(Arguments arguments) throws SQLException, IOException {
-    Connection connection = arguments.dbConnection();
     DataEntityManager dataEntityManager = dataEntityManagerFactory.apply(arguments.outputPath());
 
     for (String scriptName : getScriptNames(arguments)) {
+      Connection connection =
+          DriverManager.getConnection(
+              arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
       scriptManager.executeScript(connection, scriptName, dataEntityManager);
+      connection.close();
     }
 
+    Connection connection = DriverManager.getConnection(
+        arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
     // TODO(b/193563006): the retrieve schema is not working in the e2e workflow when connected to
     //  an actual teradata instance.
     for (SchemaKey schemaKey : schemaManager.getSchemaKeys(connection, arguments.schemaFilters())) {
       schemaManager.retrieveSchema(connection, schemaKey, dataEntityManager);
     }
+    connection.close();
+    dataEntityManager.close();
 
     return 0;
   }

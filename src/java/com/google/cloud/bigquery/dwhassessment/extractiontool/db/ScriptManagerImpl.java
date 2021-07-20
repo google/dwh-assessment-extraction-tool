@@ -58,7 +58,7 @@ public class ScriptManagerImpl implements ScriptManager {
             connection, script, /*schemaName= */ scriptName, /*namespace= */ "namespace");
     ImmutableList<GenericRecord> records =
         scriptRunner.executeScriptToAvro(connection, script, schema);
-    dumpResults(records, dataEntityManager.getEntityOutputStream(scriptName), schema);
+    dumpResults(records, dataEntityManager.getEntityOutputStream(scriptName + ".avro"), schema);
   }
 
   @Override

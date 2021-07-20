@@ -20,9 +20,9 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Properties;
 
 /** Executor for the extract action. */
 public interface ExtractExecutor {
@@ -31,7 +31,10 @@ public interface ExtractExecutor {
   @AutoValue
   abstract class Arguments {
     /** The JDBC address of the database to which to connect. */
-    public abstract Connection dbConnection();
+    public abstract String dbConnectionAddress();
+
+    /** The JDBC connection properties. */
+    public abstract Properties dbConnectionProperties();
 
     /** The path to which to write the output. Must be a directory. */
     public abstract Path outputPath();
@@ -54,7 +57,9 @@ public interface ExtractExecutor {
 
     @AutoValue.Builder
     public abstract static class Builder {
-      public abstract Builder setDbConnection(Connection dbConnection);
+      public abstract Builder setDbConnectionProperties(Properties properties);
+
+      public abstract Builder setDbConnectionAddress(String dbAddress);
 
       public abstract Builder setOutputPath(Path path);
 
