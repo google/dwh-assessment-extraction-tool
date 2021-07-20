@@ -12,13 +12,13 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-SELECT  UserName,
-        CreatorName,
-        DefaultDatabase,
-        CreateTimeStamp,
-        RoleName,
-        AccessCount
-FROM DBC.UsersV
-WHERE   Username NOT IN ('TDPUSER', 'Crashdumps', 'tdwm', 'DBC',
+SELECT  RoleName,
+        Grantor,
+        Grantee,
+        WhenGranted,
+        DefaultRole,
+        WithAdmin
+FROM DBC.RoleMembersV
+WHERE   Grantee NOT IN ('TDPUSER', 'Crashdumps', 'tdwm', 'DBC',
         'LockLogShredder', 'TDMaps', 'Sys_Calendar', 'SysAdmin',
         'SystemFe', 'External_AP');

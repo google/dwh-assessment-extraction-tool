@@ -244,7 +244,7 @@ public class InternalScriptLoaderTest {
             .set("INDEXNAME", "index_name")
             .set("COLUMNNAME", "column_name")
             .set("COLUMNPOSITION", 2)
-            .set("ACCESSCOUNT", (long) 100000)
+            .set("ACCESSCOUNT", 100000L)
             .set("UNIQUEFLAG", "U")
             .build();
     assertThat(records).containsExactly(expectedRecord);
@@ -430,7 +430,8 @@ public class InternalScriptLoaderTest {
             .set("CREATORNAME", "user_0")
             .set("DEFAULTDATABASE", "test_database")
             .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
-            .set("ROLES", "test_role_1,test_role_2")
+            .set("ROLENAME", "test_role_1")
+            .set("ACCESSCOUNT", 123L)
             .build();
     GenericRecord expectedRecordUser2 =
         new GenericRecordBuilder(schema)
@@ -438,7 +439,8 @@ public class InternalScriptLoaderTest {
             .set("CREATORNAME", "user_0")
             .set("DEFAULTDATABASE", null)
             .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
-            .set("ROLES", "test_role_1")
+            .set("ROLENAME", "test_role_2")
+            .set("ACCESSCOUNT", 45L)
             .build();
     assertThat(records).containsExactly(expectedRecordUser1, expectedRecordUser2);
 
@@ -447,6 +449,51 @@ public class InternalScriptLoaderTest {
     scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
     assertThat(readOutputStreamToAvro(outputStream, 2))
         .containsExactly(expectedRecordUser1, expectedRecordUser2);
+  }
+
+  @Test
+  public void loadScripts_roles() throws Exception {
+    String scriptName = "roles";
+    String sqlScript = scriptManager.getScript(scriptName);
+    // Get schema and verify records.
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    GenericRecord expectedRecordRole1 =
+        new GenericRecordBuilder(schema)
+            .set("ROLENAME", "test_role_1")
+            .set("GRANTOR", "user_0")
+            .set("GRANTEE", "user_1")
+            .set("WHENGRANTED", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .set("DEFAULTROLE", "Y")
+            .set("WITHADMIN", "N")
+            .build();
+    GenericRecord expectedRecordRole2 =
+        new GenericRecordBuilder(schema)
+            .set("ROLENAME", "test_role_2")
+            .set("GRANTOR", "user_0")
+            .set("GRANTEE", "user_1")
+            .set("WHENGRANTED", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .set("DEFAULTROLE", "N")
+            .set("WITHADMIN", "Y")
+            .build();
+    GenericRecord expectedRecordRole3 =
+        new GenericRecordBuilder(schema)
+            .set("ROLENAME", "test_role_1")
+            .set("GRANTOR", "user_0")
+            .set("GRANTEE", "user_2")
+            .set("WHENGRANTED", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .set("DEFAULTROLE", "N")
+            .set("WITHADMIN", "N")
+            .build();
+    assertThat(records)
+        .containsExactly(expectedRecordRole1, expectedRecordRole2, expectedRecordRole3);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(readOutputStreamToAvro(outputStream, 2))
+        .containsExactly(expectedRecordRole1, expectedRecordRole2);
   }
 
   @Test

@@ -293,18 +293,24 @@ INSERT INTO DBC.UsersV (
   UserName,
   CreatorName,
   DefaultDatabase,
-  CreateTimeStamp
+  CreateTimeStamp,
+  RoleName,
+  AccessCount
 )
 VALUES (
   'user_1',
   'user_0',
   'test_database',
-  TIMESTAMP '2021-07-02 02:00:00'
+  TIMESTAMP '2021-07-02 02:00:00',
+  'test_role_1',
+  123
 ),(
     'user_2',
     'user_0',
     null,
-    TIMESTAMP '2021-07-02 02:00:00'
+    TIMESTAMP '2021-07-02 02:00:00',
+    'test_role_2',
+    45
 );
 
 INSERT INTO DBC.RoleMembersV (

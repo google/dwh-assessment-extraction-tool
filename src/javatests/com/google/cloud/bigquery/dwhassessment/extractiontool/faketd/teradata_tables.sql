@@ -70,6 +70,8 @@ CREATE TABLE DBC.UsersV (
   CreatorName VARCHAR(128),
   DefaultDatabase VARCHAR(128),
   CreateTimeStamp TIMESTAMP(0),
+  RoleName VARCHAR(128),
+  AccessCount BIGINT,
   PRIMARY KEY (UserName)
 );
 
