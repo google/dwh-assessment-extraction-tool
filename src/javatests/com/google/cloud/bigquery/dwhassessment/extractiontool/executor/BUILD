@@ -24,6 +24,7 @@ java_library(
         "@maven//:com_google_re2j_re2j",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
+        "@maven//:org_apache_avro_avro",
         "@maven//:org_hsqldb_hsqldb",
         "@maven//:org_mockito_mockito_core",
     ],

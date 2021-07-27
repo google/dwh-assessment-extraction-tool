@@ -16,15 +16,10 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
-import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.dumpResults;
-import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.getAvroSchema;
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.parseRowToAvro;
 
-import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -37,29 +32,22 @@ import org.apache.avro.generic.GenericRecord;
 public class SchemaManagerImpl implements SchemaManager {
 
   @Override
-  public void retrieveSchema(
-      Connection connection, SchemaKey schemaKey, DataEntityManager dataEntityManager) {
-    ImmutableList.Builder<GenericRecord> recordsBuilder = ImmutableList.builder();
-    try {
-      try (ResultSet columnResult =
-          connection
-              .getMetaData()
-              .getColumns(
-                  /*catalog =*/ null,
-                  /*schemaPattern =*/ null,
-                  /*tableNamePattern =*/ schemaKey.tableName(),
-                  /*columnNamePattern =*/ null)) {
-        Schema columnResultSchema =
-            getAvroSchema(
-                schemaKey.tableName(), schemaKey.databaseName(), columnResult.getMetaData());
-        while (columnResult.next()) {
-          recordsBuilder.add(parseRowToAvro(columnResult, columnResultSchema));
-        }
-        OutputStream outputStream =
-            dataEntityManager.getEntityOutputStream(schemaKey.tableName() + "_schema.avro");
-        dumpResults(recordsBuilder.build(), outputStream, columnResultSchema);
+  public ImmutableList<GenericRecord> retrieveSchema(
+      Connection connection, SchemaKey schemaKey, Schema schema) {
+    ImmutableList.Builder<GenericRecord> recordsBuilder = new ImmutableList.Builder<>();
+    try (ResultSet columnResult =
+        connection
+            .getMetaData()
+            .getColumns(
+                /*catalog =*/ null,
+                /*schemaPattern =*/ null,
+                /*tableNamePattern =*/ schemaKey.tableName(),
+                /*columnNamePattern =*/ null)) {
+      while (columnResult.next()) {
+        recordsBuilder.add(parseRowToAvro(columnResult, schema));
       }
-    } catch (SQLException | IOException e) {
+      return recordsBuilder.build();
+    } catch (SQLException e) {
       throw new InternalError(
           String.format(
               "Exception while retrieving schema: %s.%s : %s",

@@ -17,11 +17,8 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.getAvroSchema;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager.SchemaKey;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.re2j.Pattern;
@@ -29,15 +26,9 @@ import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-import java.util.NoSuchElementException;
 import org.apache.avro.Schema;
-import org.apache.avro.file.DataFileReader;
-import org.apache.avro.file.SeekableByteArrayInput;
-import org.apache.avro.generic.GenericData.Record;
-import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.avro.io.DatumReader;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -125,30 +116,24 @@ public final class SchemaManagerImplTest {
   @Test
   public void retrieveSchemaTest() throws Exception {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    DataEntityManager dataEntityManager = new DataEntityManagerTesting(outputStream);
     String databaseName = "HSQL Database Engine";
     String tableName = "FOO";
-
-    schemaManager.retrieveSchema(
-        connection, SchemaKey.create(databaseName, tableName), dataEntityManager);
-
     Schema schema =
         getAvroSchema(
-            tableName,
-            databaseName,
+            "schema",
+            "namespace",
             connection
                 .getMetaData()
                 .getColumns(
                     /*catalog =*/ null,
                     /*schemaPattern =*/ null,
-                    /*tableNamePattern =*/ tableName,
+                    /*tableNamePattern =*/ "%",
                     /*columnNamePattern =*/ null)
                 .getMetaData());
 
-    DatumReader<Record> datumReader = new GenericDatumReader<>();
-    DataFileReader<Record> reader =
-        new DataFileReader<>(new SeekableByteArrayInput(outputStream.toByteArray()), datumReader);
-    Record result = reader.next();
+    ImmutableList<GenericRecord> records =
+        schemaManager.retrieveSchema(connection, SchemaKey.create(databaseName, tableName), schema);
+
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
             .set("TABLE_CAT", "PUBLIC")
@@ -176,8 +161,6 @@ public final class SchemaManagerImplTest {
             .set("IS_GENERATEDCOLUMN", "NO")
             .set("SQL_DATA_TYPE", 12)
             .build();
-    assertThat(result).isEqualTo(expectedRecord);
-    Record secondResult = reader.next();
     GenericRecord expectedSecondRecord =
         new GenericRecordBuilder(schema)
             .set("TABLE_CAT", "PUBLIC")
@@ -205,7 +188,6 @@ public final class SchemaManagerImplTest {
             .set("IS_GENERATEDCOLUMN", "NO")
             .set("SQL_DATA_TYPE", 12)
             .build();
-    assertThat(secondResult).isEqualTo(expectedSecondRecord);
-    assertThrows(NoSuchElementException.class, () -> reader.next());
+    assertThat(records).containsExactly(expectedRecord, expectedSecondRecord);
   }
 }

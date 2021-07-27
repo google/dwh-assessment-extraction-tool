@@ -32,10 +32,12 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityM
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.re2j.Pattern;
+import java.io.ByteArrayOutputStream;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
+import org.apache.avro.Schema;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -160,6 +162,10 @@ public final class ExtractExecutorImplTest {
     when(schemaManager.getSchemaKeys(any(Connection.class), eq(filters)))
         .thenReturn(
             ImmutableSet.of(SchemaKey.create("foo", "bar"), SchemaKey.create("foo", "baz")));
+    when(schemaManager.retrieveSchema(any(Connection.class), any(), any(Schema.class)))
+        .thenReturn(ImmutableList.of());
+    when(dataEntityManager.getEntityOutputStream("schema.avro"))
+        .thenReturn(new ByteArrayOutputStream());
 
     assertThat(
             executor.run(
@@ -174,10 +180,10 @@ public final class ExtractExecutorImplTest {
     verify(schemaManager).getSchemaKeys(any(Connection.class), eq(filters));
     verify(schemaManager)
         .retrieveSchema(
-            any(Connection.class), eq(SchemaKey.create("foo", "bar")), eq(dataEntityManager));
+            any(Connection.class), eq(SchemaKey.create("foo", "baz")), any(Schema.class));
     verify(schemaManager)
         .retrieveSchema(
-            any(Connection.class), eq(SchemaKey.create("foo", "baz")), eq(dataEntityManager));
+            any(Connection.class), eq(SchemaKey.create("foo", "bar")), any(Schema.class));
     verifyNoMoreInteractions(schemaManager);
   }
 

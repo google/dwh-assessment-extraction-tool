@@ -15,8 +15,11 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.executor;
 
+import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.dumpResults;
+import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.getAvroSchema;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager.SchemaKey;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
@@ -27,11 +30,14 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.function.Function;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericRecord;
 
 /** Default implementation of the extract executor. */
 public final class ExtractExecutorImpl implements ExtractExecutor {
@@ -61,17 +67,43 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
       connection.close();
     }
 
-    Connection connection = DriverManager.getConnection(
-        arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
-    // TODO(b/193563006): the retrieve schema is not working in the e2e workflow when connected to
-    //  an actual teradata instance.
-    for (SchemaKey schemaKey : schemaManager.getSchemaKeys(connection, arguments.schemaFilters())) {
-      schemaManager.retrieveSchema(connection, schemaKey, dataEntityManager);
-    }
+    Connection connection =
+        DriverManager.getConnection(
+            arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
+    extractSchema(arguments.schemaFilters(), dataEntityManager, connection);
+
     connection.close();
     dataEntityManager.close();
-
     return 0;
+  }
+
+  private void extractSchema(
+      ImmutableList<SchemaFilter> schemaFilters,
+      DataEntityManager dataEntityManager,
+      Connection connection)
+      throws SQLException, IOException {
+    ImmutableSet<SchemaKey> schemaKeys = schemaManager.getSchemaKeys(connection, schemaFilters);
+    if (schemaKeys.isEmpty()) {
+      return;
+    }
+    OutputStream outputStream = dataEntityManager.getEntityOutputStream("schema.avro");
+    ImmutableList.Builder<GenericRecord> recordBuilder = new ImmutableList.Builder<>();
+    Schema schema =
+        getAvroSchema(
+            "schema",
+            "namespace",
+            connection
+                .getMetaData()
+                .getColumns(
+                    /*catalog =*/ null,
+                    /*schemaPattern =*/ null,
+                    /*tableNamePattern =*/ "%",
+                    /*columnNamePattern =*/ null)
+                .getMetaData());
+    for (SchemaKey schemaKey : schemaKeys) {
+      recordBuilder.addAll(schemaManager.retrieveSchema(connection, schemaKey, schema));
+    }
+    dumpResults(recordBuilder.build(), outputStream, schema);
   }
 
   private ImmutableCollection<String> getScriptNames(Arguments arguments) {
