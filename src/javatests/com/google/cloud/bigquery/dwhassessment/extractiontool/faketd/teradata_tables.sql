@@ -116,6 +116,8 @@ CREATE TABLE DBC.QryLog (
   QueryID DECIMAL(18,0),
   UserID BINARY(4),
   UserName CHAR(30),
+  ProxyUser VARCHAR(128),
+  ProxyRole VARCHAR(128),
   DefaultDatabase CHAR(30),
   AcctString CHAR(30),
   ExpandAcctString CHAR(30),
@@ -132,11 +134,13 @@ CREATE TABLE DBC.QryLog (
   StartTime TIMESTAMP(0),
   FirstRespTime TIMESTAMP(0),
   FirstStepTime TIMESTAMP(0),
+  Statements INTEGER,
   NumResultRows FLOAT,
   AMPCPUTime FLOAT,
   AMPCPUTimeNorm FLOAT,
   NumOfActiveAmps INTEGER,
   MaxStepMemory FLOAT,
+  ReqPhysIO FLOAT,
   TotalIOCount FLOAT,
   PRIMARY KEY (ProcID, CollectTimeStamp)
 );

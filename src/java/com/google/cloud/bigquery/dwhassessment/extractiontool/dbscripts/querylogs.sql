@@ -18,6 +18,8 @@ SELECT
   QueryID,
   UserID,
   UserName,
+  ProxyUser,
+  ProxyRole,
   DefaultDatabase,
   AcctString,
   ExpandAcctString,
@@ -34,10 +36,12 @@ SELECT
   StartTime AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS StartTime,
   FirstRespTime AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS FirstRespTime,
   FirstStepTime AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS FirstStepTime,
+  Statements,
   NumResultRows,
   AMPCPUTime,
   AMPCPUTimeNorm,
   NumOfActiveAmps,
   MaxStepMemory,
+  ReqPhysIO,
   TotalIOCount
 FROM DBC.QryLog

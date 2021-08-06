@@ -266,6 +266,8 @@ public class InternalScriptLoaderTest {
     fields = fields.name("QUERYID").type().optional().type(DECIMAL_18_TYPE);
     fields = fields.name("USERID").type().optional().bytesType();
     fields = fields.name("USERNAME").type().optional().stringType();
+    fields = fields.name("PROXYUSER").type().optional().stringType();
+    fields = fields.name("PROXYROLE").type().optional().stringType();
     fields = fields.name("DEFAULTDATABASE").type().optional().stringType();
     fields = fields.name("ACCTSTRING").type().optional().stringType();
     fields = fields.name("EXPANDACCTSTRING").type().optional().stringType();
@@ -282,11 +284,13 @@ public class InternalScriptLoaderTest {
     fields = fields.name("STARTTIME").type().optional().type(TIMESTAMP_MILLIS_TYPE);
     fields = fields.name("FIRSTRESPTIME").type().optional().type(TIMESTAMP_MILLIS_TYPE);
     fields = fields.name("FIRSTSTEPTIME").type().optional().type(TIMESTAMP_MILLIS_TYPE);
+    fields = fields.name("STATEMENTS").type().optional().intType();
     fields = fields.name("NUMRESULTROWS").type().optional().doubleType();
     fields = fields.name("AMPCPUTIME").type().optional().doubleType();
     fields = fields.name("AMPCPUTIMENORM").type().optional().doubleType();
     fields = fields.name("NUMOFACTIVEAMPS").type().optional().intType();
     fields = fields.name("MAXSTEPMEMORY").type().optional().doubleType();
+    fields = fields.name("REQPHYSIO").type().optional().doubleType();
     fields = fields.name("TOTALIOCOUNT").type().optional().doubleType();
     Schema schema = fields.endRecord();
 
@@ -301,6 +305,8 @@ public class InternalScriptLoaderTest {
             .set("QUERYID", ByteBuffer.wrap(BigInteger.valueOf(123).toByteArray()))
             .set("USERID", ByteBuffer.wrap(new byte[] {10, 11, 12, 13}))
             .set("USERNAME", Strings.padEnd("the_user", 30, ' '))
+            .set("PROXYUSER", "proxy_user")
+            .set("PROXYROLE", "proxy_role")
             .set("DEFAULTDATABASE", Strings.padEnd("default_db", 30, ' '))
             .set("ACCTSTRING", Strings.padEnd("account", 30, ' '))
             .set("EXPANDACCTSTRING", Strings.padEnd("expand account", 30, ' '))
@@ -317,11 +323,13 @@ public class InternalScriptLoaderTest {
             .set("STARTTIME", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
             .set("FIRSTRESPTIME", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
             .set("FIRSTSTEPTIME", Instant.parse("2021-07-01T18:15:09Z").toEpochMilli())
+            .set("STATEMENTS", (int) 10)
             .set("NUMRESULTROWS", (double) 65.0)
             .set("AMPCPUTIME", (double) 1.23)
             .set("AMPCPUTIMENORM", (double) 0.123)
             .set("NUMOFACTIVEAMPS", 2)
             .set("MAXSTEPMEMORY", (double) 123.45)
+            .set("REQPHYSIO", (double) 123.45)
             .set("TOTALIOCOUNT", (double) 1234.56)
             .build();
 

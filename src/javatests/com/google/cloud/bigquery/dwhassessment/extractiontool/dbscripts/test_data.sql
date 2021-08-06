@@ -140,6 +140,8 @@ INSERT INTO DBC.QryLog (
   QueryID,
   UserID,
   UserName,
+  ProxyUser,
+  ProxyRole,
   DefaultDatabase,
   AcctString,
   ExpandAcctString,
@@ -156,11 +158,13 @@ INSERT INTO DBC.QryLog (
   StartTime,
   FirstRespTime,
   FirstStepTime,
+  Statements,
   NumResultRows,
   AMPCPUTime,
   AMPCPUTimeNorm,
   NumOfActiveAmps,
   MaxStepMemory,
+  ReqPhysIO,
   TotalIOCount
 )
 VALUES (
@@ -169,6 +173,8 @@ VALUES (
   123,
   X'0A0B0C0D',
   'the_user',
+  'proxy_user',
+  'proxy_role',
   'default_db',
   'account',
   'expand account',
@@ -185,10 +191,12 @@ VALUES (
   TIMESTAMP '2021-07-01 18:15:06',
   TIMESTAMP '2021-07-01 18:15:08',
   TIMESTAMP '2021-07-01 18:15:09',
+  10,
   65.0,
   1.23,
   0.123,
   2,
+  123.45,
   123.45,
   1234.56
 );
