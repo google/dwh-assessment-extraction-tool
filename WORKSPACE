@@ -17,7 +17,6 @@ maven_install(
     artifacts = [
         "com.google.auto.value:auto-value:1.8.1",
         "com.google.auto.value:auto-value-annotations:1.8.1",
-        "com.google.code.findbugs:jsr305:3.0.2",
         "com.google.guava:guava:30.1.1-jre",
         "com.google.inject:guice:5.0.1",
         "com.google.re2j:re2j:1.6",
@@ -36,3 +35,18 @@ maven_install(
         "https://repo1.maven.org/maven2",
     ],
 )
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_pkg",
+    sha256 = "353b20e8b093d42dd16889c7f918750fb8701c485ac6cceb69a5236500507c27",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.5.0/rules_pkg-0.5.0.tar.gz",
+        "https://github.com/bazelbuild/rules_pkg/releases/download/0.5.0/rules_pkg-0.5.0.tar.gz",
+    ],
+)
+
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+
+rules_pkg_dependencies()

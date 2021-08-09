@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# This script is the main script for running assessment extraction client.
+# This script is a helper script for running assessment extraction client
+# for extracting data from Teradata.
+#
 # Usage: ./run -j <path to terajdbc4.jar> [-e -p <extracted_path>]
 # Options:
 #   -j: teradata jdbc jar.
@@ -88,4 +90,8 @@ if [[ -n "${SKIP_SQL_SCRIPTS}" ]]; then
     args+=( --skip-sql-scripts "${SKIP_SQL_SCRIPTS}" )
 fi
 
-java -cp ExtractionTool_deploy.jar:"${TERAJDBC4_JAR}" com/google/cloud/bigquery/dwhassessment/extractiontool/ExtractionTool td-extract "${args[@]}"
+CLASSPATH="$(dirname "$0"):${TERAJDBC4_JAR}"
+
+java -cp "${CLASSPATH}" \
+  com/google/cloud/bigquery/dwhassessment/extractiontool/ExtractionTool \
+  td-extract "${args[@]}"
