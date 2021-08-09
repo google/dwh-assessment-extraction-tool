@@ -4,6 +4,7 @@ pkg_zip(
     name = "dwh-assessment-extraction-tool",
     srcs = [
         "//:LICENSE",
+        "//:NOTICE.txt",
         "//:README.md",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool:ExtractionTool_deploy.jar",
         "//src/scripts:dwh-assessment-extraction-tool",

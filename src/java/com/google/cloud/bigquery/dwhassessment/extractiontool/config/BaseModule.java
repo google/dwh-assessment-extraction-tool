@@ -27,6 +27,7 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityM
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerZipImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutorImpl;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand.AboutSubcommand;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand.ExtractSubcommand;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
@@ -61,6 +62,12 @@ public final class BaseModule extends AbstractModule {
   @Singleton
   ExtractSubcommand extractSubcommand(Provider<ExtractExecutor> extractExecutorProvider) {
     return new ExtractSubcommand(extractExecutorProvider::get);
+  }
+
+  @Provides
+  @Singleton
+  AboutSubcommand aboutSubcommand() {
+    return new AboutSubcommand();
   }
 
   @Provides
@@ -113,6 +120,7 @@ public final class BaseModule extends AbstractModule {
   protected void configure() {
     Multibinder<Callable<Integer>> subcommandBinder =
         Multibinder.newSetBinder(binder(), new TypeLiteral<Callable<Integer>>() {});
+    subcommandBinder.addBinding().to(new Key<AboutSubcommand>() {});
     subcommandBinder.addBinding().to(new Key<ExtractSubcommand>() {});
   }
 }

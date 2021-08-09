@@ -18,6 +18,9 @@ package(default_visibility = ["//src:internal"])
 java_library(
     name = "config",
     srcs = glob(["*.java"]),
+    data = [
+        "//:NOTICE.txt",
+    ],
     deps = [
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dbscripts",
