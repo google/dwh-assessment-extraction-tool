@@ -22,8 +22,13 @@ import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "about", description = "Provides information about this software")
+@CommandLine.Command(name = "about", description = "Provides information about this software.")
 public class AboutSubcommand implements Callable<Integer> {
+
+  @CommandLine.Option(
+      names = {"-h", "--help"},
+      usageHelp = true)
+  private boolean help;
 
   @Override
   public Integer call() throws IOException, SQLException {

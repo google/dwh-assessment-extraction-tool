@@ -51,6 +51,11 @@ public final class ExtractSubcommand implements Callable<Integer> {
   }
 
   @Option(
+      names = {"-h", "--help"},
+      usageHelp = true)
+  private boolean help;
+
+  @Option(
       names = "--db-address",
       required = true,
       description = {
