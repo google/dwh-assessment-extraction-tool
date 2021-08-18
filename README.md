@@ -53,4 +53,4 @@ Only take schemas from tables in the database abc or from tables whose names hav
 
 `--skip-sql-scripts` The list of scripts to skip. By default, all available scripts will be executed.
 
-**Step 4:** Share the output zip file with the PSO Cloud Consultant or email bq-edw-migration-support@google.com for further assistance.
+**Step 4:** Share the output zip file with the PSO Cloud Consultant.

@@ -53,7 +53,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class InternalScriptLoaderTest {
 
-  private static final String DB_URL = "jdbc:hsqldb:mem:faketd";
+  private static final String DB_URL = "jdbc:hsqldb:mem:faketd;get_column_name=false";
 
   private static final Schema DECIMAL_5_TYPE =
       LogicalTypes.decimal(5).addToSchema(Schema.create(Type.BYTES));
@@ -436,19 +436,13 @@ public class InternalScriptLoaderTest {
         new GenericRecordBuilder(schema)
             .set("USERNAME", "user_1")
             .set("CREATORNAME", "user_0")
-            .set("DEFAULTDATABASE", "test_database")
             .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
-            .set("ROLENAME", "test_role_1")
-            .set("ACCESSCOUNT", 123L)
             .build();
     GenericRecord expectedRecordUser2 =
         new GenericRecordBuilder(schema)
             .set("USERNAME", "user_2")
             .set("CREATORNAME", "user_0")
-            .set("DEFAULTDATABASE", null)
             .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
-            .set("ROLENAME", "test_role_2")
-            .set("ACCESSCOUNT", 45L)
             .build();
     assertThat(records).containsExactly(expectedRecordUser1, expectedRecordUser2);
 

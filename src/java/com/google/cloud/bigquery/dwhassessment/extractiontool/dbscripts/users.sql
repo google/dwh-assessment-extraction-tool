@@ -12,13 +12,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-SELECT  UserName,
+SELECT  DatabaseName AS UserName,
         CreatorName,
-        DefaultDatabase,
-        CreateTimeStamp,
-        RoleName,
-        AccessCount
-FROM DBC.UsersV
-WHERE   Username NOT IN ('TDPUSER', 'Crashdumps', 'tdwm', 'DBC',
-        'LockLogShredder', 'TDMaps', 'Sys_Calendar', 'SysAdmin',
-        'SystemFe', 'External_AP');
+        CreateTimeStamp
+FROM DBC.DatabasesV
+WHERE DBKind='U';

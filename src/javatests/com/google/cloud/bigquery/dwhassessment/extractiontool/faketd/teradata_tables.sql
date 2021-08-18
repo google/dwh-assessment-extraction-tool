@@ -65,14 +65,23 @@ CREATE TABLE DBC.IndicesV (
   PRIMARY KEY (DatabaseName, TableName)
 );
 
-CREATE TABLE DBC.UsersV (
-  UserName VARCHAR(128),
+CREATE TABLE DBC.DatabasesV (
+  DatabaseName VARCHAR(128),
   CreatorName VARCHAR(128),
-  DefaultDatabase VARCHAR(128),
+  OwnerName VARCHAR(128),
+  AccountName VARCHAR(128),
+  ProtectionType VARCHAR(1),
+  JournalFlag VARCHAR(2),
+  PermSpace FLOAT,
+  SpoolSpace FLOAT,
+  TempSpace FLOAT,
+  CommentString VARCHAR(255),
   CreateTimeStamp TIMESTAMP(0),
-  RoleName VARCHAR(128),
+  LastAlterName VARCHAR(128),
+  LastAlterTimeStamp TIMESTAMP(0),
+  DBKind VARCHAR(1),
   AccessCount BIGINT,
-  PRIMARY KEY (UserName)
+  LastAccessTimeStamp TIMESTAMP(0)
 );
 
 CREATE TABLE DBC.RoleMembersV (

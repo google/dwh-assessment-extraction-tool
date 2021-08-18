@@ -297,29 +297,76 @@ VALUES (
    1
 );
 
-INSERT INTO DBC.UsersV (
-  UserName,
+INSERT INTO DBC.DatabasesV (
+  DatabaseName,
   CreatorName,
-  DefaultDatabase,
+  OwnerName,
+  AccountName,
+  ProtectionType,
+  JournalFlag,
+  PermSpace,
+  SpoolSpace,
+  TempSpace,
+  CommentString,
   CreateTimeStamp,
-  RoleName,
-  AccessCount
+  LastAlterName,
+  LastAlterTimeStamp,
+  DBKind,
+  AccessCount,
+  LastAccessTimeStamp
 )
 VALUES (
   'user_1',
   'user_0',
-  'test_database',
+  'owner_name',
+  'account_name',
+  'F',
+  'NN',
+  100000,
+  200000,
+  20000000,
+  null,
   TIMESTAMP '2021-07-02 02:00:00',
-  'test_role_1',
-  123
+  'last_alter_name',
+  TIMESTAMP '2021-07-01 02:00:00',
+  'U',
+  123,
+  null
 ),(
     'user_2',
     'user_0',
+    'owner_name_2',
+    'account_name_2',
+    'F',
+    'NN',
+    1000,
+    2000,
+    200000,
     null,
     TIMESTAMP '2021-07-02 02:00:00',
-    'test_role_2',
-    45
-);
+    'last_later_name_2',
+    TIMESTAMP '2021-07-01 02:00:00',
+    'U',
+    45,
+    null
+),(
+    'non_user',
+    'user_0',
+    'owner_name',
+    'account_name',
+    'F',
+    'NN',
+    1000,
+    2000,
+    200000,
+    null,
+    TIMESTAMP '2021-07-02 02:00:00',
+    'last_later_name',
+    TIMESTAMP '2021-07-01 02:00:00',
+    'N',
+    145,
+    null
+  );
 
 INSERT INTO DBC.RoleMembersV (
   RoleName,
