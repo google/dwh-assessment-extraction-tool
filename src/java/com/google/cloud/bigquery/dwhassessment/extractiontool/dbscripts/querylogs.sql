@@ -43,5 +43,6 @@ SELECT
   NumOfActiveAmps,
   MaxStepMemory,
   ReqPhysIO,
+  TotalFirstRespTime,
   TotalIOCount
 FROM DBC.QryLog

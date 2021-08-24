@@ -165,6 +165,7 @@ INSERT INTO DBC.QryLog (
   NumOfActiveAmps,
   MaxStepMemory,
   ReqPhysIO,
+  TotalFirstRespTime,
   TotalIOCount
 )
 VALUES (
@@ -198,6 +199,7 @@ VALUES (
   2,
   123.45,
   123.45,
+  1234.5,
   1234.56
 );
 

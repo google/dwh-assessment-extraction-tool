@@ -291,6 +291,7 @@ public class InternalScriptLoaderTest {
     fields = fields.name("NUMOFACTIVEAMPS").type().optional().intType();
     fields = fields.name("MAXSTEPMEMORY").type().optional().doubleType();
     fields = fields.name("REQPHYSIO").type().optional().doubleType();
+    fields = fields.name("TOTALFIRSTRESPTIME").type().optional().doubleType();
     fields = fields.name("TOTALIOCOUNT").type().optional().doubleType();
     Schema schema = fields.endRecord();
 
@@ -330,6 +331,7 @@ public class InternalScriptLoaderTest {
             .set("NUMOFACTIVEAMPS", 2)
             .set("MAXSTEPMEMORY", (double) 123.45)
             .set("REQPHYSIO", (double) 123.45)
+            .set("TOTALFIRSTRESPTIME", (double) 1234.5)
             .set("TOTALIOCOUNT", (double) 1234.56)
             .build();
 

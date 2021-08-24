@@ -150,6 +150,7 @@ CREATE TABLE DBC.QryLog (
   NumOfActiveAmps INTEGER,
   MaxStepMemory FLOAT,
   ReqPhysIO FLOAT,
+  TotalFirstRespTime FLOAT,
   TotalIOCount FLOAT,
   PRIMARY KEY (ProcID, CollectTimeStamp)
 );
