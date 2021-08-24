@@ -90,7 +90,7 @@ if [[ -n "${SKIP_SQL_SCRIPTS}" ]]; then
     args+=( --skip-sql-scripts "${SKIP_SQL_SCRIPTS}" )
 fi
 
-CLASSPATH="$(dirname "$0"):${TERAJDBC4_JAR}"
+CLASSPATH="$(dirname "$0")/ExtractionTool_deploy.jar:${TERAJDBC4_JAR}"
 
 java -cp "${CLASSPATH}" \
   com/google/cloud/bigquery/dwhassessment/extractiontool/ExtractionTool \
