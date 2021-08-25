@@ -14,6 +14,7 @@
 
 SELECT  DatabaseName AS UserName,
         CreatorName,
-        CreateTimeStamp
+        CreateTimeStamp,
+        LastAccessTimestamp
 FROM DBC.DatabasesV
 WHERE DBKind='U';

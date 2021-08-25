@@ -439,12 +439,14 @@ public class InternalScriptLoaderTest {
             .set("USERNAME", "user_1")
             .set("CREATORNAME", "user_0")
             .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .set("LASTACCESSTIMESTAMP", null)
             .build();
     GenericRecord expectedRecordUser2 =
         new GenericRecordBuilder(schema)
             .set("USERNAME", "user_2")
             .set("CREATORNAME", "user_0")
             .set("CREATETIMESTAMP", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
+            .set("LASTACCESSTIMESTAMP", Instant.parse("2021-07-03T02:00:00Z").toEpochMilli())
             .build();
     assertThat(records).containsExactly(expectedRecordUser1, expectedRecordUser2);
 

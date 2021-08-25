@@ -350,7 +350,7 @@ VALUES (
     TIMESTAMP '2021-07-01 02:00:00',
     'U',
     45,
-    null
+    TIMESTAMP '2021-07-03 02:00:00'
 ),(
     'non_user',
     'user_0',
