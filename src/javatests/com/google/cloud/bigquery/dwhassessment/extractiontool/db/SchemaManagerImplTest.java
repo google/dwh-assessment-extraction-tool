@@ -119,8 +119,13 @@ public final class SchemaManagerImplTest {
         connection,
         ImmutableList.of(SchemaFilter.builder().setTableName(Pattern.compile("FOO.*")).build(),
             SchemaFilter.builder().setTableName(Pattern.compile(".*BAR")).build()));
-
-    assertThat(results).containsExactly(SchemaKey.create("HSQL Database Engine", "FOOBAR"));
+    
+    assertThat(results)
+        .containsAtLeastElementsIn(
+            ImmutableSet.of(
+                SchemaKey.create("HSQL Database Engine", "FOO"),
+                SchemaKey.create("HSQL Database Engine", "FOOBAR"),
+                SchemaKey.create("HSQL Database Engine", "BAR")));
   }
 
   @Test
