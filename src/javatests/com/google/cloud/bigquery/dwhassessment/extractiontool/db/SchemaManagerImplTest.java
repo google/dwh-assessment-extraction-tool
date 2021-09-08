@@ -114,6 +114,21 @@ public final class SchemaManagerImplTest {
   }
 
   @Test
+  public void getSchemaKeys_multipleFilter_success() {
+    ImmutableSet<SchemaKey> results = schemaManager.getSchemaKeys(
+        connection,
+        ImmutableList.of(SchemaFilter.builder().setTableName(Pattern.compile("FOO.*")).build(),
+            SchemaFilter.builder().setTableName(Pattern.compile(".*BAR")).build()));
+    
+    assertThat(results)
+        .containsAtLeastElementsIn(
+            ImmutableSet.of(
+                SchemaKey.create("HSQL Database Engine", "FOO"),
+                SchemaKey.create("HSQL Database Engine", "FOOBAR"),
+                SchemaKey.create("HSQL Database Engine", "BAR")));
+  }
+
+  @Test
   public void retrieveSchemaTest() throws Exception {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     String databaseName = "HSQL Database Engine";
