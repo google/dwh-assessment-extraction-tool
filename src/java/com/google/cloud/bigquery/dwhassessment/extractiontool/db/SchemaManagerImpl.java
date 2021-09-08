@@ -70,23 +70,21 @@ public class SchemaManagerImpl implements SchemaManager {
         if (filters.isEmpty()) {
           schemaKeys.add(SchemaKey.create(databaseName, tableName));
         } else {
+          boolean databaseNameMatch = true;
+          boolean tableNameMatch = true;
           for (SchemaFilter filter : filters) {
-            boolean databaseNameMatch;
             if (filter.databaseName().isPresent()) {
-              databaseNameMatch = filter.databaseName().get().matcher(databaseName).matches();
-            } else {
-              databaseNameMatch = true;
+              databaseNameMatch =
+                  databaseNameMatch && filter.databaseName().get().matcher(databaseName).matches();
             }
 
-            boolean tableNameMatch;
             if (filter.tableName().isPresent()) {
-              tableNameMatch = filter.tableName().get().matcher(tableName).matches();
-            } else {
-              tableNameMatch = true;
+              tableNameMatch =
+                  tableNameMatch && filter.tableName().get().matcher(tableName).matches();
             }
-            if (databaseNameMatch && tableNameMatch) {
-              schemaKeys.add(SchemaKey.create(databaseName, tableName));
-            }
+          }
+          if (databaseNameMatch && tableNameMatch) {
+            schemaKeys.add(SchemaKey.create(databaseName, tableName));
           }
         }
       }

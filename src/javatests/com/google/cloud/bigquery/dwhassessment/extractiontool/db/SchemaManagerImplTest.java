@@ -53,7 +53,7 @@ public final class SchemaManagerImplTest {
   }
 
   @Test
-  public void getSchemaKeys_onlyTableFilter_success() {
+  public void getSchemaKeys_noFilter_success() {
     ImmutableSet<SchemaKey> results = schemaManager.getSchemaKeys(connection, ImmutableList.of());
 
     assertThat(results)
@@ -111,6 +111,16 @@ public final class SchemaManagerImplTest {
             ImmutableSet.of(
                 SchemaKey.create("HSQL Database Engine", "FOO"),
                 SchemaKey.create("HSQL Database Engine", "FOOBAR")));
+  }
+
+  @Test
+  public void getSchemaKeys_multipleFilter_success() {
+    ImmutableSet<SchemaKey> results = schemaManager.getSchemaKeys(
+        connection,
+        ImmutableList.of(SchemaFilter.builder().setTableName(Pattern.compile("FOO.*")).build(),
+            SchemaFilter.builder().setTableName(Pattern.compile(".*BAR")).build()));
+
+    assertThat(results).containsExactly(SchemaKey.create("HSQL Database Engine", "FOOBAR"));
   }
 
   @Test
