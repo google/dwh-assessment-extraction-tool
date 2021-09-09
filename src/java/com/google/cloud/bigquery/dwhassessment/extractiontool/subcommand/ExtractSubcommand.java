@@ -125,8 +125,8 @@ public final class ExtractSubcommand implements Callable<Integer> {
         "  db:(abc|def),table:public_.*",
         "  Only take schemas from tables in the database abc or def that have",
         "  the prefix public_.",
-        "Multiple filters can be defined by repeating the option. At least one filter",
-        "has to match (i.e. OR logic)."
+        "Multiple filters can be defined by repeating the option. At least one",
+        "filter has to match (i.e. OR logic)."
       })
   void setSchemaFilters(List<SchemaFilter> schemaFilters) {
     if (schemaFilters == null | schemaFilters.isEmpty()) {
