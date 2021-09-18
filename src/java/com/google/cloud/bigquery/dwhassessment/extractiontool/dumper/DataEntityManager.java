@@ -17,6 +17,7 @@
 package com.google.cloud.bigquery.dwhassessment.extractiontool.dumper;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.io.OutputStream;
 
 /** Interface to manage data entity, e.g. AVRO files. */
@@ -27,5 +28,5 @@ public interface DataEntityManager extends Closeable {
    *
    * @param name The name of the output entity.
    */
-  OutputStream getEntityOutputStream(String name);
+  OutputStream getEntityOutputStream(String name) throws IOException;
 }

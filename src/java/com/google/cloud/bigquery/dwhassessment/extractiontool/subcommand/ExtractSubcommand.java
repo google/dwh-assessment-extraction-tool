@@ -39,16 +39,10 @@ import picocli.CommandLine.Spec;
 @Command(name = "td-extract", description = "Subcommand to extract from a Teradata data warehouse")
 public final class ExtractSubcommand implements Callable<Integer> {
 
-  @Spec CommandSpec spec;
-
   private final Supplier<ExtractExecutor> executorSupplier;
-
   private final ExtractExecutor.Arguments.Builder argumentsBuilder =
       ExtractExecutor.Arguments.builder();
-
-  public ExtractSubcommand(Supplier<ExtractExecutor> executorSupplier) {
-    this.executorSupplier = executorSupplier;
-  }
+  @Spec CommandSpec spec;
 
   @Option(
       names = {"-h", "--help"},
@@ -70,16 +64,32 @@ public final class ExtractSubcommand implements Callable<Integer> {
   @Option(names = "--db-password", description = "The password for the database.")
   private String dbPassword = "";
 
+  public ExtractSubcommand(Supplier<ExtractExecutor> executorSupplier) {
+    this.executorSupplier = executorSupplier;
+  }
+
   @Option(
       names = {"--output", "-o"},
       required = true,
-      description = "Output path to which to write the extracted information.")
+      description = {
+        "Output path to which to write the extracted information.",
+        "The output is written into a ZIP file if the output path ends in '.zip'.",
+        "Otherwise, the output path must be an existing directory."
+      })
   void setOutputPath(String pathString) {
     Path path = Paths.get(pathString);
-    if (!Files.isDirectory(path)) {
-      throw new ParameterException(
-          spec.commandLine(),
-          String.format("--output must specify a directory, but '%s' is not a directory.", path));
+    if (path.toString().endsWith(".zip")) {
+      if (!Files.isDirectory(path.getParent())) {
+        throw new ParameterException(
+            spec.commandLine(),
+            String.format("Parent path of --output '%s' is not a directory.", path.getParent()));
+      }
+    } else {
+      if (!Files.isDirectory(path)) {
+        throw new ParameterException(
+            spec.commandLine(),
+            String.format("--output must specify a directory, but '%s' is not a directory.", path));
+      }
     }
     argumentsBuilder.setOutputPath(path);
   }

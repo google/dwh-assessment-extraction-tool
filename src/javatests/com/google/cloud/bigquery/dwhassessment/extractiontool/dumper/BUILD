@@ -31,6 +31,7 @@ java_library(
     srcs = glob(["*Test.java"]),
     deps = [
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
+        "@maven//:com_google_guava_guava_30_1_1_jre",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
         "@maven//:org_mockito_mockito_core",
@@ -38,9 +39,27 @@ java_library(
 )
 
 java_test(
+    name = "DataEntityManagerDirectoryImplTest",
+    size = "small",
+    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerDirectoryImplTest",
+    runtime_deps = [
+        ":tests",
+    ],
+)
+
+java_test(
     name = "DataEntityManagerZipImplTest",
     size = "small",
     test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerZipImplTest",
+    runtime_deps = [
+        ":tests",
+    ],
+)
+
+java_test(
+    name = "DataEntityManagerFactoryTest",
+    size = "small",
+    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerFactoryTest",
     runtime_deps = [
         ":tests",
     ],

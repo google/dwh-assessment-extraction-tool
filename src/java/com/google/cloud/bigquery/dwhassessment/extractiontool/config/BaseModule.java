@@ -24,7 +24,7 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptRunnerImp
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dbscripts.InternalScriptLoader;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dbscripts.ScriptLoader;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerZipImpl;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerFactory;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutorImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand.AboutSubcommand;
@@ -35,14 +35,10 @@ import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.zip.ZipOutputStream;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
@@ -86,16 +82,7 @@ public final class BaseModule extends AbstractModule {
   @Provides
   @Singleton
   Function<Path, DataEntityManager> dataEntityManagerFactory() {
-    return path -> {
-      File bundledZipFile = new File(path.toFile(), "assessment.zip");
-      try {
-        return new DataEntityManagerZipImpl(
-            new ZipOutputStream(new FileOutputStream(bundledZipFile)));
-      } catch (IOException e) {
-        throw new IllegalStateException(
-            "Failed to initialize the dataEntityManagerFactory for path: " + path.toString());
-      }
-    };
+    return new DataEntityManagerFactory();
   }
 
   @Provides
