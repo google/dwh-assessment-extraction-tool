@@ -13,15 +13,15 @@
 -- limitations under the License.
 
 SELECT
-  TablesV.DatabaseName,
-  TablesV.TableName,
-  IndicesV.IndexNumber,
-  IndicesV.IndexType,
-  IndicesV.IndexName,
-  IndicesV.ColumnName,
-  IndicesV.ColumnPosition,
-  IndicesV.AccessCount,
-  IndicesV.UniqueFlag
+  TablesV.DatabaseName AS "DatabaseName",
+  TablesV.TableName AS "TableName",
+  IndicesV.IndexNumber AS "IndexNumber",
+  IndicesV.IndexType AS "IndexType",
+  IndicesV.IndexName AS "IndexName",
+  IndicesV.ColumnName AS "ColumnName",
+  IndicesV.ColumnPosition AS "ColumnPosition",
+  IndicesV.AccessCount AS "AccessCount",
+  IndicesV.UniqueFlag AS "UniqueFlag"
 FROM DBC.TablesV
 INNER JOIN DBC.IndicesV ON TablesV.DatabaseName = IndicesV.DatabaseName
         AND TablesV.TableName = IndicesV.TableName

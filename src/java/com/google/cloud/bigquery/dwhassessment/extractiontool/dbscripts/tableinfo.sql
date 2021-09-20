@@ -13,18 +13,18 @@
 -- limitations under the License.
 
 SELECT
-  DatabaseName,
-  TableName,
-  AccessCount,
-  LastAccessTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE as LastAccessTimeStamp,
-  LastAlterTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE as LastAlterTimeStamp,
-  TableKind,
-  CreatorName,
-  CreateTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE as CreateTimeStamp,
-  PrimaryKeyIndexId,
-  ParentCount,
-  ChildCount,
-  CommitOpt
+  DatabaseName AS "DatabaseName",
+  TableName AS "TableName",
+  AccessCount AS "AccessCount",
+  LastAccessTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS "LastAccessTimeStamp",
+  LastAlterTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS "LastAlterTimeStamp",
+  TableKind AS "TableKind",
+  CreatorName AS "CreatorName",
+  CreateTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS "CreateTimeStamp",
+  PrimaryKeyIndexId AS "PrimaryKeyIndexId",
+  ParentCount AS "ParentCount",
+  ChildCount AS "ChildCount",
+  CommitOpt AS "CommitOpt"
 FROM DBC.TablesV
 WHERE
   TableKind IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND

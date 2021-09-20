@@ -94,7 +94,7 @@ CREATE TABLE DBC.RoleMembersV (
 );
 
 CREATE TABLE DBC.DiskSpaceV (
-  Vproc INT,
+  VProc INT,
   DatabaseName VARCHAR(128),
   AccountName VARCHAR(128),
   MaxPerm BIGINT,
