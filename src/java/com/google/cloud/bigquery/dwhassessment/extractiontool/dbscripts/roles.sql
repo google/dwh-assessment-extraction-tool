@@ -12,12 +12,12 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-SELECT  RoleName,
-        Grantor,
-        Grantee,
-        WhenGranted,
-        DefaultRole,
-        WithAdmin
+SELECT  RoleName AS "RoleName",
+        Grantor AS "Grantor",
+        Grantee AS "Grantee",
+        WhenGranted AS "WhenGranted",
+        DefaultRole AS "DefaultRole",
+        WithAdmin AS "WithAdmin"
 FROM DBC.RoleMembersV
 WHERE   Grantee NOT IN ('TDPUSER', 'Crashdumps', 'tdwm', 'DBC',
         'LockLogShredder', 'TDMaps', 'Sys_Calendar', 'SysAdmin',

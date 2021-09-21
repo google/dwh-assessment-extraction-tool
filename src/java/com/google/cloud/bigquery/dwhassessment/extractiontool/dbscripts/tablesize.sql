@@ -13,10 +13,10 @@
 -- limitations under the License.
 
 SELECT
-  DataBaseName,
-  TableName,
-  CurrentPerm,
-  PeakPerm
+  DataBaseName AS "DataBaseName",
+  TableName AS "TableName",
+  CurrentPerm AS "CurrentPerm",
+  PeakPerm AS "PeakPerm"
 FROM DBC.TableSizeV
 WHERE
   DataBaseName NOT IN (

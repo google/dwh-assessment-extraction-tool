@@ -12,7 +12,18 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-SELECT *
+SELECT
+ IndexId AS "IndexId",
+ IndexName AS "IndexName",
+ ChildDB AS "ChildDB",
+ ChildTable AS "ChildTable",
+ ChildKeyColumn AS "ChildKeyColumn",
+ ParentDB AS "ParentDB",
+ ParentTable AS "ParentTable",
+ ParentKeyColumn AS "ParentKeyColumn",
+ InconsistentFlag AS "InconsistentFlag",
+ CreatorName AS "CreatorName",
+ CreateTimeStamp AS "CreateTimeStamp"
 FROM DBC.All_RI_ChildrenV
 WHERE
   ChildDB NOT IN (
