@@ -18,4 +18,7 @@ package(default_visibility = ["//src:internal"])
 java_library(
     name = "dumper",
     srcs = glob(["*.java"]),
+    deps = [
+        "@maven//:com_google_guava_guava_30_1_1_jre",
+    ],
 )

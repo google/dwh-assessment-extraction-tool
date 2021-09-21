@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import picocli.CommandLine;
 
@@ -239,6 +238,24 @@ public final class ExtractSubcommandTest {
         .isEqualTo(2);
     assertThat(writer.toString())
         .contains("--output must specify a directory, but '/does/not/exist' is not a directory.");
+  }
+
+  @Test
+  public void call_failOnIncorrectOutputZipPath() {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    StringWriter writer = new StringWriter();
+    cmd.setErr(new PrintWriter(writer));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "--output",
+                "/does/not/exist/out.zip"))
+        .isEqualTo(2);
+    assertThat(writer.toString())
+        .contains("Parent path of --output '/does/not/exist' is not a directory.");
   }
 
   @Test
