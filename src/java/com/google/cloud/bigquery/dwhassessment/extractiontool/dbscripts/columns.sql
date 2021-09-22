@@ -22,7 +22,8 @@ SELECT
   ColumnsV.ColumnType AS "ColumnType",
   ColumnsV.DefaultValue AS "DefaultValue",
   ColumnsV.ColumnConstraint AS "ColumnConstraint",
-  ColumnsV.ConstraintCount AS "ConstraintCount"
+  ColumnsV.ConstraintCount AS "ConstraintCount",
+  ColumnsV.Nullable AS "Nullable"
 FROM DBC.TablesV
 INNER JOIN DBC.ColumnsV ON TablesV.DatabaseName = ColumnsV.DatabaseName
         AND TablesV.TableName = ColumnsV.TableName

@@ -49,6 +49,7 @@ CREATE TABLE DBC.ColumnsV (
   DefaultValue VARCHAR(1024),
   ColumnConstraint VARCHAR(8192),
   ConstraintCount SMALLINT,
+  Nullable CHAR(1),
   PRIMARY KEY (DatabaseName, TableName, ColumnName)
 );
 

@@ -353,6 +353,7 @@ public class InternalScriptLoaderTest {
             .set("DefaultValue", "0")
             .set("ColumnConstraint", "test constraint")
             .set("ConstraintCount", 1)
+            .set("Nullable", "Y")
             .build();
     assertThat(records).containsExactly(expectedRecord);
 
