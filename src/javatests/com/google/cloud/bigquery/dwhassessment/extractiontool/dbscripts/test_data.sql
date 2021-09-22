@@ -273,7 +273,8 @@ INSERT INTO DBC.ColumnsV (
   ColumnType,
   DefaultValue,
   ColumnConstraint,
-  ConstraintCount
+  ConstraintCount,
+  Nullable
 )
 VALUES (
   'test_database',
@@ -285,7 +286,8 @@ VALUES (
   'I',
   '0',
   'test constraint',
-  1
+  1,
+  'Y'
 ), (
    'test_database',
    'not_existing_table',
@@ -296,7 +298,8 @@ VALUES (
    'I',
    '0',
    'test constraint',
-   1
+   1,
+   'N'
 );
 
 INSERT INTO DBC.DatabasesV (
