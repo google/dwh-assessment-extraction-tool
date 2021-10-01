@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -145,6 +146,7 @@ public class AvroHelper {
       case Types.LONGVARCHAR:
         fieldBuilder.type().optional().stringType();
         break;
+      case Types.DATE:
       case Types.TIMESTAMP:
       case Types.TIMESTAMP_WITH_TIMEZONE:
         {
@@ -173,6 +175,11 @@ public class AvroHelper {
           return bigDecimal == null
               ? null
               : ByteBuffer.wrap(bigDecimal.toBigInteger().toByteArray());
+        }
+      case Types.DATE:
+        {
+          Date date = row.getDate(columnIndex);
+          return date == null ? null : date.toInstant().toEpochMilli();
         }
       case Types.TIMESTAMP:
       case Types.TIMESTAMP_WITH_TIMEZONE:
