@@ -403,6 +403,7 @@ VALUES (
     'N',
     'N'
 );
+
 INSERT INTO DBC.All_RI_ChildrenV (
   IndexId,
   IndexName,
@@ -441,6 +442,7 @@ VALUES (
      'creator_1',
      TIMESTAMP '2021-07-02 02:00:00'
 );
+
 INSERT INTO DBC.All_RI_ParentsV (
   IndexId,
   IndexName,
@@ -478,4 +480,37 @@ VALUES (
      'Y',
      'creator_1',
      TIMESTAMP '2021-07-02 02:00:00'
+);
+
+INSERT INTO DBC.PartitioningConstraintsV (
+  DatabaseName,
+  IndexName,
+  IndexNumber,
+  ConstraintType,
+  ConstraintText,
+  ConstraintCollation,
+  CollationName,
+  CreatorName,
+  CreateTimeStamp,
+  CharSetID,
+  DefinedCombinedPartitions,
+  MaxCombinedPartitions,
+  PartitioningLevels,
+  ColumnPartitioningLevel
+)
+VALUES (
+  'db1',
+  'index1',
+  1,
+  'K',
+  'Foo',
+  'A',
+  'ASCII',
+  'Creator',
+  TIMESTAMP '2021-07-01 18:23:42',
+  5,
+  2916096,
+  9223372036854775807,
+  1,
+  0
 );

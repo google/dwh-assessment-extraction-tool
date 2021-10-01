@@ -485,6 +485,40 @@ public class InternalScriptLoaderTest {
   }
 
   @Test
+  public void loadScripts_partitioning_constraints() throws IOException, SQLException {
+    String scriptName = "partitioning_constraints";
+    String sqlScript = scriptManager.getScript(scriptName);
+    // Get schema and verify records.
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(schema)
+            .set("DatabaseName", "db1")
+            .set("IndexName", "index1")
+            .set("IndexNumber", 1)
+            .set("ConstraintType", "K")
+            .set("ConstraintText", "Foo")
+            .set("ConstraintCollation", "A")
+            .set("CollationName", "ASCII")
+            .set("CreatorName", "Creator")
+            .set("CreateTimeStamp", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
+            .set("CharSetID", 5)
+            .set("DefinedCombinedPartitions", 2916096L)
+            .set("MaxCombinedPartitions", 9223372036854775807L)
+            .set("PartitioningLevels", 1)
+            .set("ColumnPartitioningLevel", 0)
+            .build();
+    assertThat(records).containsExactly(expectedRecord);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(readOutputStreamToAvro(outputStream, /* recordNum= */ 1))
+        .containsExactly(expectedRecord);
+  }
+
+  @Test
   public void loadScripts_all_ri_parents() throws IOException, SQLException {
     String scriptName = "all_ri_parents";
     String sqlScript = scriptManager.getScript(scriptName);
