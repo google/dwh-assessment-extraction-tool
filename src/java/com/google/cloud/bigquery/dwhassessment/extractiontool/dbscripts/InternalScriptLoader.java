@@ -38,6 +38,7 @@ public class InternalScriptLoader implements ScriptLoader {
             "diskspace",
             "functioninfo",
             "indices",
+            "partitioning_constraints",
             "querylogs",
             "roles",
             "tableinfo",

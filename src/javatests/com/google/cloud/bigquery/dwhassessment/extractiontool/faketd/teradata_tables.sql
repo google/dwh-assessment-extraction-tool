@@ -214,3 +214,23 @@ CREATE TABLE DBC.FunctionsV (
   ExecMapColocName VARCHAR(128),
   PRIMARY KEY (FunctionId)
 );
+
+CREATE TABLE DBC.PartitioningConstraintsV (
+  DatabaseName VARCHAR(128) NOT NULL,
+  IndexName VARCHAR(128),
+  IndexNumber SMALLINT,
+  ConstraintType CHAR(1) NOT NULL,
+  ConstraintText VARCHAR(16000),
+  ConstraintCollation CHAR(1) NOT NULL,
+  CollationName VARCHAR(128),
+  CreatorName VARCHAR(128) NOT NULL,
+  CreateTimeStamp TIMESTAMP(0),
+  CharSetID SMALLINT,
+  SessionMode CHAR(1),
+  ResolvedCurrent_Date DATE,
+  ResolvedCurrent_TimeStamp TIMESTAMP(6) WITH TIME ZONE,
+  DefinedCombinedPartitions BIGINT NOT NULL,
+  MaxCombinedPartitions BIGINT NOT NULL,
+  PartitioningLevels SMALLINT NOT NULL,
+  ColumnPartitioningLevel SMALLINT NOT NULL,
+);
