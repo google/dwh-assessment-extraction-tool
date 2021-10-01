@@ -45,6 +45,8 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class AvroHelperTest {
 
+  private static Connection connection;
+  private static ResultSetMetaData metaData;
   private final String TEST_SCHEMA =
       "{\"namespace\": \"namespace\",\n"
           + " \"type\": \"record\",\n"
@@ -62,6 +64,8 @@ public final class AvroHelperTest {
           + " {\"type\":\"bytes\",\"logicalType\":\"decimal\",\"precision\":128,\"scale\":0}],"
           + " \"default\":null},\n"
           + "     {\"name\": \"TIMESTAMP_COL\", \"type\": [\"null\","
+          + " {\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}], \"default\":null},\n"
+          + "     {\"name\": \"DATE_COL\", \"type\": [\"null\","
           + " {\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}], \"default\":null},\n"
           + "     {\"name\": \"BINARY_COL\", \"type\": [\"null\", \"bytes\"], \"default\":null},\n"
           + "     {\"name\": \"FLOAT_COL\", \"type\": [\"null\", \"double\"], \"default\":null},\n"
@@ -83,19 +87,29 @@ public final class AvroHelperTest {
           + "     {\"name\": \"NAME\", \"type\": [\"null\", \"string\"], \"default\":null}\n"
           + " ]\n"
           + "}";
-  private static Connection connection;
-  private static ResultSetMetaData metaData;
 
   @BeforeClass
   public static void setUp() throws Exception {
     connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_1");
     Statement baseStmt = connection.createStatement();
     baseStmt.execute(
-        "CREATE TABLE T0 (INT_COL INTEGER, VARCHAR_COL VARCHAR(100), CHAR_COL CHAR(100),"
-            + " LONGVARCHAR_COL LONGVARCHAR(100), SMALLINT_COL SMALLINT, BIGINT_COL BIGINT,"
-            + " DECIMAL_COL DECIMAL, TIMESTAMP_COL TIMESTAMP, BINARY_COL BINARY, FLOAT_COL FLOAT,"
-            + " DOUBLE_COL DOUBLE, BIT_COL BIT, BOOLEAN_COL BOOLEAN, TINYINT_COL TINYINT, REAL_COL"
-            + " REAL)");
+        "CREATE TABLE T0 ("
+            + "INT_COL INTEGER, "
+            + "VARCHAR_COL VARCHAR(100), "
+            + "CHAR_COL CHAR(100), "
+            + "LONGVARCHAR_COL LONGVARCHAR(100), "
+            + "SMALLINT_COL SMALLINT, "
+            + "BIGINT_COL BIGINT, "
+            + "DECIMAL_COL DECIMAL, "
+            + "TIMESTAMP_COL TIMESTAMP, "
+            + "DATE_COL DATE, "
+            + "BINARY_COL BINARY, "
+            + "FLOAT_COL FLOAT, "
+            + "DOUBLE_COL DOUBLE, "
+            + "BIT_COL BIT, "
+            + "BOOLEAN_COL BOOLEAN, "
+            + "TINYINT_COL TINYINT, "
+            + "REAL_COL REAL)");
     baseStmt.execute("CREATE TABLE SIMPLE_TABLE (ID INTEGER, NAME VARCHAR(100))");
     baseStmt.execute("INSERT INTO SIMPLE_TABLE VALUES (0, 'name_0')");
     baseStmt.close();
