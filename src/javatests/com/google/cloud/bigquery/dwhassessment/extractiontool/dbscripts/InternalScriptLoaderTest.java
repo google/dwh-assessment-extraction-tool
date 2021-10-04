@@ -457,7 +457,7 @@ public class InternalScriptLoaderTest {
             .set("ParentDB", "parent_db_0")
             .set("ParentTable", "parent_table_0")
             .set("ParentKeyColumn", "parent_key_column_0")
-            .set("InconsistentFlag", "Y")
+            .set("InconsistencyFlag", "Y")
             .set("CreatorName", "creator_0")
             .set("CreateTimeStamp", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
             .build();
@@ -471,7 +471,7 @@ public class InternalScriptLoaderTest {
             .set("ParentDB", "parent_db_0")
             .set("ParentTable", "parent_table_0")
             .set("ParentKeyColumn", "parent_key_column_0")
-            .set("InconsistentFlag", "Y")
+            .set("InconsistencyFlag", "Y")
             .set("CreatorName", "creator_1")
             .set("CreateTimeStamp", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
             .build();
@@ -536,7 +536,7 @@ public class InternalScriptLoaderTest {
             .set("ParentDB", "parent_db_0")
             .set("ParentTable", "parent_table_0")
             .set("ParentKeyColumn", "parent_key_column_0")
-            .set("InconsistentFlag", "Y")
+            .set("InconsistencyFlag", "Y")
             .set("CreatorName", "creator_0")
             .set("CreateTimeStamp", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
             .build();
@@ -550,7 +550,7 @@ public class InternalScriptLoaderTest {
             .set("ParentDB", "parent_db_0")
             .set("ParentTable", "parent_table_0")
             .set("ParentKeyColumn", "parent_key_column_0")
-            .set("InconsistentFlag", "Y")
+            .set("InconsistencyFlag", "Y")
             .set("CreatorName", "creator_1")
             .set("CreateTimeStamp", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
             .build();
