@@ -165,7 +165,7 @@ CREATE TABLE DBC.All_RI_ChildrenV (
   ParentDB VARCHAR(128),
   ParentTable VARCHAR(128),
   ParentKeyColumn VARCHAR(128),
-  InconsistentFlag CHAR(1),
+  InconsistencyFlag CHAR(1),
   CreatorName VARCHAR(128),
   CreateTimeStamp TIMESTAMP(0)
 );
@@ -179,7 +179,7 @@ CREATE TABLE DBC.All_RI_ParentsV (
   ParentDB VARCHAR(128),
   ParentTable VARCHAR(128),
   ParentKeyColumn VARCHAR(128),
-  InconsistentFlag CHAR(1),
+  InconsistencyFlag CHAR(1),
   CreatorName VARCHAR(128),
   CreateTimeStamp TIMESTAMP(0)
 );

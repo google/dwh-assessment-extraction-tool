@@ -413,7 +413,7 @@ INSERT INTO DBC.All_RI_ChildrenV (
   ParentDB,
   ParentTable,
   ParentKeyColumn,
-  InconsistentFlag,
+  InconsistencyFlag,
   CreatorName,
   CreateTimeStamp
 )
@@ -452,7 +452,7 @@ INSERT INTO DBC.All_RI_ParentsV (
   ParentDB,
   ParentTable,
   ParentKeyColumn,
-  InconsistentFlag,
+  InconsistencyFlag,
   CreatorName,
   CreateTimeStamp
 )

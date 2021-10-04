@@ -21,7 +21,7 @@ SELECT
  ParentDB AS "ParentDB",
  ParentTable AS "ParentTable",
  ParentKeyColumn AS "ParentKeyColumn",
- InconsistentFlag AS "InconsistentFlag",
+ InconsistencyFlag AS "InconsistencyFlag",
  CreatorName AS "CreatorName",
  CreateTimeStamp AS "CreateTimeStamp"
 FROM DBC.All_RI_ParentsV
