@@ -30,13 +30,13 @@ binary (i.e., ExtractionTool_deploy.jar) and its run script.
 
 **Step 3:** Create a folder for output files and run the Extraction tool:
 ```build
-./bin/run-td-extract.sh -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user> --db-password <db password>
+./run-td-extract.sh -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user> --db-password <db password>
 ```
 
 **Optional parameters:**
 
 `--schema-filter`  The schema filter to apply when extracting schemas from the database. By default, all schemas will be extracted.
-- Example usage: `--schema-filter db:(abc|def),table:public_.`
+- Example usage: `--schema-filter db:(abc|def),table:public_.
   Only take schemas from tables in the database abc or from tables whose names have the prefix public_.
 - Multiple filters can be defined by repeating the option. Each filter has to match (i.e. AND logic).
 
