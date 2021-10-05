@@ -19,22 +19,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-## Extraction client user guide
+## Extraction tool user guide
+The extraction tool is currently intended for approved users that are working
+with a PSO Cloud Consultant at Google.
 
-**Step 1:** Download Extraction Client binary and its run script.
+**Step 1:** Follow the user guide from PSO and download the Extraction tool
+binary (i.e., ExtractionTool_deploy.jar) and its run script.
 
-**Step 2:** Download [Teradata JDBC driver](https://downloads.teradata.com/download/connectivity/jdbc-driver) into the same directory with the Extraction Client binary.
+**Step 2:** Download [Teradata JDBC driver](https://downloads.teradata.com/download/connectivity/jdbc-driver) into the same directory with the Extraction tool binary.
 
-**Step 3:** Run the Extraction Client:
+**Step 3:** Create a folder for output files and run the Extraction tool:
 ```build
-./run-td-extract.sh -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user> --db-password <db password>
+./bin/run-td-extract.sh -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user> --db-password <db password>
 ```
 
 **Optional parameters:**
 
-`--schema-filter`  The schema filter to apply when extracting schemas from the database. By default, all schemas will be extracted. 
+`--schema-filter`  The schema filter to apply when extracting schemas from the database. By default, all schemas will be extracted.
 - Example usage: `--schema-filter db:(abc|def),table:public_.`
-Only take schemas from tables in the database abc or from tables whose names have the prefix public_.
+  Only take schemas from tables in the database abc or from tables whose names have the prefix public_.
 - Multiple filters can be defined by repeating the option. Each filter has to match (i.e. AND logic).
 
 `--sql-scripts`  The list of scripts to execute. By default, all available scripts will be executed.
@@ -53,4 +56,6 @@ Only take schemas from tables in the database abc or from tables whose names hav
 
 `--skip-sql-scripts` The list of scripts to skip. By default, all available scripts will be executed.
 
-**Step 4:** Share the output zip file with the PSO Cloud Consultant.
+**Step 4:** The extraction process may take from a few minutes to hours to finish,
+depending on the amount of data in your database. Share the output files with
+the PSO Cloud Consultant.
