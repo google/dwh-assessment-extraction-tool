@@ -20,11 +20,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ## Extraction tool user guide
-The extraction tool is currently intended for approved users that are working
-with a PSO Cloud Consultant at Google.
+The extraction tool is currently intended for approved users that are engaging 
+with GCP technical sales teams.
 
-**Step 1:** Follow the user guide from PSO and download the Extraction tool
-binary (i.e., ExtractionTool_deploy.jar) and its run script.
+**Step 1:** Follow the user guide from the GCP technical sales team and download 
+the Extraction tool binary (i.e., ExtractionTool_deploy.jar) and its run script.
 
 **Step 2:** Download [Teradata JDBC driver](https://downloads.teradata.com/download/connectivity/jdbc-driver) into the same directory with the Extraction tool binary.
 
