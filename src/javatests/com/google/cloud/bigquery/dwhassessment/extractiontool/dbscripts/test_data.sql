@@ -496,6 +496,7 @@ INSERT INTO DBC.PartitioningConstraintsV (
   DefinedCombinedPartitions,
   MaxCombinedPartitions,
   PartitioningLevels,
+  ResolvedCurrent_Date,
   ColumnPartitioningLevel
 )
 VALUES (
@@ -512,5 +513,6 @@ VALUES (
   2916096,
   9223372036854775807,
   1,
+  DATE '2021-07-01',
   0
 );

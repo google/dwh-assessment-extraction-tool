@@ -178,8 +178,7 @@ public class AvroHelper {
         }
       case Types.DATE:
         {
-          Date date = row.getDate(columnIndex);
-          return date == null ? null : date.toInstant().toEpochMilli();
+          return row.getDate(columnIndex) == null ? null : row.getDate(columnIndex).getTime();
         }
       case Types.TIMESTAMP:
       case Types.TIMESTAMP_WITH_TIMEZONE:
