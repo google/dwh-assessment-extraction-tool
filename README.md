@@ -21,16 +21,21 @@ limitations under the License.
 
 ## Extraction client user guide
 
-**Step 1:** Build a binary of the extraction tool.
+**Step 1:** Download this repository that includes an executable binary of the extraction tool:`bin/ExtractionTool_deploy.jar`.
+
+You can also make changes on the source code and build a new binary through:
 ```build
 bazel build src/java/com/google/cloud/bigquery/dwhassessment/extractiontool:ExtractionTool_deploy.jar
 ```
+Once the build finishes, the output binary should be available at `bazel-bin/src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/ExtractionTool_deploy.jar`. 
+Move the binary to the [bin](https://github.com/google/dwh-assessment-extraction-tool/tree/main/bin) folder and override the existing one.
 
-**Step 2:** Download [Teradata JDBC driver](https://downloads.teradata.com/download/connectivity/jdbc-driver) into the same directory with the Extraction Client binary.
+**Step 2:** Download [Teradata JDBC driver](https://downloads.teradata.com/download/connectivity/jdbc-driver) 
+and put the `terajdbc4.jar` into the same directory (prefer [bin](https://github.com/google/dwh-assessment-extraction-tool/tree/main/bin)) with the ExtractionTool binary.
 
-**Step 3:** Run the Extraction Client:
+**Step 3:** Create a folder for output files and run the Extraction tool:
 ```build
-./run-td-extract.sh -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user> --db-password <db password>
+./bin/run-td-extract.sh -j bin/terajdbc4.jar --db-address <database address> --output <output path> --db-user <db user> --db-password <db password>
 ```
 
 **Optional parameters:**
@@ -56,4 +61,6 @@ Only take schemas from tables in the database abc or from tables whose names hav
 
 `--skip-sql-scripts` The list of scripts to skip. By default, all available scripts will be executed.
 
-**Step 4:** Share the output zip file with the PSO Cloud Consultant.
+**Step 4:** The extraction process may take from a few minutes to hours to finish,
+depending on the amount of data in your database. Share the output files with 
+the PSO Cloud Consultant.
