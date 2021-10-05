@@ -21,7 +21,10 @@ limitations under the License.
 
 ## Extraction client user guide
 
-**Step 1:** Download Extraction Client binary and its run script.
+**Step 1:** Build a binary of the extraction tool.
+```build
+bazel build src/java/com/google/cloud/bigquery/dwhassessment/extractiontool:ExtractionTool_deploy.jar
+```
 
 **Step 2:** Download [Teradata JDBC driver](https://downloads.teradata.com/download/connectivity/jdbc-driver) into the same directory with the Extraction Client binary.
 
