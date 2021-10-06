@@ -12,6 +12,23 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+INSERT INTO DBC.AllTempTablesVX (
+  HostNo,
+  SessionNo,
+  UserName,
+  B_DatabaseName,
+  B_TableName,
+  E_TableId
+)
+VALUES(
+  1,
+  1,
+  'user_name',
+  'database_name',
+  'table_name',
+   X'010203040506'
+);
+
 INSERT INTO DBC.DiskSpaceV (
   VProc,
   DatabaseName,

@@ -564,6 +564,32 @@ public class InternalScriptLoaderTest {
         .containsExactly(expectedRecord1, expectedRecord2);
   }
 
+  @Test
+  public void loadScripts_temptables() throws IOException, SQLException {
+    String scriptName = "temptables";
+    String sqlScript = scriptManager.getScript(scriptName);
+    // Get schema and verify records.
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(schema)
+            .set("HostNo", 1)
+            .set("SessionNo", 1)
+            .set("UserName", "user_name")
+            .set("B_DatabaseName", "database_name")
+            .set("B_TableName", "table_name")
+            .set("E_TableId", ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6}))
+            .build();
+    assertThat(records).containsExactly(expectedRecord);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(readOutputStreamToAvro(outputStream, 1))
+        .containsExactly(expectedRecord);
+  }
+
   private ImmutableList<Record> readOutputStreamToAvro(
       ByteArrayOutputStream outputStream, int recordNum) throws IOException {
     DataFileReader<Record> reader = getAvroDataOutputReader(outputStream);
