@@ -507,6 +507,7 @@ public class InternalScriptLoaderTest {
             .set("DefinedCombinedPartitions", 2916096L)
             .set("MaxCombinedPartitions", 9223372036854775807L)
             .set("PartitioningLevels", 1)
+            .set("ResolvedCurrent_Date", Instant.parse("2021-07-01T00:00:00Z").toEpochMilli())
             .set("ColumnPartitioningLevel", 0)
             .build();
     assertThat(records).containsExactly(expectedRecord);

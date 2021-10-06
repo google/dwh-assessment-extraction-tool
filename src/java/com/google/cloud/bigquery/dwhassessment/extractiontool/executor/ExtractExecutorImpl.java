@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -37,10 +38,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.function.Function;
 import org.apache.avro.Schema;
+import java.util.logging.Logger;
 import org.apache.avro.generic.GenericRecord;
 
 /** Default implementation of the extract executor. */
 public final class ExtractExecutorImpl implements ExtractExecutor {
+  private final static Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
 
   private final SchemaManager schemaManager;
   private final ScriptManager scriptManager;
@@ -60,17 +63,21 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     DataEntityManager dataEntityManager = dataEntityManagerFactory.apply(arguments.outputPath());
 
     for (String scriptName : getScriptNames(arguments)) {
+      LOGGER.log(Level.INFO, "Start extracting {0}...", scriptName);
       Connection connection =
           DriverManager.getConnection(
               arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
       scriptManager.executeScript(connection, scriptName, dataEntityManager);
       connection.close();
+      LOGGER.log(Level.INFO, "Finished extracting {0}.", scriptName);
     }
 
+    LOGGER.log(Level.INFO, "Start extracting schemas");
     Connection connection =
         DriverManager.getConnection(
             arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
     extractSchema(arguments.schemaFilters(), dataEntityManager, connection);
+    LOGGER.log(Level.INFO, "Finish extracting schemas");
 
     connection.close();
     dataEntityManager.close();
