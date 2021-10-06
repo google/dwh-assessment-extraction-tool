@@ -43,6 +43,7 @@ public class InternalScriptLoader implements ScriptLoader {
             "roles",
             "tableinfo",
             "tablesize",
+            "temp_tables",
             "users")
         .stream()
         .collect(

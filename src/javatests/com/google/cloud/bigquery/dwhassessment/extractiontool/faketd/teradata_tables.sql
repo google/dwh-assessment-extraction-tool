@@ -14,6 +14,15 @@
 
 CREATE SCHEMA DBC;
 
+CREATE TABLE DBC.AllTempTablesVX (
+  HostNo SMALLINT,
+  SessionNo INT,
+  UserName VARCHAR(128),
+  B_DatabaseName VARCHAR(128),
+  B_TableName VARCHAR(128),
+  E_TableId BINARY(6)
+);
+
 CREATE TABLE DBC.TablesV (
   DatabaseName VARCHAR(128),
   TableName VARCHAR(128),
