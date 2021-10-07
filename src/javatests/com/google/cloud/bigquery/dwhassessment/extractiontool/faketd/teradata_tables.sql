@@ -243,3 +243,17 @@ CREATE TABLE DBC.PartitioningConstraintsV (
   PartitioningLevels SMALLINT NOT NULL,
   ColumnPartitioningLevel SMALLINT NOT NULL,
 );
+
+CREATE TABLE DBC.DBQLObjTbl (
+  ProcID DECIMAL(5,0) NOT NULL,
+  CollectTimeStamp TIMESTAMP(6) NOT NULL,
+  QueryID DECIMAL(18,0) NOT NULL,
+  ObjectDatabaseName VARCHAR(128),
+  ObjectTableName VARCHAR(128),
+  ObjectColumnName VARCHAR(128),
+  ObjectID SMALLINT NOT NULL,
+  ObjectNum INTEGER,
+  ObjectType CHAR(3),
+  FreqofUse INTEGER,
+  TypeofUse SMALLINT
+);
