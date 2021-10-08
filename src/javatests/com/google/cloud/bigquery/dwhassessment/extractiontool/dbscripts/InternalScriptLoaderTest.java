@@ -167,7 +167,7 @@ public class InternalScriptLoaderTest {
             .set("DatabaseName", "db_name")
             .set("FunctionName", "function_name")
             .set("SpecificName", "specific_name")
-            .set("FunctionId", ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6}))
+            .set("FunctionId", ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6}))
             .set("NumParameters", 3)
             .set("ParameterDataTypes", "I1BF")
             .set("FunctionType", "F")
@@ -187,8 +187,8 @@ public class InternalScriptLoaderTest {
             .set(
                 "ParameterUDTIds",
                 ByteBuffer.wrap(
-                    new byte[] {
-                      0, 0, (byte) 0xEC, 0xC, 0, (byte) 0xC0, 0x30, 0, 0, (byte) 0xC0, 0x16, 0
+                    new byte[]{
+                        0, 0, (byte) 0xEC, 0xC, 0, (byte) 0xC0, 0x30, 0, 0, (byte) 0xC0, 0x16, 0
                     }))
             .set("MaxOutParameters", 0)
             .set("RefQueryband", "N")
@@ -218,6 +218,38 @@ public class InternalScriptLoaderTest {
             .set("AccessCount", 100000L)
             .set("UniqueFlag", "U")
             .build();
+    assertThat(records).containsExactly(expectedRecord);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
+  }
+
+  @Test
+  public void loadScripts_queryReferences() throws SQLException, IOException {
+    String scriptName = "query_references";
+    String sqlScript = scriptManager.getScript(scriptName);
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(schema)
+            .set("ProcID", ByteBuffer.wrap(BigInteger.ONE.toByteArray()))
+            .set("CollectTimeStamp", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
+            .set("QueryID", ByteBuffer.wrap(BigInteger.valueOf(123).toByteArray()))
+            .set("ObjectDatabaseName", "dbname")
+            .set("ObjectTableName", "tablename")
+            .set("ObjectColumnName", "columnname")
+            .set("ObjectID", 5)
+            .set("ObjectNum", 10)
+            .set("ObjectType", "Col")
+            .set("FreqofUse", 10)
+            .set("TypeOfUse", 8)
+            .build();
+
     assertThat(records).containsExactly(expectedRecord);
 
     // Verify records serialization.
@@ -579,7 +611,7 @@ public class InternalScriptLoaderTest {
             .set("UserName", "user_name")
             .set("B_DatabaseName", "database_name")
             .set("B_TableName", "table_name")
-            .set("E_TableId", ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6}))
+            .set("E_TableId", ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6}))
             .build();
     assertThat(records).containsExactly(expectedRecord);
 

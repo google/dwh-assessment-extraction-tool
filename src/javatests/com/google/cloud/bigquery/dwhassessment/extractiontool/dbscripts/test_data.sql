@@ -533,3 +533,30 @@ VALUES (
   DATE '2021-07-01',
   0
 );
+
+INSERT INTO DBC.DBQLObjTbl (
+  ProcID,
+  CollectTimeStamp,
+  QueryID,
+  ObjectDatabaseName,
+  ObjectTableName,
+  ObjectColumnName,
+  ObjectID,
+  ObjectNum,
+  ObjectType,
+  FreqofUse,
+  TypeOfUse
+)
+VALUES (
+  1,
+  TIMESTAMP '2021-07-01 18:23:42',
+  123,
+  'dbname',
+  'tablename',
+  'columnname',
+  5,
+  10,
+  'Col',
+  10,
+  8
+);
