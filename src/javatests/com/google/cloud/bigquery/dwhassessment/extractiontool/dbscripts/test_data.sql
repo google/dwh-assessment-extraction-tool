@@ -151,7 +151,7 @@ VALUES (
   'U'
 );
 
-INSERT INTO DBC.QryLog (
+INSERT INTO DBC.QryLogV (
   ProcID,
   CollectTimeStamp,
   QueryID,
@@ -179,7 +179,7 @@ INSERT INTO DBC.QryLog (
   NumResultRows,
   AMPCPUTime,
   AMPCPUTimeNorm,
-  NumOfActiveAmps,
+  NumOfActiveAMPs,
   MaxStepMemory,
   ReqPhysIO,
   TotalFirstRespTime,

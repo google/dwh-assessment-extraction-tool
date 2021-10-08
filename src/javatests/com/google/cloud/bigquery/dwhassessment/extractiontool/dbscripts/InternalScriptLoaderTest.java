@@ -241,12 +241,12 @@ public class InternalScriptLoaderTest {
             .set("CollectTimeStamp", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
             .set("QueryID", ByteBuffer.wrap(BigInteger.valueOf(123).toByteArray()))
             .set("UserID", ByteBuffer.wrap(new byte[] {10, 11, 12, 13}))
-            .set("UserName", Strings.padEnd("the_user", 30, ' '))
+            .set("UserName", "the_user")
             .set("ProxyUser", "proxy_user")
             .set("ProxyRole", "proxy_role")
-            .set("DefaultDatabase", Strings.padEnd("default_db", 30, ' '))
-            .set("AcctString", Strings.padEnd("account", 30, ' '))
-            .set("ExpandAcctString", Strings.padEnd("expand account", 30, ' '))
+            .set("DefaultDatabase", "default_db")
+            .set("AcctString", "account")
+            .set("ExpandAcctString", "expand account")
             .set("SessionID", 9)
             .set("LogicalHostID", 2)
             .set("LogonDateTime", Instant.parse("2021-07-01T18:05:06Z").toEpochMilli())
@@ -264,7 +264,7 @@ public class InternalScriptLoaderTest {
             .set("NumResultRows", (double) 65.0)
             .set("AMPCPUTime", (double) 1.23)
             .set("AMPCPUTimeNorm", (double) 0.123)
-            .set("NumOfActiveAmps", 2)
+            .set("NumOfActiveAMPs", 2)
             .set("MaxStepMemory", (double) 123.45)
             .set("ReqPhysIO", (double) 123.45)
             .set("TotalFirstRespTime", (double) 1234.5)
@@ -566,7 +566,7 @@ public class InternalScriptLoaderTest {
 
   @Test
   public void loadScripts_temptables() throws IOException, SQLException {
-    String scriptName = "temptables";
+    String scriptName = "temp_tables";
     String sqlScript = scriptManager.getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
