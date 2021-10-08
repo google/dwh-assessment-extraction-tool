@@ -13,25 +13,25 @@
 -- limitations under the License.
 
 SELECT
-  TablesV.DatabaseName AS "DatabaseName",
-  TablesV.TableName AS "TableName",
-  ColumnsV.ColumnName AS "ColumnName",
-  ColumnsV.ColumnFormat AS "ColumnFormat",
-  ColumnsV.ColumnTitle AS "ColumnTitle",
-  ColumnsV.ColumnLength AS "ColumnLength",
-  ColumnsV.ColumnType AS "ColumnType",
-  ColumnsV.DefaultValue AS "DefaultValue",
-  ColumnsV.ColumnConstraint AS "ColumnConstraint",
-  ColumnsV.ConstraintCount AS "ConstraintCount",
-  ColumnsV.Nullable AS "Nullable"
-FROM DBC.TablesV
-INNER JOIN DBC.ColumnsV ON TablesV.DatabaseName = ColumnsV.DatabaseName
-        AND TablesV.TableName = ColumnsV.TableName
+  "TablesV"."DatabaseName",
+  "TablesV"."TableName",
+  "ColumnsV"."ColumnName",
+  "ColumnsV"."ColumnFormat",
+  "ColumnsV"."ColumnTitle",
+  "ColumnsV"."ColumnLength",
+  "ColumnsV"."ColumnType",
+  "ColumnsV"."DefaultValue",
+  "ColumnsV"."ColumnConstraint",
+  "ColumnsV"."ConstraintCount",
+  "ColumnsV"."Nullable"
+FROM DBC."TablesV"
+INNER JOIN DBC."ColumnsV" ON "TablesV"."DatabaseName" = "ColumnsV"."DatabaseName"
+        AND "TablesV"."TableName" = "ColumnsV"."TableName"
 WHERE
-  TablesV.TableKind IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND
-  TablesV.DatabaseName NOT IN (
+  "TablesV"."TableKind" IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND
+  "TablesV"."DatabaseName" NOT IN (
     'dbc', 'SYSJDBC', 'TD_SYSGPL', 'SYSLIB', 'SYSSPATIAL', 'TD_SYSXML',
     'Crashdumps', 'viewpoint', 'Sys_Calendar', 'EXTUSER', 'SYSUIF', 'TDStats',
     'LockLogShredder', 'External_AP', 'SysAdmin', 'dbcmngr', 'console',
     'TD_SYSFNLIB', 'SQLJ', 'TDQCD', 'TD_SERVER_DB', 'TDMaps', 'SystemFe',
-    'TDPUSER', 'SYSUDTLIB', 'tdwm', 'SYSBAR');
+    'TDPUSER', 'SYSUDTLIB', 'tdwm', 'SYSBAR')

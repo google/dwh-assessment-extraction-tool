@@ -13,22 +13,22 @@
 -- limitations under the License.
 
 SELECT
- IndexId AS "IndexId",
- IndexName AS "IndexName",
- ChildDB AS "ChildDB",
- ChildTable AS "ChildTable",
- ChildKeyColumn AS "ChildKeyColumn",
- ParentDB AS "ParentDB",
- ParentTable AS "ParentTable",
- ParentKeyColumn AS "ParentKeyColumn",
- InconsistencyFlag AS "InconsistencyFlag",
- CreatorName AS "CreatorName",
- CreateTimeStamp AS "CreateTimeStamp"
-FROM DBC.All_RI_ParentsV
+  "IndexId",
+  "IndexName",
+  "ChildDB",
+  "ChildTable",
+  "ChildKeyColumn",
+  "ParentDB",
+  "ParentTable",
+  "ParentKeyColumn",
+  "InconsistencyFlag",
+  "CreatorName",
+  "CreateTimeStamp"
+FROM DBC."All_RI_ParentsV"
 WHERE
-  ParentDB NOT IN (
+  "ParentDB" NOT IN (
     'dbc', 'SYSJDBC', 'TD_SYSGPL', 'SYSLIB', 'SYSSPATIAL', 'TD_SYSXML',
     'Crashdumps', 'viewpoint', 'Sys_Calendar', 'EXTUSER', 'SYSUIF', 'TDStats',
     'LockLogShredder', 'External_AP', 'SysAdmin', 'dbcmngr', 'console',
     'TD_SYSFNLIB', 'SQLJ', 'TDQCD', 'TD_SERVER_DB', 'TDMaps', 'SystemFe',
-    'TDPUSER', 'SYSUDTLIB', 'tdwm', 'SYSBAR');
+    'TDPUSER', 'SYSUDTLIB', 'tdwm', 'SYSBAR')

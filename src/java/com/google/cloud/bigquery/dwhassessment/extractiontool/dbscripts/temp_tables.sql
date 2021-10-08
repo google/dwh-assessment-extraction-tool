@@ -13,10 +13,10 @@
 -- limitations under the License.
 
 SELECT
-  HostNo AS "HostNo",
-  SessionNo AS "SessionNo",
-  UserName AS "UserName",
-  B_DatabaseName AS "B_DatabaseName",
-  B_TableName AS "B_TableName",
-  E_TableId AS "E_TableId"
-FROM DBC.AllTempTablesVX;
+  "HostNo",
+  "SessionNo",
+  "UserName",
+  "B_DatabaseName",
+  "B_TableName",
+  "E_TableId"
+FROM DBC."AllTempTablesVX"

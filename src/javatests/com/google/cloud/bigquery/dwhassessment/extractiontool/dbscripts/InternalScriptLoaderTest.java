@@ -247,7 +247,7 @@ public class InternalScriptLoaderTest {
             .set("ObjectNum", 10)
             .set("ObjectType", "Col")
             .set("FreqofUse", 10)
-            .set("TypeOfUse", 8)
+            .set("TypeofUse", 8)
             .build();
 
     assertThat(records).containsExactly(expectedRecord);
@@ -352,7 +352,7 @@ public class InternalScriptLoaderTest {
         scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
-            .set("DataBaseName", "test_database")
+            .set("DatabaseName", "test_database")
             .set("TableName", "test_table")
             .set("CurrentPerm", 1000L)
             .set("PeakPerm", 2000L)
@@ -408,14 +408,14 @@ public class InternalScriptLoaderTest {
             .set("UserName", "user_1")
             .set("CreatorName", "user_0")
             .set("CreateTimeStamp", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
-            .set("LastAccessTimestamp", null)
+            .set("LastAccessTimeStamp", null)
             .build();
     GenericRecord expectedRecordUser2 =
         new GenericRecordBuilder(schema)
             .set("UserName", "user_2")
             .set("CreatorName", "user_0")
             .set("CreateTimeStamp", Instant.parse("2021-07-02T02:00:00Z").toEpochMilli())
-            .set("LastAccessTimestamp", Instant.parse("2021-07-03T02:00:00Z").toEpochMilli())
+            .set("LastAccessTimeStamp", Instant.parse("2021-07-03T02:00:00Z").toEpochMilli())
             .build();
     assertThat(records).containsExactly(expectedRecordUser1, expectedRecordUser2);
 

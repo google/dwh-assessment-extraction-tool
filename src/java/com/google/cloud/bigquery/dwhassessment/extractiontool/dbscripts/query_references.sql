@@ -13,15 +13,15 @@
 -- limitations under the License.
 
 SELECT
-  ProcID AS "ProcID",
-  CollectTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS "CollectTimeStamp",
-  QueryID AS "QueryID",
-  ObjectDatabaseName AS "ObjectDatabaseName",
-  ObjectTableName AS "ObjectTableName",
-  ObjectColumnName AS "ObjectColumnName",
-  ObjectID AS "ObjectID",
-  ObjectNum AS "ObjectNum",
-  ObjectType AS "ObjectType",
-  FreqofUse AS "FreqofUse",
-  TypeOfUse AS "TypeOfUse"
-FROM DBC.DBQLObjTbl
+  "ProcID",
+  "CollectTimeStamp" AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS "CollectTimeStamp",
+  "QueryID",
+  "ObjectDatabaseName",
+  "ObjectTableName",
+  "ObjectColumnName",
+  "ObjectID",
+  "ObjectNum",
+  "ObjectType",
+  "FreqofUse",
+  "TypeofUse"
+FROM DBC."DBQLObjTbl"
