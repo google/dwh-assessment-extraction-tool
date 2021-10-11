@@ -36,6 +36,7 @@ CREATE TABLE DBC."TablesV" (
   "ParentCount" SMALLINT,
   "ChildCount" SMALLINT,
   "CommitOpt" CHAR(1),
+  "CheckOpt" CHAR(1),
   PRIMARY KEY ("DatabaseName", "TableName")
 );
 

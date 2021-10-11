@@ -232,7 +232,8 @@ INSERT INTO DBC."TablesV" (
   "PrimaryKeyIndexId",
   "ParentCount",
   "ChildCount",
-  "CommitOpt"
+  "CommitOpt",
+  "CheckOpt"
 )
 VALUES (
   'test_database',
@@ -246,7 +247,8 @@ VALUES (
   10,
   2,
   10,
-  'C'
+  'C',
+  'Y'
 ), (
   'dbc',
   'test_table',
@@ -259,7 +261,8 @@ VALUES (
   10,
   2,
   10,
-  'C'
+  'C',
+  'Y'
 );
 
 INSERT INTO DBC."TableSizeV" (
