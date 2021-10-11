@@ -12,9 +12,10 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-SELECT  DatabaseName AS "UserName",
-        CreatorName AS "CreatorName",
-        CreateTimeStamp AS "CreateTimeStamp",
-        LastAccessTimestamp AS "LastAccessTimestamp"
-FROM DBC.DatabasesV
-WHERE DBKind='U';
+SELECT
+  "DatabaseName" AS "UserName",
+  "CreatorName",
+  "CreateTimeStamp",
+  "LastAccessTimeStamp"
+FROM DBC."DatabasesV"
+WHERE "DBKind"='U'

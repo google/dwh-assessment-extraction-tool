@@ -41,10 +41,10 @@ public class TeradataSimulatorTest {
         try (ResultSet rs =
             statement.executeQuery(
                 "SELECT"
-                    + "  DatabaseName,"
-                    + "  TableName,"
-                    + "  LastAccessTimeStamp AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE "
-                    + "FROM DBC.TablesV")) {
+                    + "  \"DatabaseName\","
+                    + "  \"TableName\","
+                    + "  \"LastAccessTimeStamp\" AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE "
+                    + "FROM DBC.\"TablesV\"")) {
           assertThat(rs.next()).isFalse();
         }
       }
@@ -60,7 +60,7 @@ public class TeradataSimulatorTest {
           TeradataSimulatorTest.class.getResource("insert_test.sql"));
 
       try (Statement statement = connection.createStatement()) {
-        try (ResultSet rs = statement.executeQuery("SELECT * FROM DBC.TablesV")) {
+        try (ResultSet rs = statement.executeQuery("SELECT * FROM DBC.\"TablesV\"")) {
           assertThat(rs.next()).isTrue();
         }
       }

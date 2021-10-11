@@ -34,3 +34,12 @@ java_binary(
         ":extraction_tool",
     ],
 )
+
+java_binary(
+    name = "ExtractionToolHsqldb",
+    main_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.ExtractionTool",
+    runtime_deps = [
+        ":extraction_tool",
+        "@maven//:org_hsqldb_hsqldb",
+    ],
+)

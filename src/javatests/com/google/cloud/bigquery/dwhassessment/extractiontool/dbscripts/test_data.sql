@@ -12,13 +12,13 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-INSERT INTO DBC.AllTempTablesVX (
-  HostNo,
-  SessionNo,
-  UserName,
-  B_DatabaseName,
-  B_TableName,
-  E_TableId
+INSERT INTO DBC."AllTempTablesVX" (
+  "HostNo",
+  "SessionNo",
+  "UserName",
+  "B_DatabaseName",
+  "B_TableName",
+  "E_TableId"
 )
 VALUES(
   1,
@@ -29,29 +29,29 @@ VALUES(
    X'010203040506'
 );
 
-INSERT INTO DBC.DiskSpaceV (
-  VProc,
-  DatabaseName,
-  AccountName,
-  MaxPerm,
-  MaxSpool,
-  MaxTemp,
-  CurrentPerm,
-  CurrentSpool,
-  CurrentPersistentSpool,
-  CurrentTemp,
-  PeakPerm,
-  PeakSpool,
-  PeakPersistentSpool,
-  PeakTemp,
-  MaxProfileSpool,
-  MaxProfileTemp,
-  AllocatedPerm,
-  AllocatedSpool,
-  AllocatedTemp,
-  PermSkew,
-  SpoolSkew,
-  TempSkew
+INSERT INTO DBC."DiskSpaceV" (
+  "VProc",
+  "DatabaseName",
+  "AccountName",
+  "MaxPerm",
+  "MaxSpool",
+  "MaxTemp",
+  "CurrentPerm",
+  "CurrentSpool",
+  "CurrentPersistentSpool",
+  "CurrentTemp",
+  "PeakPerm",
+  "PeakSpool",
+  "PeakPersistentSpool",
+  "PeakTemp",
+  "MaxProfileSpool",
+  "MaxProfileTemp",
+  "AllocatedPerm",
+  "AllocatedSpool",
+  "AllocatedTemp",
+  "PermSkew",
+  "SpoolSkew",
+  "TempSkew"
 )
 VALUES (
   100,
@@ -78,30 +78,30 @@ VALUES (
   13
 );
 
-INSERT INTO DBC.FunctionsV (
-  DatabaseName,
-  FunctionName,
-  SpecificName,
-  FunctionId,
-  NumParameters,
-  ParameterDataTypes,
-  FunctionType,
-  ExternalName,
-  SrcFileLanguage,
-  NoSQLDataAccess,
-  ParameterStyle,
-  DeterministicOpt,
-  NullCall,
-  PrepareCount,
-  ExecProtectionMode,
-  ExtFileReference,
-  CharacterType,
-  Platform,
-  InterimFldSize,
-  RoutineKind,
-  ParameterUDTIds,
-  MaxOutParameters,
-  RefQueryband
+INSERT INTO DBC."FunctionsV" (
+  "DatabaseName",
+  "FunctionName",
+  "SpecificName",
+  "FunctionId",
+  "NumParameters",
+  "ParameterDataTypes",
+  "FunctionType",
+  "ExternalName",
+  "SrcFileLanguage",
+  "NoSQLDataAccess",
+  "ParameterStyle",
+  "DeterministicOpt",
+  "NullCall",
+  "PrepareCount",
+  "ExecProtectionMode",
+  "ExtFileReference",
+  "CharacterType",
+  "Platform",
+  "InterimFldSize",
+  "RoutineKind",
+  "ParameterUDTIds",
+  "MaxOutParameters",
+  "RefQueryband"
 ) VALUES (
   'db_name',
   'function_name',
@@ -128,16 +128,16 @@ INSERT INTO DBC.FunctionsV (
   'N'
 );
 
-INSERT INTO DBC.IndicesV (
-  DatabaseName,
-  TableName,
-  IndexNumber,
-  IndexType,
-  IndexName,
-  ColumnName,
-  ColumnPosition,
-  AccessCount,
-  UniqueFlag
+INSERT INTO DBC."IndicesV" (
+  "DatabaseName",
+  "TableName",
+  "IndexNumber",
+  "IndexType",
+  "IndexName",
+  "ColumnName",
+  "ColumnPosition",
+  "AccessCount",
+  "UniqueFlag"
 )
 VALUES (
   'test_database',
@@ -151,39 +151,39 @@ VALUES (
   'U'
 );
 
-INSERT INTO DBC.QryLogV (
-  ProcID,
-  CollectTimeStamp,
-  QueryID,
-  UserID,
-  UserName,
-  ProxyUser,
-  ProxyRole,
-  DefaultDatabase,
-  AcctString,
-  ExpandAcctString,
-  SessionID,
-  LogicalHostID,
-  LogonDateTime,
-  LogonSource,
-  AppID,
-  ClientID,
-  ClientAddr,
-  QueryText,
-  StatementType,
-  StatementGroup,
-  StartTime,
-  FirstRespTime,
-  FirstStepTime,
-  Statements,
-  NumResultRows,
-  AMPCPUTime,
-  AMPCPUTimeNorm,
-  NumOfActiveAMPs,
-  MaxStepMemory,
-  ReqPhysIO,
-  TotalFirstRespTime,
-  TotalIOCount
+INSERT INTO DBC."QryLogV" (
+  "ProcID",
+  "CollectTimeStamp",
+  "QueryID",
+  "UserID",
+  "UserName",
+  "ProxyUser",
+  "ProxyRole",
+  "DefaultDatabase",
+  "AcctString",
+  "ExpandAcctString",
+  "SessionID",
+  "LogicalHostID",
+  "LogonDateTime",
+  "LogonSource",
+  "AppID",
+  "ClientID",
+  "ClientAddr",
+  "QueryText",
+  "StatementType",
+  "StatementGroup",
+  "StartTime",
+  "FirstRespTime",
+  "FirstStepTime",
+  "Statements",
+  "NumResultRows",
+  "AMPCPUTime",
+  "AMPCPUTimeNorm",
+  "NumOfActiveAMPs",
+  "MaxStepMemory",
+  "ReqPhysIO",
+  "TotalFirstRespTime",
+  "TotalIOCount"
 )
 VALUES (
   1,
@@ -220,19 +220,19 @@ VALUES (
   1234.56
 );
 
-INSERT INTO DBC.TablesV (
-  DatabaseName,
-  TableName,
-  AccessCount,
-  LastAccessTimeStamp,
-  LastAlterTimeStamp,
-  TableKind,
-  CreatorName,
-  CreateTimeStamp,
-  PrimaryKeyIndexId,
-  ParentCount,
-  ChildCount,
-  CommitOpt
+INSERT INTO DBC."TablesV" (
+  "DatabaseName",
+  "TableName",
+  "AccessCount",
+  "LastAccessTimeStamp",
+  "LastAlterTimeStamp",
+  "TableKind",
+  "CreatorName",
+  "CreateTimeStamp",
+  "PrimaryKeyIndexId",
+  "ParentCount",
+  "ChildCount",
+  "CommitOpt"
 )
 VALUES (
   'test_database',
@@ -262,11 +262,11 @@ VALUES (
   'C'
 );
 
-INSERT INTO DBC.TableSizeV (
-  DataBaseName,
-  TableName,
-  CurrentPerm,
-  PeakPerm
+INSERT INTO DBC."TableSizeV" (
+  "DatabaseName",
+  "TableName",
+  "CurrentPerm",
+  "PeakPerm"
 )
 VALUES (
   'test_database',
@@ -280,18 +280,18 @@ VALUES (
   2000
 );
 
-INSERT INTO DBC.ColumnsV (
-  DatabaseName,
-  TableName,
-  ColumnName,
-  ColumnFormat,
-  ColumnTitle,
-  ColumnLength,
-  ColumnType,
-  DefaultValue,
-  ColumnConstraint,
-  ConstraintCount,
-  Nullable
+INSERT INTO DBC."ColumnsV" (
+  "DatabaseName",
+  "TableName",
+  "ColumnName",
+  "ColumnFormat",
+  "ColumnTitle",
+  "ColumnLength",
+  "ColumnType",
+  "DefaultValue",
+  "ColumnConstraint",
+  "ConstraintCount",
+  "Nullable"
 )
 VALUES (
   'test_database',
@@ -319,23 +319,23 @@ VALUES (
    'N'
 );
 
-INSERT INTO DBC.DatabasesV (
-  DatabaseName,
-  CreatorName,
-  OwnerName,
-  AccountName,
-  ProtectionType,
-  JournalFlag,
-  PermSpace,
-  SpoolSpace,
-  TempSpace,
-  CommentString,
-  CreateTimeStamp,
-  LastAlterName,
-  LastAlterTimeStamp,
-  DBKind,
-  AccessCount,
-  LastAccessTimeStamp
+INSERT INTO DBC."DatabasesV" (
+  "DatabaseName",
+  "CreatorName",
+  "OwnerName",
+  "AccountName",
+  "ProtectionType",
+  "JournalFlag",
+  "PermSpace",
+  "SpoolSpace",
+  "TempSpace",
+  "CommentString",
+  "CreateTimeStamp",
+  "LastAlterName",
+  "LastAlterTimeStamp",
+  "DBKind",
+  "AccessCount",
+  "LastAccessTimeStamp"
 )
 VALUES (
   'user_1',
@@ -390,13 +390,13 @@ VALUES (
     null
   );
 
-INSERT INTO DBC.RoleMembersV (
-  RoleName,
-  Grantee,
-  Grantor,
-  WhenGranted,
-  DefaultRole,
-  WithAdmin
+INSERT INTO DBC."RoleMembersV" (
+  "RoleName",
+  "Grantee",
+  "Grantor",
+  "WhenGranted",
+  "DefaultRole",
+  "WithAdmin"
 )
 VALUES (
   'test_role_1',
@@ -421,18 +421,18 @@ VALUES (
     'N'
 );
 
-INSERT INTO DBC.All_RI_ChildrenV (
-  IndexId,
-  IndexName,
-  ChildDB,
-  ChildTable,
-  ChildKeyColumn,
-  ParentDB,
-  ParentTable,
-  ParentKeyColumn,
-  InconsistencyFlag,
-  CreatorName,
-  CreateTimeStamp
+INSERT INTO DBC."All_RI_ChildrenV" (
+  "IndexId",
+  "IndexName",
+  "ChildDB",
+  "ChildTable",
+  "ChildKeyColumn",
+  "ParentDB",
+  "ParentTable",
+  "ParentKeyColumn",
+  "InconsistencyFlag",
+  "CreatorName",
+  "CreateTimeStamp"
 )
 VALUES (
   0,
@@ -460,18 +460,18 @@ VALUES (
      TIMESTAMP '2021-07-02 02:00:00'
 );
 
-INSERT INTO DBC.All_RI_ParentsV (
-  IndexId,
-  IndexName,
-  ChildDB,
-  ChildTable,
-  ChildKeyColumn,
-  ParentDB,
-  ParentTable,
-  ParentKeyColumn,
-  InconsistencyFlag,
-  CreatorName,
-  CreateTimeStamp
+INSERT INTO DBC."All_RI_ParentsV" (
+  "IndexId",
+  "IndexName",
+  "ChildDB",
+  "ChildTable",
+  "ChildKeyColumn",
+  "ParentDB",
+  "ParentTable",
+  "ParentKeyColumn",
+  "InconsistencyFlag",
+  "CreatorName",
+  "CreateTimeStamp"
 )
 VALUES (
   0,
@@ -499,22 +499,22 @@ VALUES (
      TIMESTAMP '2021-07-02 02:00:00'
 );
 
-INSERT INTO DBC.PartitioningConstraintsV (
-  DatabaseName,
-  IndexName,
-  IndexNumber,
-  ConstraintType,
-  ConstraintText,
-  ConstraintCollation,
-  CollationName,
-  CreatorName,
-  CreateTimeStamp,
-  CharSetID,
-  DefinedCombinedPartitions,
-  MaxCombinedPartitions,
-  PartitioningLevels,
-  ResolvedCurrent_Date,
-  ColumnPartitioningLevel
+INSERT INTO DBC."PartitioningConstraintsV" (
+  "DatabaseName",
+  "IndexName",
+  "IndexNumber",
+  "ConstraintType",
+  "ConstraintText",
+  "ConstraintCollation",
+  "CollationName",
+  "CreatorName",
+  "CreateTimeStamp",
+  "CharSetID",
+  "DefinedCombinedPartitions",
+  "MaxCombinedPartitions",
+  "PartitioningLevels",
+  "ResolvedCurrent_Date",
+  "ColumnPartitioningLevel"
 )
 VALUES (
   'db1',
@@ -534,18 +534,18 @@ VALUES (
   0
 );
 
-INSERT INTO DBC.DBQLObjTbl (
-  ProcID,
-  CollectTimeStamp,
-  QueryID,
-  ObjectDatabaseName,
-  ObjectTableName,
-  ObjectColumnName,
-  ObjectID,
-  ObjectNum,
-  ObjectType,
-  FreqofUse,
-  TypeOfUse
+INSERT INTO DBC."DBQLObjTbl" (
+  "ProcID",
+  "CollectTimeStamp",
+  "QueryID",
+  "ObjectDatabaseName",
+  "ObjectTableName",
+  "ObjectColumnName",
+  "ObjectID",
+  "ObjectNum",
+  "ObjectType",
+  "FreqofUse",
+  "TypeofUse"
 )
 VALUES (
   1,

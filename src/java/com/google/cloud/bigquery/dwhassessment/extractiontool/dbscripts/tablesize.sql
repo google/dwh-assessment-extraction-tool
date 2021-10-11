@@ -13,13 +13,13 @@
 -- limitations under the License.
 
 SELECT
-  DataBaseName AS "DataBaseName",
-  TableName AS "TableName",
-  CurrentPerm AS "CurrentPerm",
-  PeakPerm AS "PeakPerm"
-FROM DBC.TableSizeV
+  "DatabaseName",
+  "TableName",
+  "CurrentPerm",
+  "PeakPerm"
+FROM DBC."TableSizeV"
 WHERE
-  DataBaseName NOT IN (
+  "DatabaseName" NOT IN (
     'dbc', 'SYSJDBC', 'TD_SYSGPL', 'SYSLIB', 'SYSSPATIAL', 'TD_SYSXML',
     'Crashdumps', 'viewpoint', 'Sys_Calendar', 'EXTUSER', 'SYSUIF',
     'TDStats', 'LockLogShredder', 'External_AP', 'SysAdmin', 'dbcmngr',

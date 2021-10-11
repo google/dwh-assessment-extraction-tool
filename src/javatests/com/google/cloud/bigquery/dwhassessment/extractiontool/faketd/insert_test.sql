@@ -12,7 +12,9 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-INSERT INTO DBC.TablesV (DatabaseName, TableName, LastAccessTimeStamp) VALUES (
-  'db',
-  'table',
-  TIMESTAMP '2021-07-02 18:23:42' AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE);
+INSERT INTO DBC."TablesV" ("DatabaseName", "TableName", "LastAccessTimeStamp")
+  VALUES (
+    'db',
+    'table',
+    TIMESTAMP '2021-07-02 18:23:42' AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE
+  );
