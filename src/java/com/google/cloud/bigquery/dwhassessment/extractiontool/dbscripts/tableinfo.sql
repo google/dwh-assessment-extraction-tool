@@ -24,7 +24,8 @@ SELECT
   "PrimaryKeyIndexId",
   "ParentCount",
   "ChildCount",
-  "CommitOpt"
+  "CommitOpt",
+  "CheckOpt"
 FROM DBC."TablesV"
 WHERE
   "TableKind" IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND

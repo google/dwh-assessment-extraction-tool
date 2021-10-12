@@ -333,6 +333,7 @@ public class InternalScriptLoaderTest {
             .set("ParentCount", 2)
             .set("ChildCount", 10)
             .set("CommitOpt", "C")
+            .set("CheckOpt", "Y")
             .build();
     assertThat(records).containsExactly(expectedRecord);
 
