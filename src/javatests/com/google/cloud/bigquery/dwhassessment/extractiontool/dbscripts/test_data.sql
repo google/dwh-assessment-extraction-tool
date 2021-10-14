@@ -563,3 +563,20 @@ VALUES (
   10,
   8
 );
+
+INSERT INTO DBC."StatsV" (
+  "DatabaseName",
+  "TableName",
+  "ColumnName",
+  "RowCount",
+  "UniqueValueCount",
+  "CreateTimeStamp"
+)
+VALUES (
+  'dbname',
+  'tablename',
+  'columnname',
+  20,
+  3,
+  TIMESTAMP '2021-07-01 18:23:42'
+);

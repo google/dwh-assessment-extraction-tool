@@ -345,3 +345,12 @@ CREATE TABLE DBC."DBQLObjTbl" (
   "FreqofUse" INTEGER,
   "TypeofUse" SMALLINT
 );
+
+CREATE TABLE DBC."StatsV" (
+  "DatabaseName" VARCHAR(128),
+  "TableName" VARCHAR(128),
+  "ColumnName" VARCHAR(128),
+  "RowCount" INTEGER,
+  "UniqueValueCount" INTEGER,
+  "CreateTimeStamp" TIMESTAMP(6) NOT NULL
+);
