@@ -259,6 +259,33 @@ public class InternalScriptLoaderTest {
   }
 
   @Test
+  public void loadScripts_stats() throws SQLException, IOException {
+    String scriptName = "stats";
+    String sqlScript = scriptManager.getScript(scriptName);
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(schema)
+            .set("DatabaseName", "dbname")
+            .set("TableName", "tablename")
+            .set("ColumnName", "columnname")
+            .set("RowCount", 20)
+            .set("UniqueValueCount", 3)
+            .set("CreateTimeStamp", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
+            .build();
+
+    assertThat(records).containsExactly(expectedRecord);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
+  }
+
+  @Test
   public void loadScripts_queryLogs() throws IOException, SQLException {
     String scriptName = "querylogs";
     String sqlScript = scriptManager.getScript(scriptName);

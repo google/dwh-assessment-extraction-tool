@@ -42,6 +42,7 @@ public class InternalScriptLoader implements ScriptLoader {
             "query_references",
             "querylogs",
             "roles",
+            "stats",
             "tableinfo",
             "tablesize",
             "temp_tables",
