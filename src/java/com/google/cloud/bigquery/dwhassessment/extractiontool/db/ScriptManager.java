@@ -28,17 +28,35 @@ public interface ScriptManager {
    * Executes a script against a DB connection and writes the output to a stream.
    *
    * @param connection The JDBC connection to the database.
+   * @param dryRun Whether to just perform a dry run, which just logs out the action to perform.
+   * @param sqlTransformer A transformer to apply on the SQL script before execution.
    * @param scriptName The name of the script. This is not a file name. The interpretation of the
    *     name is left to the implementation but can also map to several files (e.g., an SQL file and
    *     a schema definition file).
    * @param dataEntityManager The data entity manager to use to write the output.
    */
-  void executeScript(Connection connection, String scriptName, DataEntityManager dataEntityManager)
+  void executeScript(
+      Connection connection,
+      boolean dryRun,
+      SqlTemplateRenderer sqlTemplateRenderer,
+      String scriptName,
+      DataEntityManager dataEntityManager)
       throws SQLException, IOException;
+
+  default void executeScript(
+      Connection connection, String scriptName, DataEntityManager dataEntityManager)
+      throws SQLException, IOException {
+    executeScript(
+        connection,
+        /* dryRun= */ false,
+        /* sqlTransformer= */ (name, script) -> script,
+        scriptName,
+        dataEntityManager);
+  }
 
   /** Gets a list of names of all available scripts. */
   ImmutableSet<String> getAllScriptNames();
 
   /** Gets a SQL script based on a script name. */
-  String getScript(String scriptName);
+  String getScript(SqlTemplateRenderer sqlTemplateRenderer, String scriptName);
 }

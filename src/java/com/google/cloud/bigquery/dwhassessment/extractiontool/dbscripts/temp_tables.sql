@@ -19,4 +19,4 @@ SELECT
   "B_DatabaseName",
   "B_TableName",
   "E_TableId"
-FROM DBC."AllTempTablesVX"
+FROM "{{baseDatabase}}"."AllTempTablesVX"

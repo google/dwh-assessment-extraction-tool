@@ -40,4 +40,4 @@ SELECT
   "RefQueryband",
   "ExecMapName",
   "ExecMapColocName"
-FROM DBC."FunctionsV"
+FROM "{{baseDatabase}}"."FunctionsV"

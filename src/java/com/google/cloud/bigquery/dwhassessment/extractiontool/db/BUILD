@@ -21,6 +21,7 @@ java_library(
     deps = [
         "//src:auto_value_plugin",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
+        "@maven//:com_github_jknack_handlebars",
         "@maven//:com_google_auto_value_auto_value",
         "@maven//:com_google_auto_value_auto_value_annotations",
         "@maven//:com_google_guava_guava_30_1_1_jre",

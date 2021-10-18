@@ -21,6 +21,9 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManagerImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptRunner;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptRunnerImpl;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRenderer;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRendererImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerTesting;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.faketd.TeradataSimulator;
 import com.google.common.base.Strings;
@@ -72,6 +75,8 @@ public class InternalScriptLoaderTest {
   private final ScriptManager scriptManager =
       new ScriptManagerImpl(new ScriptRunnerImpl(), scriptLoader.loadScripts());
   private final ScriptRunner scriptRunner = new ScriptRunnerImpl();
+  private final SqlTemplateRenderer sqlTemplateRenderer =
+      new SqlTemplateRendererImpl(SqlScriptVariables.builder().setBaseDatabase("DBC").build());
 
   @BeforeClass
   public static void setUpConnection() throws IOException, SQLException {
@@ -88,11 +93,10 @@ public class InternalScriptLoaderTest {
 
   @Test
   public void loadScripts_diskSpace() throws IOException, SQLException {
-    String sqlScript = scriptManager.getScript("diskspace");
+    String sqlScript = getScript("diskspace");
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(
-        connection, "diskspace", new DataEntityManagerTesting(outputStream));
+    executeScript("diskspace", outputStream);
 
     SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record("TimestampRecord").fields();
     fields = fields.name("VProc").type().intType().noDefault();
@@ -153,10 +157,10 @@ public class InternalScriptLoaderTest {
   @Test
   public void loadScripts_functioninfo() throws IOException, SQLException {
     String scriptName = "functioninfo";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
 
     ImmutableList<GenericRecord> records =
@@ -167,7 +171,7 @@ public class InternalScriptLoaderTest {
             .set("DatabaseName", "db_name")
             .set("FunctionName", "function_name")
             .set("SpecificName", "specific_name")
-            .set("FunctionId", ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6}))
+            .set("FunctionId", ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6}))
             .set("NumParameters", 3)
             .set("ParameterDataTypes", "I1BF")
             .set("FunctionType", "F")
@@ -187,8 +191,8 @@ public class InternalScriptLoaderTest {
             .set(
                 "ParameterUDTIds",
                 ByteBuffer.wrap(
-                    new byte[]{
-                        0, 0, (byte) 0xEC, 0xC, 0, (byte) 0xC0, 0x30, 0, 0, (byte) 0xC0, 0x16, 0
+                    new byte[] {
+                      0, 0, (byte) 0xEC, 0xC, 0, (byte) 0xC0, 0x30, 0, 0, (byte) 0xC0, 0x16, 0
                     }))
             .set("MaxOutParameters", 0)
             .set("RefQueryband", "N")
@@ -201,7 +205,7 @@ public class InternalScriptLoaderTest {
   @Test
   public void loadScripts_indices() throws IOException, SQLException {
     String scriptName = "indices";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
     ImmutableList<GenericRecord> records =
@@ -222,14 +226,14 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
   public void loadScripts_queryReferences() throws SQLException, IOException {
     String scriptName = "query_references";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
 
     ImmutableList<GenericRecord> records =
@@ -254,14 +258,14 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
   public void loadScripts_queryLogs() throws IOException, SQLException {
     String scriptName = "querylogs";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
 
     ImmutableList<GenericRecord> records =
@@ -307,14 +311,14 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
   public void loadScripts_tableInfo() throws IOException, SQLException {
     String scriptName = "tableinfo";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
     ImmutableList<GenericRecord> records =
@@ -339,14 +343,14 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
   public void loadScripts_tableSize() throws IOException, SQLException {
     String scriptName = "tablesize";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
     ImmutableList<GenericRecord> records =
@@ -362,14 +366,14 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
   public void loadScripts_columns() throws IOException, SQLException {
     String scriptName = "columns";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
     ImmutableList<GenericRecord> records =
@@ -392,14 +396,14 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
   public void loadScripts_users() throws IOException, SQLException {
     String scriptName = "users";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
     ImmutableList<GenericRecord> records =
@@ -422,7 +426,7 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     assertThat(readOutputStreamToAvro(outputStream, 2))
         .containsExactly(expectedRecordUser1, expectedRecordUser2);
   }
@@ -430,7 +434,7 @@ public class InternalScriptLoaderTest {
   @Test
   public void loadScripts_roles() throws Exception {
     String scriptName = "roles";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
     ImmutableList<GenericRecord> records =
@@ -467,7 +471,7 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     assertThat(readOutputStreamToAvro(outputStream, 2))
         .containsExactly(expectedRecordRole1, expectedRecordRole2);
   }
@@ -475,7 +479,7 @@ public class InternalScriptLoaderTest {
   @Test
   public void loadScripts_all_ri_children() throws IOException, SQLException {
     String scriptName = "all_ri_children";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
     ImmutableList<GenericRecord> records =
@@ -512,7 +516,7 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     assertThat(readOutputStreamToAvro(outputStream, 2))
         .containsExactly(expectedRecord1, expectedRecord2);
   }
@@ -520,7 +524,7 @@ public class InternalScriptLoaderTest {
   @Test
   public void loadScripts_partitioning_constraints() throws IOException, SQLException {
     String scriptName = "partitioning_constraints";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
     ImmutableList<GenericRecord> records =
@@ -547,7 +551,7 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     assertThat(readOutputStreamToAvro(outputStream, /* recordNum= */ 1))
         .containsExactly(expectedRecord);
   }
@@ -555,7 +559,7 @@ public class InternalScriptLoaderTest {
   @Test
   public void loadScripts_all_ri_parents() throws IOException, SQLException {
     String scriptName = "all_ri_parents";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
     ImmutableList<GenericRecord> records =
@@ -592,7 +596,7 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    executeScript(scriptName, outputStream);
     assertThat(readOutputStreamToAvro(outputStream, 2))
         .containsExactly(expectedRecord1, expectedRecord2);
   }
@@ -600,7 +604,7 @@ public class InternalScriptLoaderTest {
   @Test
   public void loadScripts_temptables() throws IOException, SQLException {
     String scriptName = "temp_tables";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
     ImmutableList<GenericRecord> records =
@@ -612,15 +616,14 @@ public class InternalScriptLoaderTest {
             .set("UserName", "user_name")
             .set("B_DatabaseName", "database_name")
             .set("B_TableName", "table_name")
-            .set("E_TableId", ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6}))
+            .set("E_TableId", ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6}))
             .build();
     assertThat(records).containsExactly(expectedRecord);
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
-    assertThat(readOutputStreamToAvro(outputStream, 1))
-        .containsExactly(expectedRecord);
+    executeScript(scriptName, outputStream);
+    assertThat(readOutputStreamToAvro(outputStream, 1)).containsExactly(expectedRecord);
   }
 
   private ImmutableList<Record> readOutputStreamToAvro(
@@ -638,5 +641,19 @@ public class InternalScriptLoaderTest {
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     return new DataFileReader<Record>(
         new SeekableByteArrayInput(outputStream.toByteArray()), datumReader);
+  }
+
+  private String getScript(String scriptName) {
+    return scriptManager.getScript(sqlTemplateRenderer, scriptName);
+  }
+
+  private void executeScript(String scriptName, ByteArrayOutputStream outputStream)
+      throws SQLException, IOException {
+    scriptManager.executeScript(
+        connection,
+        /*dryRun=*/ false,
+        sqlTemplateRenderer,
+        scriptName,
+        new DataEntityManagerTesting(outputStream));
   }
 }

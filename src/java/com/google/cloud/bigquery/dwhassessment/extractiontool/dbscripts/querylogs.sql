@@ -141,4 +141,4 @@ SELECT
   "VHPhysIOKB",
   "WarningOnly",
   "WDName"
-FROM DBC."QryLogV"
+FROM "{{baseDatabase}}"."QryLogV"

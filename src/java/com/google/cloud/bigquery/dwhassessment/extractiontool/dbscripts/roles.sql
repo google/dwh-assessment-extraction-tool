@@ -18,7 +18,7 @@ SELECT  "RoleName",
   "WhenGranted",
   "DefaultRole",
   "WithAdmin"
-FROM DBC."RoleMembersV"
+FROM "{{baseDatabase}}"."RoleMembersV"
 WHERE "Grantee" NOT IN (
   'TDPUSER', 'Crashdumps', 'tdwm', 'DBC', 'LockLogShredder', 'TDMaps',
   'Sys_Calendar', 'SysAdmin', 'SystemFe', 'External_AP')

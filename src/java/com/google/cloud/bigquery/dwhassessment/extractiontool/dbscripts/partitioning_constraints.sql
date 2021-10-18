@@ -30,4 +30,4 @@ SELECT
   "MaxCombinedPartitions",
   "PartitioningLevels",
   "ColumnPartitioningLevel"
-FROM DBC."PartitioningConstraintsV"
+FROM "{{baseDatabase}}"."PartitioningConstraintsV"

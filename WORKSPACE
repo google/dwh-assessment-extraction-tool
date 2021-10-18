@@ -15,6 +15,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
     artifacts = [
+        "com.github.jknack:handlebars:4.3.0",
         "com.google.auto.value:auto-value:1.8.1",
         "com.google.auto.value:auto-value-annotations:1.8.1",
         "com.google.guava:guava:30.1.1-jre",
@@ -28,6 +29,7 @@ maven_install(
         "org.hsqldb:hsqldb:2.6.0",
         "org.hsqldb:sqltool:2.6.0",
         "org.mockito:mockito-core:3.11.1",
+        "org.slf4j:slf4j-log4j12:1.7.32",
     ],
     fetch_sources = True,
     repositories = [

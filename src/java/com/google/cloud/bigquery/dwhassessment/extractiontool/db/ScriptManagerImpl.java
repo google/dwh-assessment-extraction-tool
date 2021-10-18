@@ -36,7 +36,7 @@ import org.apache.avro.generic.GenericRecord;
  */
 public class ScriptManagerImpl implements ScriptManager {
 
-  private static final Logger logger = Logger.getLogger(ScriptManagerImpl.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(ScriptManagerImpl.class.getName());
 
   private final ImmutableMap<String, Supplier<String>> scriptsMap;
   private final ScriptRunner scriptRunner;
@@ -49,24 +49,32 @@ public class ScriptManagerImpl implements ScriptManager {
 
   @Override
   public void executeScript(
-      Connection connection, String scriptName, DataEntityManager dataEntityManager)
+      Connection connection,
+      boolean dryRun,
+      SqlTemplateRenderer sqlTemplateRenderer,
+      String scriptName,
+      DataEntityManager dataEntityManager)
       throws SQLException, IOException {
-    String script = getScript(scriptName);
+    String script = getScript(sqlTemplateRenderer, scriptName);
+    if (dryRun) {
+      LOGGER.info(String.format("Should execute script '%s':\n%s", scriptName, script));
+      return;
+    }
+
     /* TODO(xshang): figure out how to set schema name and namespace in the schema extraction. */
     Schema schema =
-        scriptRunner.extractSchema(
-            connection, script, /*schemaName= */ scriptName, /*namespace= */ "namespace");
+        scriptRunner.extractSchema(connection, script, scriptName, /* namespace= */ "namespace");
     ImmutableList<GenericRecord> records =
         scriptRunner.executeScriptToAvro(connection, script, schema);
     dumpResults(records, dataEntityManager.getEntityOutputStream(scriptName + ".avro"), schema);
   }
 
   @Override
-  public String getScript(String scriptName) {
+  public String getScript(SqlTemplateRenderer sqlTemplateRenderer, String scriptName) {
     Preconditions.checkArgument(
         scriptsMap.containsKey(scriptName),
         String.format("Script name %s is not available.", scriptName));
-    return scriptsMap.get(scriptName).get();
+    return sqlTemplateRenderer.renderTemplate(scriptName, scriptsMap.get(scriptName).get());
   }
 
   @Override

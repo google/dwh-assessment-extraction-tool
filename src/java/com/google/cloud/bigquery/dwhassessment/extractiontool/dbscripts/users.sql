@@ -17,5 +17,5 @@ SELECT
   "CreatorName",
   "CreateTimeStamp",
   "LastAccessTimeStamp"
-FROM DBC."DatabasesV"
+FROM "{{baseDatabase}}"."DatabasesV"
 WHERE "DBKind"='U'

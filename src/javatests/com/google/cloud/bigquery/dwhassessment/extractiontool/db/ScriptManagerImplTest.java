@@ -44,12 +44,14 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class ScriptManagerImplTest {
 
+  private final ImmutableMap<String, Supplier<String>> scriptsMap =
+      ImmutableMap.of("default", () -> "SELECT * FROM TestTable");
+  private final SqlTemplateRenderer sqlTemplateRenderer =
+      new SqlTemplateRendererImpl(SqlScriptVariables.builder().setBaseDatabase("test-db").build());
   private ScriptManager scriptManager;
   private DataEntityManager dataEntityManager;
   private ByteArrayOutputStream outputStream;
   private ScriptRunner scriptRunner;
-  private final ImmutableMap<String, Supplier<String>> scriptsMap =
-      ImmutableMap.of("default", () -> "SELECT * FROM TestTable");
 
   @Before
   public void setUp() throws Exception {
@@ -67,11 +69,11 @@ public final class ScriptManagerImplTest {
     baseStmt.execute("INSERT INTO TestTable VALUES (0, 'name_0')");
     baseStmt.close();
     connection.commit();
-    scriptManager.executeScript(connection, "default", dataEntityManager);
+    scriptManager.executeScript(
+        connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager);
 
     String sqlScript = "SELECT * FROM TestTable";
-    Schema testSchema =
-        scriptRunner.extractSchema(connection, sqlScript, "default", "namespace");
+    Schema testSchema = scriptRunner.extractSchema(connection, sqlScript, "default", "namespace");
 
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     DataFileReader<Record> reader =
@@ -88,11 +90,11 @@ public final class ScriptManagerImplTest {
     baseStmt.execute("CREATE Table TestTable (" + "ID INTEGER," + "NAME VARCHAR(100)" + ")");
     baseStmt.close();
     connection.commit();
-    scriptManager.executeScript(connection, "default", dataEntityManager);
+    scriptManager.executeScript(
+        connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager);
 
     String sqlScript = "SELECT * FROM TestTable";
-    Schema testSchema =
-        scriptRunner.extractSchema(connection, sqlScript, "default", "namespace");
+    Schema testSchema = scriptRunner.extractSchema(connection, sqlScript, "default", "namespace");
 
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     DataFileReader<Record> reader =
@@ -112,7 +114,12 @@ public final class ScriptManagerImplTest {
     assertThrows(
         IllegalArgumentException.class,
         () ->
-            scriptManager.executeScript(connection, "not_existing_script_name", dataEntityManager));
+            scriptManager.executeScript(
+                connection,
+                /*dryRun=*/ false,
+                sqlTemplateRenderer,
+                "not_existing_script_name",
+                dataEntityManager));
   }
 
   @Test
@@ -124,13 +131,15 @@ public final class ScriptManagerImplTest {
   @Test
   public void getScript_success() {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap);
-    assertThat(scriptManager.getScript("default")).isEqualTo(scriptsMap.get("default").get());
+    assertThat(scriptManager.getScript(sqlTemplateRenderer, "default"))
+        .isEqualTo(scriptsMap.get("default").get());
   }
 
   @Test
   public void getScript_fail() {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap);
     assertThrows(
-        IllegalArgumentException.class, () -> scriptManager.getScript("not_available_name"));
+        IllegalArgumentException.class,
+        () -> scriptManager.getScript(sqlTemplateRenderer, "not_available_name"));
   }
 }
