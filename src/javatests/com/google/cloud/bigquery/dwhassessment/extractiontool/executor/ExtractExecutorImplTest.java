@@ -28,6 +28,7 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager.SchemaKey;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRenderer;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -80,11 +81,26 @@ public final class ExtractExecutorImplTest {
 
     verify(scriptManager).getAllScriptNames();
     verify(scriptManager)
-        .executeScript(any(Connection.class), /*scriptName=*/ eq("one"), eq(dataEntityManager));
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            any(SqlTemplateRenderer.class),
+            /*scriptName=*/ eq("one"),
+            eq(dataEntityManager));
     verify(scriptManager)
-        .executeScript(any(Connection.class), /*scriptName=*/ eq("two"), eq(dataEntityManager));
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            any(SqlTemplateRenderer.class),
+            /*scriptName=*/ eq("two"),
+            eq(dataEntityManager));
     verify(scriptManager)
-        .executeScript(any(Connection.class), /*scriptName=*/ eq("three"), eq(dataEntityManager));
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            any(SqlTemplateRenderer.class),
+            /*scriptName=*/ eq("three"),
+            eq(dataEntityManager));
     verifyNoMoreInteractions(scriptManager);
   }
 
@@ -106,9 +122,19 @@ public final class ExtractExecutorImplTest {
 
     verify(scriptManager).getAllScriptNames();
     verify(scriptManager)
-        .executeScript(any(Connection.class), /*scriptName=*/ eq("one"), eq(dataEntityManager));
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            any(SqlTemplateRenderer.class),
+            /*scriptName=*/ eq("one"),
+            eq(dataEntityManager));
     verify(scriptManager)
-        .executeScript(any(Connection.class), /*scriptName=*/ eq("three"), eq(dataEntityManager));
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            any(SqlTemplateRenderer.class),
+            /*scriptName=*/ eq("three"),
+            eq(dataEntityManager));
     verifyNoMoreInteractions(scriptManager);
   }
 
@@ -130,7 +156,12 @@ public final class ExtractExecutorImplTest {
 
     verify(scriptManager).getAllScriptNames();
     verify(scriptManager)
-        .executeScript(any(Connection.class), /*scriptName=*/ eq("two"), eq(dataEntityManager));
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            any(SqlTemplateRenderer.class),
+            /*scriptName=*/ eq("two"),
+            eq(dataEntityManager));
     verifyNoMoreInteractions(scriptManager);
   }
 

@@ -64,8 +64,23 @@ public final class ExtractSubcommand implements Callable<Integer> {
   @Option(names = "--db-password", description = "The password for the database.")
   private String dbPassword = "";
 
+  @Option(
+      names = "--base-db",
+      defaultValue = "DBC",
+      description = "The base database from which to extract the metadata.")
+  private String baseDatabase;
+
   public ExtractSubcommand(Supplier<ExtractExecutor> executorSupplier) {
     this.executorSupplier = executorSupplier;
+  }
+
+  @Option(
+      names = "--dry-run",
+      description = {
+        "Whether to do a dry run. A dry run just logs the scripts that would be executed."
+      })
+  private void setDryRun(boolean dryRun) {
+    argumentsBuilder.setDryRun(dryRun);
   }
 
   @Option(
@@ -165,6 +180,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
     connectionProperties.put("password", dbPassword);
     argumentsBuilder.setDbConnectionProperties(connectionProperties);
     argumentsBuilder.setDbConnectionAddress(dbAddress);
+    argumentsBuilder.setBaseDatabase(baseDatabase);
 
     ExtractExecutor.Arguments arguments = argumentsBuilder.build();
     if (!arguments.sqlScripts().isEmpty() && !arguments.skipSqlScripts().isEmpty()) {

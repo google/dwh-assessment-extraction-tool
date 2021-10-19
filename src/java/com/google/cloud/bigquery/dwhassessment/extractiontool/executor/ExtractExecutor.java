@@ -48,8 +48,16 @@ public interface ExtractExecutor {
     /** Filter to apply on schemas to extract */
     public abstract ImmutableList<SchemaFilter> schemaFilters();
 
+    /** The base database from which to extract the metadata. */
+    public abstract String baseDatabase();
+
+    /** Whether to do a dry run. */
+    public abstract boolean dryRun();
+
     public static Builder builder() {
       return new AutoValue_ExtractExecutor_Arguments.Builder()
+          .setDryRun(false)
+          .setBaseDatabase("DBC")
           .setSchemaFilters(ImmutableList.of())
           .setSqlScripts(ImmutableList.of())
           .setSkipSqlScripts(ImmutableList.of());
@@ -68,6 +76,10 @@ public interface ExtractExecutor {
       public abstract Builder setSkipSqlScripts(List<String> scripts);
 
       public abstract Builder setSchemaFilters(List<SchemaFilter> schemaFilters);
+
+      public abstract Builder setBaseDatabase(String baseDatabase);
+
+      public abstract Builder setDryRun(boolean dryRun);
 
       public abstract Arguments build();
     }

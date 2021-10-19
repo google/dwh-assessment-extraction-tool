@@ -22,8 +22,8 @@ SELECT
   "IndicesV"."ColumnPosition",
   "IndicesV"."AccessCount",
   "IndicesV"."UniqueFlag"
-FROM DBC."TablesV"
-INNER JOIN DBC."IndicesV" ON "TablesV"."DatabaseName" = "IndicesV"."DatabaseName"
+FROM "{{baseDatabase}}"."TablesV"
+INNER JOIN "{{baseDatabase}}"."IndicesV" ON "TablesV"."DatabaseName" = "IndicesV"."DatabaseName"
         AND "TablesV"."TableName" = "IndicesV"."TableName"
 WHERE
   "TablesV"."TableKind" IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND

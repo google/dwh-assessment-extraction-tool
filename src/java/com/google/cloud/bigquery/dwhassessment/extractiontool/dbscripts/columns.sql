@@ -24,8 +24,8 @@ SELECT
   "ColumnsV"."ColumnConstraint",
   "ColumnsV"."ConstraintCount",
   "ColumnsV"."Nullable"
-FROM DBC."TablesV"
-INNER JOIN DBC."ColumnsV" ON "TablesV"."DatabaseName" = "ColumnsV"."DatabaseName"
+FROM "{{baseDatabase}}"."TablesV"
+INNER JOIN "{{baseDatabase}}"."ColumnsV" ON "TablesV"."DatabaseName" = "ColumnsV"."DatabaseName"
         AND "TablesV"."TableName" = "ColumnsV"."TableName"
 WHERE
   "TablesV"."TableKind" IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND

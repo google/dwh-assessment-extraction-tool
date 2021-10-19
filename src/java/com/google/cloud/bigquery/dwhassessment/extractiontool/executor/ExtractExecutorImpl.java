@@ -23,6 +23,9 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager.SchemaKey;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRenderer;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRendererImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -30,20 +33,21 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.function.Function;
-import org.apache.avro.Schema;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
 /** Default implementation of the extract executor. */
 public final class ExtractExecutorImpl implements ExtractExecutor {
-  private final static Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
+
+  private static final Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
 
   private final SchemaManager schemaManager;
   private final ScriptManager scriptManager;
@@ -58,16 +62,33 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     this.schemaManager = schemaManager;
   }
 
+  private static ImmutableList<String> validateScriptNames(
+      String scriptListName, ImmutableSet<String> allNames, ImmutableList<String> input) {
+    ImmutableList<String> unknownNames =
+        input.stream().filter(name -> !allNames.contains(name)).collect(toImmutableList());
+    Preconditions.checkState(
+        unknownNames.isEmpty(),
+        "Got unknown SQL scripts for %s: %s",
+        scriptListName,
+        Joiner.on(", ").join(unknownNames));
+    return input;
+  }
+
   @Override
   public int run(Arguments arguments) throws SQLException, IOException {
     DataEntityManager dataEntityManager = dataEntityManagerFactory.apply(arguments.outputPath());
+
+    SqlScriptVariables sqlScriptVariables =
+        SqlScriptVariables.builder().setBaseDatabase(arguments.baseDatabase()).build();
+    SqlTemplateRenderer sqlTemplateRenderer = new SqlTemplateRendererImpl(sqlScriptVariables);
 
     for (String scriptName : getScriptNames(arguments)) {
       LOGGER.log(Level.INFO, "Start extracting {0}...", scriptName);
       Connection connection =
           DriverManager.getConnection(
               arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
-      scriptManager.executeScript(connection, scriptName, dataEntityManager);
+      scriptManager.executeScript(
+          connection, arguments.dryRun(), sqlTemplateRenderer, scriptName, dataEntityManager);
       connection.close();
       LOGGER.log(Level.INFO, "Finished extracting {0}.", scriptName);
     }
@@ -128,17 +149,5 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     } else {
       return validateScriptNames("sql-scripts", allScriptNames, arguments.sqlScripts());
     }
-  }
-
-  private static ImmutableList<String> validateScriptNames(
-      String scriptListName, ImmutableSet<String> allNames, ImmutableList<String> input) {
-    ImmutableList<String> unknownNames =
-        input.stream().filter(name -> !allNames.contains(name)).collect(toImmutableList());
-    Preconditions.checkState(
-        unknownNames.isEmpty(),
-        "Got unknown SQL scripts for %s: %s",
-        scriptListName,
-        Joiner.on(", ").join(unknownNames));
-    return input;
   }
 }

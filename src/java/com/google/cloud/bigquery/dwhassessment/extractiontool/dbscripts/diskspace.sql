@@ -35,4 +35,4 @@ SELECT
   "PermSkew",
   "SpoolSkew",
   "TempSkew"
-FROM DBC."DiskSpaceV"
+FROM "{{baseDatabase}}"."DiskSpaceV"

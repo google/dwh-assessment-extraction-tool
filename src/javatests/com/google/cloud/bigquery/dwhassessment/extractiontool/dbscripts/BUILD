@@ -31,7 +31,7 @@ java_library(
 )
 
 java_test(
-    name = "InternalScriptLoadrTest",
+    name = "InternalScriptLoaderTest",
     size = "small",
     test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.dbscripts.InternalScriptLoaderTest",
     runtime_deps = [

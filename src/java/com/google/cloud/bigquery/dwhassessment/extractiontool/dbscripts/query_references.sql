@@ -24,4 +24,4 @@ SELECT
   "ObjectType",
   "FreqofUse",
   "TypeofUse"
-FROM DBC."DBQLObjTbl"
+FROM "{{baseDatabase}}"."DBQLObjTbl"

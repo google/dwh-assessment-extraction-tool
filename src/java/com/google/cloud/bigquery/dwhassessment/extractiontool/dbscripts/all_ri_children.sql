@@ -24,7 +24,7 @@ SELECT
   "InconsistencyFlag",
   "CreatorName",
   "CreateTimeStamp"
-FROM DBC."All_RI_ChildrenV"
+FROM "{{baseDatabase}}"."All_RI_ChildrenV"
 WHERE
   "ChildDB" NOT IN (
     'dbc', 'SYSJDBC', 'TD_SYSGPL', 'SYSLIB', 'SYSSPATIAL', 'TD_SYSXML',
