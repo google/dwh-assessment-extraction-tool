@@ -265,7 +265,7 @@ public class InternalScriptLoaderTest {
   @Test
   public void loadScripts_stats() throws SQLException, IOException {
     String scriptName = "stats";
-    String sqlScript = scriptManager.getScript(scriptName);
+    String sqlScript = getScript(scriptName);
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
 
     ImmutableList<GenericRecord> records =
