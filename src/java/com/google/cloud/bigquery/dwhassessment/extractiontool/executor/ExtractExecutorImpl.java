@@ -44,7 +44,9 @@ import java.util.logging.Logger;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
-/** Default implementation of the extract executor. */
+/**
+ * Default implementation of the extract executor.
+ */
 public final class ExtractExecutorImpl implements ExtractExecutor {
 
   private static final Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
@@ -93,14 +95,18 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
       LOGGER.log(Level.INFO, "Finished extracting {0}.", scriptName);
     }
 
-    LOGGER.log(Level.INFO, "Start extracting schemas");
-    Connection connection =
-        DriverManager.getConnection(
-            arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
-    extractSchema(arguments.schemaFilters(), dataEntityManager, connection);
-    LOGGER.log(Level.INFO, "Finish extracting schemas");
+    if (arguments.dryRun()) {
+      LOGGER.log(Level.INFO, "Skipping extracting schemas because dry run was requested.");
+    } else {
+      LOGGER.log(Level.INFO, "Start extracting schemas");
+      try (Connection connection =
+          DriverManager.getConnection(
+              arguments.dbConnectionAddress(), arguments.dbConnectionProperties())) {
+        extractSchema(arguments.schemaFilters(), dataEntityManager, connection);
+        LOGGER.log(Level.INFO, "Finish extracting schemas");
+      }
+    }
 
-    connection.close();
     dataEntityManager.close();
     return 0;
   }
