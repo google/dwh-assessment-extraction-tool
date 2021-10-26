@@ -559,6 +559,7 @@ public class InternalScriptLoaderTest {
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
             .set("DatabaseName", "db1")
+            .set("TableName", "table1")
             .set("IndexName", "index1")
             .set("IndexNumber", 1)
             .set("ConstraintType", "K")

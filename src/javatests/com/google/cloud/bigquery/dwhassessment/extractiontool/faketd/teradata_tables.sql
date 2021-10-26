@@ -314,6 +314,7 @@ CREATE TABLE DBC."FunctionsV" (
 
 CREATE TABLE DBC."PartitioningConstraintsV" (
   "DatabaseName" VARCHAR(128) NOT NULL,
+  "TableName" VARCHAR(128),
   "IndexName" VARCHAR(128),
   "IndexNumber" SMALLINT,
   "ConstraintType" CHAR(1) NOT NULL,

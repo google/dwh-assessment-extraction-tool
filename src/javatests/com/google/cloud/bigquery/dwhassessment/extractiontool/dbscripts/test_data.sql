@@ -504,6 +504,7 @@ VALUES (
 
 INSERT INTO DBC."PartitioningConstraintsV" (
   "DatabaseName",
+  "TableName",
   "IndexName",
   "IndexNumber",
   "ConstraintType",
@@ -521,6 +522,7 @@ INSERT INTO DBC."PartitioningConstraintsV" (
 )
 VALUES (
   'db1',
+  'table1',
   'index1',
   1,
   'K',
