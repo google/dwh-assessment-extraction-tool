@@ -14,6 +14,7 @@
 
 SELECT
   "DatabaseName",
+  "TableName",
   "IndexName",
   "IndexNumber",
   "ConstraintType",
