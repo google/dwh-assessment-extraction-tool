@@ -17,13 +17,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.dbscripts;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManagerImpl;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptRunner;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptRunnerImpl;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRenderer;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRendererImpl;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.*;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerTesting;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.faketd.TeradataSimulator;
 import com.google.common.base.Strings;
@@ -76,7 +70,11 @@ public class InternalScriptLoaderTest {
       new ScriptManagerImpl(new ScriptRunnerImpl(), scriptLoader.loadScripts());
   private final ScriptRunner scriptRunner = new ScriptRunnerImpl();
   private final SqlTemplateRenderer sqlTemplateRenderer =
-      new SqlTemplateRendererImpl(SqlScriptVariables.builder().setBaseDatabase("DBC").build());
+      new SqlTemplateRendererImpl(
+          SqlScriptVariables.builder()
+              .setBaseDatabase("DBC")
+              .setQueryLogsVariables(SqlScriptVariables.QueryLogsVariables.builder().build())
+              .build());
 
   @BeforeClass
   public static void setUpConnection() throws IOException, SQLException {
@@ -298,7 +296,7 @@ public class InternalScriptLoaderTest {
     ImmutableList<GenericRecord> records =
         scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
 
-    GenericRecord expectedRecord =
+    GenericRecord expectedQueryLogsRecord1 =
         new GenericRecordBuilder(schema)
             .set("ProcID", ByteBuffer.wrap(BigInteger.ONE.toByteArray()))
             .set("CollectTimeStamp", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
@@ -323,23 +321,127 @@ public class InternalScriptLoaderTest {
             .set("StartTime", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
             .set("FirstRespTime", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
             .set("FirstStepTime", Instant.parse("2021-07-01T18:15:09Z").toEpochMilli())
-            .set("Statements", (int) 10)
-            .set("NumResultRows", (double) 65.0)
-            .set("AMPCPUTime", (double) 1.23)
-            .set("AMPCPUTimeNorm", (double) 0.123)
+            .set("Statements", 10)
+            .set("NumResultRows", 65.0)
+            .set("AMPCPUTime", 1.23)
+            .set("AMPCPUTimeNorm", 0.123)
             .set("NumOfActiveAMPs", 2)
-            .set("MaxStepMemory", (double) 123.45)
-            .set("ReqPhysIO", (double) 123.45)
-            .set("TotalFirstRespTime", (double) 1234.5)
-            .set("TotalIOCount", (double) 1234.56)
+            .set("MaxStepMemory", 123.45)
+            .set("ReqPhysIO", 123.45)
+            .set("TotalFirstRespTime", 1234.5)
+            .set("TotalIOCount", 1234.56)
             .build();
 
-    assertThat(records).containsExactly(expectedRecord);
+    GenericRecord expectedQueryLogsRecord2 =
+        new GenericRecordBuilder(schema)
+            .set("ProcID", ByteBuffer.wrap(BigInteger.valueOf(2).toByteArray()))
+            .set("CollectTimeStamp", Instant.parse("2021-07-01T23:20:20Z").toEpochMilli())
+            .set("QueryID", ByteBuffer.wrap(BigInteger.valueOf(124).toByteArray()))
+            .set("UserID", ByteBuffer.wrap(new byte[] {10, 11, 12, 13}))
+            .set("UserName", "the_user")
+            .set("ProxyUser", "proxy_user")
+            .set("ProxyRole", "proxy_role")
+            .set("DefaultDatabase", "default_db")
+            .set("AcctString", "account")
+            .set("ExpandAcctString", "expand account")
+            .set("SessionID", 9)
+            .set("LogicalHostID", 2)
+            .set("LogonDateTime", Instant.parse("2021-07-01T23:23:46Z").toEpochMilli())
+            .set("LogonSource", Strings.padEnd("logon source", 128, ' '))
+            .set("AppID", Strings.padEnd("app_id", 30, ' '))
+            .set("ClientID", Strings.padEnd("client_id", 30, ' '))
+            .set("ClientAddr", Strings.padEnd("client_address", 45, ' '))
+            .set("QueryText", "SELECT * FROM MyTable; SELECT * FROM YourTable;")
+            .set("StatementType", Strings.padEnd("Select", 20, ' '))
+            .set("StatementGroup", "Select")
+            .set("StartTime", Instant.parse("2021-07-01T23:23:46Z").toEpochMilli())
+            .set("FirstRespTime", Instant.parse("2021-07-01T23:23:47Z").toEpochMilli())
+            .set("FirstStepTime", Instant.parse("2021-07-01T23:23:48Z").toEpochMilli())
+            .set("Statements", 10)
+            .set("NumResultRows", 65.0)
+            .set("AMPCPUTime", 1.23)
+            .set("AMPCPUTimeNorm", 0.123)
+            .set("NumOfActiveAMPs", 2)
+            .set("MaxStepMemory", 123.45)
+            .set("ReqPhysIO", 123.45)
+            .set("TotalFirstRespTime", 1234.5)
+            .set("TotalIOCount", 1234.56)
+            .build();
+
+    assertThat(records).containsExactly(expectedQueryLogsRecord1, expectedQueryLogsRecord2);
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     executeScript(scriptName, outputStream);
-    assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
+    DataFileReader<Record> reader = getAvroDataOutputReader(outputStream);
+    assertThat(reader.next()).isEqualTo(expectedQueryLogsRecord1);
+    assertThat(reader.next()).isEqualTo(expectedQueryLogsRecord2);
+  }
+
+  @Test
+  public void loadScripts_queryLogs_with_timeRange() throws IOException, SQLException {
+    String scriptName = "querylogs";
+    SqlTemplateRenderer sqlTemplateRendererWithTimeRange =
+        new SqlTemplateRendererImpl(
+            SqlScriptVariables.builder()
+                .setBaseDatabase("DBC")
+                .setQueryLogsVariables(
+                    SqlScriptVariables.QueryLogsVariables.builder()
+                        .setTimeRange(
+                            SqlScriptVariables.QueryLogsVariables.TimeRange.builder()
+                                .setEndTimestamp("2021-07-01 23:23:23.23")
+                                .build())
+                        .build())
+                .build());
+    String sqlScript = getScript(scriptName, sqlTemplateRendererWithTimeRange);
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+
+    ImmutableList<GenericRecord> records =
+        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+
+    GenericRecord expectedQueryLogsRecord1 =
+        new GenericRecordBuilder(schema)
+            .set("ProcID", ByteBuffer.wrap(BigInteger.ONE.toByteArray()))
+            .set("CollectTimeStamp", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
+            .set("QueryID", ByteBuffer.wrap(BigInteger.valueOf(123).toByteArray()))
+            .set("UserID", ByteBuffer.wrap(new byte[] {10, 11, 12, 13}))
+            .set("UserName", "the_user")
+            .set("ProxyUser", "proxy_user")
+            .set("ProxyRole", "proxy_role")
+            .set("DefaultDatabase", "default_db")
+            .set("AcctString", "account")
+            .set("ExpandAcctString", "expand account")
+            .set("SessionID", 9)
+            .set("LogicalHostID", 2)
+            .set("LogonDateTime", Instant.parse("2021-07-01T18:05:06Z").toEpochMilli())
+            .set("LogonSource", Strings.padEnd("logon source", 128, ' '))
+            .set("AppID", Strings.padEnd("app_id", 30, ' '))
+            .set("ClientID", Strings.padEnd("client_id", 30, ' '))
+            .set("ClientAddr", Strings.padEnd("client_address", 45, ' '))
+            .set("QueryText", "SELECT * FROM MyTable; SELECT * FROM YourTable;")
+            .set("StatementType", Strings.padEnd("Select", 20, ' '))
+            .set("StatementGroup", "Select")
+            .set("StartTime", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
+            .set("FirstRespTime", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
+            .set("FirstStepTime", Instant.parse("2021-07-01T18:15:09Z").toEpochMilli())
+            .set("Statements", 10)
+            .set("NumResultRows", 65.0)
+            .set("AMPCPUTime", 1.23)
+            .set("AMPCPUTimeNorm", 0.123)
+            .set("NumOfActiveAMPs", 2)
+            .set("MaxStepMemory", 123.45)
+            .set("ReqPhysIO", 123.45)
+            .set("TotalFirstRespTime", 1234.5)
+            .set("TotalIOCount", 1234.56)
+            .build();
+
+    assertThat(records).containsExactly(expectedQueryLogsRecord1);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    executeScript(scriptName, outputStream);
+    DataFileReader<Record> reader = getAvroDataOutputReader(outputStream);
+    assertThat(reader.next()).isEqualTo(expectedQueryLogsRecord1);
   }
 
   @Test
@@ -672,7 +774,11 @@ public class InternalScriptLoaderTest {
   }
 
   private String getScript(String scriptName) {
-    return scriptManager.getScript(sqlTemplateRenderer, scriptName);
+    return getScript(scriptName, sqlTemplateRenderer);
+  }
+
+  private String getScript(String scriptName, SqlTemplateRenderer renderer) {
+    return scriptManager.getScript(renderer, scriptName);
   }
 
   private void executeScript(String scriptName, ByteArrayOutputStream outputStream)
