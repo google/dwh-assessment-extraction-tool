@@ -22,6 +22,7 @@ maven_install(
         "com.google.inject:guice:5.0.1",
         "com.google.re2j:re2j:1.6",
         "com.google.truth:truth:1.1.3",
+        "com.google.truth.extensions:truth-java8-extension:1.1.3",
         "info.picocli:picocli:4.6.1",
         "javax.inject:javax.inject:1",
         "junit:junit:4.13.2",

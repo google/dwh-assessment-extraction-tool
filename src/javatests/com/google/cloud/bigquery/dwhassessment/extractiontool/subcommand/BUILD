@@ -21,6 +21,7 @@ java_library(
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/subcommand",
         "@maven//:com_google_re2j_re2j",
+        "@maven//:com_google_truth_extensions_truth_java8_extension",
         "@maven//:com_google_truth_truth",
         "@maven//:info_picocli_picocli",
         "@maven//:junit_junit",

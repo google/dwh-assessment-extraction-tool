@@ -17,6 +17,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.re2j.Pattern;
 import java.io.IOException;
@@ -25,6 +26,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
+import java.time.zone.ZoneRulesException;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -42,6 +49,15 @@ public final class ExtractSubcommand implements Callable<Integer> {
   private final Supplier<ExtractExecutor> executorSupplier;
   private final ExtractExecutor.Arguments.Builder argumentsBuilder =
       ExtractExecutor.Arguments.builder();
+
+  private Instant getUtcInstantFromDatetimeAndZone(String dateTime, String zoneId) {
+    try {
+      return ZonedDateTime.of(LocalDateTime.parse(dateTime), ZoneId.of(zoneId)).toInstant();
+    } catch (DateTimeParseException | ZoneRulesException e) {
+      throw new ParameterException(spec.commandLine(), "Unable to parse time specification: ", e);
+    }
+  }
+
   @Spec CommandSpec spec;
 
   @Option(
@@ -73,6 +89,16 @@ public final class ExtractSubcommand implements Callable<Integer> {
   public ExtractSubcommand(Supplier<ExtractExecutor> executorSupplier) {
     this.executorSupplier = executorSupplier;
   }
+
+  @Option(
+      names = "--time-zone",
+      defaultValue = "Z",
+      description =
+          "The time-zone id for specified timestamps, with format complying with java.time.ZoneID's"
+              + " default options"
+              + " (https://docs.oracle.com/javase/8/docs/api/java/time/ZoneId.html#of-java.lang.String-)."
+              + " If unspecified, evaluates to time-zone UTC.")
+  private String timeZone;
 
   @Option(
       names = "--dry-run",
@@ -108,6 +134,22 @@ public final class ExtractSubcommand implements Callable<Integer> {
     }
     argumentsBuilder.setOutputPath(path);
   }
+
+  @Option(
+      names = "--qrylog-timerange-start",
+      description = {
+        "The local start of the time range for the query logs to retrieve.",
+        "The format is 'yyyy-mm-ddThh:mm:ss[.n...]'. Example: '2007-12-03T10:15:30.233333'."
+      })
+  private String startTimeString;
+
+  @Option(
+      names = "--qrylog-timerange-end",
+      description = {
+        "The local end of the time range for the query logs to retrieve.",
+        "The format is 'yyyy-mm-ddThh:mm:ss[.n...]'. Example: '2007-12-03T10:15:30.233333'."
+      })
+  private String endTimeString;
 
   @Option(
       names = "--sql-scripts",
@@ -154,7 +196,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
         "filter has to match (i.e. OR logic)."
       })
   void setSchemaFilters(List<SchemaFilter> schemaFilters) {
-    if (schemaFilters == null | schemaFilters.isEmpty()) {
+    if (schemaFilters == null || schemaFilters.isEmpty()) {
       argumentsBuilder.setSchemaFilters(
           ImmutableList.of(
               SchemaFilter.builder()
@@ -181,6 +223,14 @@ public final class ExtractSubcommand implements Callable<Integer> {
     argumentsBuilder.setDbConnectionProperties(connectionProperties);
     argumentsBuilder.setDbConnectionAddress(dbAddress);
     argumentsBuilder.setBaseDatabase(baseDatabase);
+
+    if (!Strings.isNullOrEmpty(startTimeString)) {
+      argumentsBuilder.setQryLogStartTime(
+          getUtcInstantFromDatetimeAndZone(startTimeString, timeZone));
+    }
+    if (!Strings.isNullOrEmpty(endTimeString)) {
+      argumentsBuilder.setQryLogEndTime(getUtcInstantFromDatetimeAndZone(endTimeString, timeZone));
+    }
 
     ExtractExecutor.Arguments arguments = argumentsBuilder.build();
     if (!arguments.sqlScripts().isEmpty() && !arguments.skipSqlScripts().isEmpty()) {

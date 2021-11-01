@@ -47,7 +47,11 @@ public final class ScriptManagerImplTest {
   private final ImmutableMap<String, Supplier<String>> scriptsMap =
       ImmutableMap.of("default", () -> "SELECT * FROM TestTable");
   private final SqlTemplateRenderer sqlTemplateRenderer =
-      new SqlTemplateRendererImpl(SqlScriptVariables.builder().setBaseDatabase("test-db").build());
+      new SqlTemplateRendererImpl(
+          SqlScriptVariables.builder()
+              .setBaseDatabase("test-db")
+              .setQueryLogsVariables(SqlScriptVariables.QueryLogsVariables.builder().build())
+              .build());
   private ScriptManager scriptManager;
   private DataEntityManager dataEntityManager;
   private ByteArrayOutputStream outputStream;

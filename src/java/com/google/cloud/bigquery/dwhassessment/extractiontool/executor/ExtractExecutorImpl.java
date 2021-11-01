@@ -38,15 +38,16 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
-/**
- * Default implementation of the extract executor.
- */
+/** Default implementation of the extract executor. */
 public final class ExtractExecutorImpl implements ExtractExecutor {
 
   private static final Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
@@ -76,12 +77,50 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     return input;
   }
 
+  private static String getTeradataTimestampFromInstant(Instant instant) {
+    String instantWithoutNanoseconds =
+        instant.truncatedTo(ChronoUnit.SECONDS).toString().replaceAll("[TZ]", " ").trim();
+    // Convert nanosecond representation of Instant into fraction-of-second representation with a
+    // 6-digit max precision to conform with Teradata's TIMESTAMP format.
+    DecimalFormat formatter = new DecimalFormat();
+    formatter.setMinimumIntegerDigits(0);
+    formatter.setMaximumFractionDigits(6);
+    return instantWithoutNanoseconds + formatter.format(instant.getNano() / Math.pow(10, 9));
+  }
+
+  private static void maybeAddTimeRange(
+      SqlScriptVariables.QueryLogsVariables.Builder builder, Arguments arguments) {
+    boolean will_add = false;
+    SqlScriptVariables.QueryLogsVariables.TimeRange.Builder timeRange_builder =
+        SqlScriptVariables.QueryLogsVariables.TimeRange.builder();
+    if (arguments.qryLogStartTime().isPresent()) {
+      will_add = true;
+      timeRange_builder.setStartTimestamp(
+          getTeradataTimestampFromInstant(arguments.qryLogStartTime().get()));
+    }
+    if (arguments.qryLogEndTime().isPresent()) {
+      will_add = true;
+      timeRange_builder.setEndTimestamp(
+          getTeradataTimestampFromInstant(arguments.qryLogEndTime().get()));
+    }
+    if (will_add) {
+      builder.setTimeRange(timeRange_builder.build());
+    }
+  }
+
   @Override
   public int run(Arguments arguments) throws SQLException, IOException {
     DataEntityManager dataEntityManager = dataEntityManagerFactory.apply(arguments.outputPath());
 
+    SqlScriptVariables.QueryLogsVariables.Builder qryLogVarsBuilder =
+        SqlScriptVariables.QueryLogsVariables.builder();
+    maybeAddTimeRange(qryLogVarsBuilder, arguments);
+
     SqlScriptVariables sqlScriptVariables =
-        SqlScriptVariables.builder().setBaseDatabase(arguments.baseDatabase()).build();
+        SqlScriptVariables.builder()
+            .setBaseDatabase(arguments.baseDatabase())
+            .setQueryLogsVariables(qryLogVarsBuilder.build())
+            .build();
     SqlTemplateRenderer sqlTemplateRenderer = new SqlTemplateRendererImpl(sqlScriptVariables);
 
     for (String scriptName : getScriptNames(arguments)) {

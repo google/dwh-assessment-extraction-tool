@@ -142,3 +142,6 @@ SELECT
   "WarningOnly",
   "WDName"
 FROM "{{baseDatabase}}"."QryLogV"
+{{#if queryLogsVariables.timeRange}}
+WHERE "{{baseDatabase}}"."QryLogV"."StartTime" BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
+{{/if}}
