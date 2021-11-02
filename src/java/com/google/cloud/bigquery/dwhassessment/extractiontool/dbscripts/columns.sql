@@ -23,7 +23,8 @@ SELECT
   "ColumnsV"."DefaultValue",
   "ColumnsV"."ColumnConstraint",
   "ColumnsV"."ConstraintCount",
-  "ColumnsV"."Nullable"
+  "ColumnsV"."Nullable",
+  "ColumnsV"."UpperCaseFlag"
 FROM "{{baseDatabase}}"."TablesV"
 INNER JOIN "{{baseDatabase}}"."ColumnsV" ON "TablesV"."DatabaseName" = "ColumnsV"."DatabaseName"
         AND "TablesV"."TableName" = "ColumnsV"."TableName"
