@@ -60,6 +60,7 @@ CREATE TABLE DBC."ColumnsV" (
   "ColumnConstraint" VARCHAR(8192),
   "ConstraintCount" SMALLINT,
   "Nullable" CHAR(1),
+  "UpperCaseFlag" CHAR(1),
   PRIMARY KEY ("DatabaseName", "TableName", "ColumnName")
 );
 
