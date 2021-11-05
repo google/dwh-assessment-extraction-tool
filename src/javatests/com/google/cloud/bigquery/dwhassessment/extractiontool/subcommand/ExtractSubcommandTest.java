@@ -16,6 +16,7 @@
 package com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
 import static org.mockito.Mockito.verify;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
@@ -28,6 +29,7 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.Instant;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -149,6 +151,157 @@ public final class ExtractSubcommandTest {
     assertThat(arguments.schemaFilters())
         .containsExactly(SchemaFilter.builder().setDatabaseName(Pattern.compile("foo")).build())
         .inOrder();
+  }
+
+  @Test
+  public void call_successWithTimeRangeStartDatetime() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "--output",
+                outputPath.toString(),
+                "--qrylog-timerange-start",
+                "2021-01-01T11:46:46.42134212"))
+        .isEqualTo(0);
+
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+
+    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
+    assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.schemaFilters()).isEmpty();
+    assertThat(arguments.qryLogStartTime())
+        .hasValue(Instant.parse("2021-01-01T11:46:46.42134212Z"));
+    assertThat(arguments.qryLogEndTime()).isEmpty();
+  }
+
+  @Test
+  public void call_successWithTimeRangeStartDate() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+
+    assertThat(
+            cmd.execute(
+                    "--db-address",
+                    "jdbc:hsqldb:mem:my-animalclinic.example",
+                    "--output",
+                    outputPath.toString(),
+                    "--qrylog-timerange-start",
+                    "2021-01-01"))
+            .isEqualTo(0);
+
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+            ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+
+    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
+    assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.schemaFilters()).isEmpty();
+    assertThat(arguments.qryLogStartTime())
+            .hasValue(Instant.parse("2021-01-01T00:00:00.00Z"));
+    assertThat(arguments.qryLogEndTime()).isEmpty();
+  }
+
+  @Test
+  public void call_successWithEndTimeRangeCustomTimezone() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "--output",
+                outputPath.toString(),
+                "--qrylog-timerange-end",
+                "2021-01-01T11:46:46.42134212",
+                "--time-zone",
+                "Europe/Warsaw"))
+        .isEqualTo(0);
+
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+
+    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
+    assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.schemaFilters()).isEmpty();
+    assertThat(arguments.qryLogStartTime()).isEmpty();
+    assertThat(arguments.qryLogEndTime()).hasValue(Instant.parse("2021-01-01T10:46:46.42134212Z"));
+  }
+
+  @Test
+  public void call_successWithTimeRangeStartDatetimeEndDateCustomTimezone()
+          throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+
+    assertThat(
+            cmd.execute(
+                    "--db-address",
+                    "jdbc:hsqldb:mem:my-animalclinic.example",
+                    "--output",
+                    outputPath.toString(),
+                    "--qrylog-timerange-start",
+                    "2021-01-01T11:46:46.42134212",
+                    "--qrylog-timerange-end",
+                    "2022-01-01",
+                    "--time-zone",
+                    "Europe/Warsaw"))
+            .isEqualTo(0);
+
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+            ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+
+    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
+    assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.schemaFilters()).isEmpty();
+    assertThat(arguments.qryLogStartTime())
+            .hasValue(Instant.parse("2021-01-01T10:46:46.42134212Z"));
+    assertThat(arguments.qryLogEndTime()).hasValue(Instant.parse("2021-12-31T23:00:00Z"));
+  }
+
+  @Test
+  public void call_successWithTimeRangeDespiteStartIsLaterThenEnd()
+      throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "--output",
+                outputPath.toString(),
+                "--qrylog-timerange-start",
+                "2022-01-01T11:46:46.42134212",
+                "--qrylog-timerange-end",
+                "2021-01-01T11:46:46.42134212",
+                "--time-zone",
+                "Europe/Warsaw"))
+        .isEqualTo(0);
+
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+
+    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
+    assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.schemaFilters()).isEmpty();
+    assertThat(arguments.qryLogStartTime())
+        .hasValue(Instant.parse("2022-01-01T10:46:46.42134212Z"));
+    assertThat(arguments.qryLogEndTime()).hasValue(Instant.parse("2021-01-01T10:46:46.42134212Z"));
   }
 
   @Test

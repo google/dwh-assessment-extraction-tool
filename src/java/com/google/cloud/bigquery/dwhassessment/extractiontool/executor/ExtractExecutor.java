@@ -21,7 +21,9 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 /** Executor for the extract action. */
@@ -54,6 +56,10 @@ public interface ExtractExecutor {
     /** Whether to do a dry run. */
     public abstract boolean dryRun();
 
+    public abstract Optional<Instant> qryLogStartTime();
+
+    public abstract Optional<Instant> qryLogEndTime();
+
     public static Builder builder() {
       return new AutoValue_ExtractExecutor_Arguments.Builder()
           .setDryRun(false)
@@ -80,6 +86,10 @@ public interface ExtractExecutor {
       public abstract Builder setBaseDatabase(String baseDatabase);
 
       public abstract Builder setDryRun(boolean dryRun);
+
+      public abstract Builder setQryLogStartTime(Instant timestampInUtc);
+
+      public abstract Builder setQryLogEndTime(Instant timestampInUtc);
 
       public abstract Arguments build();
     }

@@ -16,20 +16,75 @@
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import com.google.auto.value.AutoValue;
+import java.util.Optional;
 
 @AutoValue
 public abstract class SqlScriptVariables {
 
-  public abstract String getBaseDatabase();
-
   public static Builder builder() {
     return new AutoValue_SqlScriptVariables.Builder().setBaseDatabase("DBC");
+  }
+
+  public abstract String getBaseDatabase();
+
+  public abstract QueryLogsVariables getQueryLogsVariables();
+
+  @AutoValue
+  public abstract static class QueryLogsVariables {
+
+    public static Builder builder() {
+      return new AutoValue_SqlScriptVariables_QueryLogsVariables.Builder();
+    }
+
+    public abstract Optional<TimeRange> timeRange();
+
+    // Value accessor for handlebars.
+    public TimeRange getTimeRange() {
+      if (timeRange().isPresent()) {
+        return timeRange().get();
+      }
+      return null;
+    }
+
+    @AutoValue
+    public abstract static class TimeRange {
+      private static final String min_time = "0001-01-01 00:00:00";
+      private static final String max_time = "9999-12-31 23:59:59.99";
+
+      public static Builder builder() {
+        return new AutoValue_SqlScriptVariables_QueryLogsVariables_TimeRange.Builder()
+            .setStartTimestamp(min_time)
+            .setEndTimestamp(max_time);
+      }
+
+      public abstract String getStartTimestamp();
+
+      public abstract String getEndTimestamp();
+
+      @AutoValue.Builder
+      public abstract static class Builder {
+        public abstract Builder setStartTimestamp(String timestamp);
+
+        public abstract Builder setEndTimestamp(String timestamp);
+
+        public abstract TimeRange build();
+      }
+    }
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+      public abstract Builder setTimeRange(TimeRange value);
+
+      public abstract QueryLogsVariables build();
+    }
   }
 
   @AutoValue.Builder
   public abstract static class Builder {
 
     public abstract Builder setBaseDatabase(String value);
+
+    public abstract Builder setQueryLogsVariables(QueryLogsVariables value);
 
     public abstract SqlScriptVariables build();
   }
