@@ -90,21 +90,21 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
   private static void maybeAddTimeRange(
       SqlScriptVariables.QueryLogsVariables.Builder builder, Arguments arguments) {
-    boolean will_add = false;
-    SqlScriptVariables.QueryLogsVariables.TimeRange.Builder timeRange_builder =
+    boolean willAddTimeRange = false;
+    SqlScriptVariables.QueryLogsVariables.TimeRange.Builder timeRangeBuilder =
         SqlScriptVariables.QueryLogsVariables.TimeRange.builder();
     if (arguments.qryLogStartTime().isPresent()) {
-      will_add = true;
-      timeRange_builder.setStartTimestamp(
+      willAddTimeRange = true;
+      timeRangeBuilder.setStartTimestamp(
           getTeradataTimestampFromInstant(arguments.qryLogStartTime().get()));
     }
     if (arguments.qryLogEndTime().isPresent()) {
-      will_add = true;
-      timeRange_builder.setEndTimestamp(
+      willAddTimeRange = true;
+      timeRangeBuilder.setEndTimestamp(
           getTeradataTimestampFromInstant(arguments.qryLogEndTime().get()));
     }
-    if (will_add) {
-      builder.setTimeRange(timeRange_builder.build());
+    if (willAddTimeRange) {
+      builder.setTimeRange(timeRangeBuilder.build());
     }
   }
 
