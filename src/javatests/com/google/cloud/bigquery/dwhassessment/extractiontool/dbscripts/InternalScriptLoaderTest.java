@@ -520,6 +520,7 @@ public class InternalScriptLoaderTest {
             .set("ColumnConstraint", "test constraint")
             .set("ConstraintCount", 1)
             .set("Nullable", "Y")
+            .set("UpperCaseFlag", "U")
             .build();
     assertThat(records).containsExactly(expectedRecord);
 

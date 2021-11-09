@@ -363,7 +363,8 @@ INSERT INTO DBC."ColumnsV" (
   "DefaultValue",
   "ColumnConstraint",
   "ConstraintCount",
-  "Nullable"
+  "Nullable",
+  "UpperCaseFlag"
 )
 VALUES (
   'test_database',
@@ -376,7 +377,8 @@ VALUES (
   '0',
   'test constraint',
   1,
-  'Y'
+  'Y',
+  'U'
 ), (
    'test_database',
    'not_existing_table',
@@ -388,7 +390,8 @@ VALUES (
    '0',
    'test constraint',
    1,
-   'N'
+   'N',
+   'C'
 );
 
 INSERT INTO DBC."DatabasesV" (
