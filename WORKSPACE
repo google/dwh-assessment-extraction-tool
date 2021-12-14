@@ -30,7 +30,7 @@ maven_install(
         "org.hsqldb:hsqldb:2.6.0",
         "org.hsqldb:sqltool:2.6.0",
         "org.mockito:mockito-core:3.11.1",
-        "org.slf4j:slf4j-log4j12:1.7.32",
+        "org.slf4j:slf4j-jdk14:1.7.32",
     ],
     fetch_sources = True,
     repositories = [
