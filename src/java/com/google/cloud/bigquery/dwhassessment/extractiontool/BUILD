@@ -32,7 +32,7 @@ java_binary(
     main_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.ExtractionTool",
     runtime_deps = [
         ":extraction_tool",
-        "@maven//:org_slf4j_slf4j_log4j12",
+        "@maven//:org_slf4j_slf4j_jdk14",
     ],
 )
 
@@ -42,6 +42,6 @@ java_binary(
     runtime_deps = [
         ":extraction_tool",
         "@maven//:org_hsqldb_hsqldb",
-        "@maven//:org_slf4j_slf4j_log4j12",
+        "@maven//:org_slf4j_slf4j_jdk14",
     ],
 )
