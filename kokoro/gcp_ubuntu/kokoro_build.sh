@@ -4,6 +4,9 @@
 set -e
 
 # Display commands being run.
+set -x
+
+# Display commands being run.
 # WARNING: please only enable 'set -x' if necessary for debugging, and be very
 #  careful if you handle credentials (e.g. from Keystore) with 'set -x':
 #  statements like "export VAR=$(cat /tmp/keystore/credentials)" will result in
@@ -15,5 +18,5 @@ set -e
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
-cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/"
-./integ-tests/mvn test
+cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
+mvn test
