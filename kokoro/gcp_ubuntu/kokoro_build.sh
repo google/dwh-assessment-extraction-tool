@@ -4,7 +4,7 @@
 set -e
 
 # Display commands being run.
-set -x
+#set -x
 
 # Display commands being run.
 # WARNING: please only enable 'set -x' if necessary for debugging, and be very
@@ -14,6 +14,9 @@ set -x
 #  Additionally, recursive invocation with credentials as command-line
 #  parameters, will print the full command, with credentials, in the build logs.
 # set -x
+
+#Create Kokoro Teradata instance
+gcloud config get-value project
 
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
