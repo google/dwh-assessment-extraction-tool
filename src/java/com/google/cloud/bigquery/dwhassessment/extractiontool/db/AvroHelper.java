@@ -39,6 +39,8 @@ import org.apache.avro.generic.GenericRecordBuilder;
 /** A helper to convert sql result set to avro format and dump the avro result to output stream. */
 public class AvroHelper {
 
+  private static final Pattern TRAILING_SPACES_REGEX = Pattern.compile("\\s++$");
+
   private AvroHelper() {}
 
   /**
@@ -200,8 +202,6 @@ public class AvroHelper {
         return row.getObject(columnIndex);
     }
   }
-
-  private static final Pattern TRAILING_SPACES_REGEX = Pattern.compile("\\s++$");
 
   private static String trimTrailingSpaces(String s) {
     return s == null ? null : TRAILING_SPACES_REGEX.matcher(s).replaceFirst("");
