@@ -29,4 +29,13 @@ public interface DataEntityManager extends Closeable {
    * @param name The name of the output entity.
    */
   OutputStream getEntityOutputStream(String name) throws IOException;
+
+  /**
+   * Retrieves whether the extraction process with this entity is resumable. Generally, a process is
+   * resumable if the progress is periodically written to the disk during the process. ZIP writers
+   * are NOT resumable.
+   *
+   * @return true if this entity enabled resumable writing.
+   */
+  boolean isResumable();
 }

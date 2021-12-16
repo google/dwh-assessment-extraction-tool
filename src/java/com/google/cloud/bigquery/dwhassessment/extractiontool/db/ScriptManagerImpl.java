@@ -22,8 +22,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -53,7 +57,8 @@ public class ScriptManagerImpl implements ScriptManager {
       boolean dryRun,
       SqlTemplateRenderer sqlTemplateRenderer,
       String scriptName,
-      DataEntityManager dataEntityManager)
+      DataEntityManager dataEntityManager,
+      Path basePath, Integer chunkRows)
       throws SQLException, IOException {
     String script = getScript(sqlTemplateRenderer, scriptName);
     if (dryRun) {
@@ -61,12 +66,29 @@ public class ScriptManagerImpl implements ScriptManager {
       return;
     }
 
+    String outputName = scriptName + "_temp.avro";
     /* TODO(xshang): figure out how to set schema name and namespace in the schema extraction. */
     Schema schema =
         scriptRunner.extractSchema(connection, script, scriptName, /* namespace= */ "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, script, schema);
-    dumpResults(records, dataEntityManager.getEntityOutputStream(scriptName + ".avro"), schema);
+    /* TODO(cyulysses): refactor / consolidate classes participating in the processing of the ResultSet. */
+    ResultSet resultSet = connection.createStatement().executeQuery(script);
+    ImmutableList<GenericRecord> records;
+    if (chunkRows > 0 && dataEntityManager.isResumable()) {
+      File file = Files.createFile(basePath.resolve(outputName)).toFile();
+      boolean isFinished = false;
+      while (!isFinished) {
+        records = scriptRunner.processResultsToAvro(resultSet, schema, chunkRows);
+        dumpResults(records, file, schema);
+        try {
+          isFinished = resultSet.isAfterLast();
+        } catch (java.sql.SQLFeatureNotSupportedException e) {
+          throw new SQLException("Essential function not supported by the JDBC driver", e);
+        }
+      }
+    } else {
+      records = scriptRunner.processResultsToAvro(resultSet, schema, 0);
+      dumpResults(records, dataEntityManager.getEntityOutputStream(scriptName + ".avro"), schema);
+    }
   }
 
   @Override

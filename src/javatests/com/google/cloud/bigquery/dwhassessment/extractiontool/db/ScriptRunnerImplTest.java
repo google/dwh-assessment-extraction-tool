@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
@@ -68,8 +69,9 @@ public final class ScriptRunnerImplTest {
 
     Schema testSchema = new Schema.Parser().parse(TEST_SCHEMA);
     String sqlScript = "SELECT * FROM T0";
+    ResultSet resultSet = connection.createStatement().executeQuery(sqlScript);
     ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, sqlScript, testSchema);
+        scriptRunner.processResultsToAvro(resultSet, testSchema, 0);
 
     GenericRecord expectedRecord =
         new GenericRecordBuilder(testSchema).set("ID", 0).set("NAME", "name_0").build();
@@ -87,8 +89,9 @@ public final class ScriptRunnerImplTest {
 
     String sqlScript = "SELECT * FROM T0";
     Schema testSchema = scriptRunner.extractSchema(connection, sqlScript, "testName", "namespace");
+    ResultSet resultSet = connection.createStatement().executeQuery(sqlScript);
     ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, sqlScript, testSchema);
+        scriptRunner.processResultsToAvro(resultSet, testSchema, 0);
 
     GenericRecord expectedRecord =
         new GenericRecordBuilder(testSchema).set("ID", 0).set("NAME", "name_0").build();
@@ -108,8 +111,9 @@ public final class ScriptRunnerImplTest {
 
     Schema testSchema = new Schema.Parser().parse(TEST_SCHEMA);
     String sqlScript = "SELECT * FROM T1";
+    ResultSet resultSet = connection.createStatement().executeQuery(sqlScript);
     ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, sqlScript, testSchema);
+        scriptRunner.processResultsToAvro(resultSet, testSchema, 0);
 
     GenericRecord expectedRecord0 =
         new GenericRecordBuilder(testSchema).set("ID", 0).set("NAME", "name_0").build();
@@ -142,9 +146,10 @@ public final class ScriptRunnerImplTest {
               .type(LogicalTypes.decimal(5).addToSchema(Schema.create(Type.BYTES)))
               .endRecord();
 
+      String sqlScript = "SELECT * FROM DecimalColumnTable";
+      ResultSet resultSet = connection.createStatement().executeQuery(sqlScript);
       ImmutableList<GenericRecord> records =
-          scriptRunner.executeScriptToAvro(
-              connection, /*sqlScript=*/ "SELECT * FROM DecimalColumnTable", schema);
+          scriptRunner.processResultsToAvro(resultSet, schema, 0);
 
       assertThat(records)
           .containsExactly(
@@ -181,9 +186,10 @@ public final class ScriptRunnerImplTest {
               .bytesType()
               .endRecord();
 
+      String sqlScript = "SELECT * FROM ByteColumnTable";
+      ResultSet resultSet = connection.createStatement().executeQuery(sqlScript);
       ImmutableList<GenericRecord> records =
-          scriptRunner.executeScriptToAvro(
-              connection, /*sqlScript=*/ "SELECT * FROM ByteColumnTable", schema);
+          scriptRunner.processResultsToAvro(/*sqlScript=*/ resultSet, schema, 0);
 
       assertThat(records)
           .containsExactly(
@@ -224,9 +230,10 @@ public final class ScriptRunnerImplTest {
               .type(LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG)))
               .endRecord();
 
+      String sqlScript = "SELECT * FROM TimestampColumnTable";
+      ResultSet resultSet = connection.createStatement().executeQuery(sqlScript);
       ImmutableList<GenericRecord> records =
-          scriptRunner.executeScriptToAvro(
-              connection, /*sqlScript=*/ "SELECT * FROM TimestampColumnTable", schema);
+          scriptRunner.processResultsToAvro(/*sqlScript=*/ resultSet, schema, 0);
 
       assertThat(records)
           .containsExactly(
@@ -263,9 +270,10 @@ public final class ScriptRunnerImplTest {
               .doubleType()
               .endRecord();
 
+      String sqlScript = "SELECT * FROM FloatColumnTable";
+      ResultSet resultSet = connection.createStatement().executeQuery(sqlScript);
       ImmutableList<GenericRecord> records =
-          scriptRunner.executeScriptToAvro(
-              connection, /*sqlScript=*/ "SELECT * FROM FloatColumnTable", schema);
+          scriptRunner.processResultsToAvro(/*sqlScript=*/ resultSet, schema, 0);
 
       assertThat(records)
           .containsExactly(
@@ -280,27 +288,75 @@ public final class ScriptRunnerImplTest {
       String testScript = "SELECT * FROM AllSupportedColumnsTable";
       Schema schema = scriptRunner.extractSchema(connection, testScript, "testName", "namespace");
 
-      Schema expectedSchema = SchemaBuilder.record("testName").namespace("namespace").fields()
-          .name("BOOLEAN_VAL").type().optional().booleanType()
-          .name("BIT_VAL").type().optional().booleanType()
-          .name("TINYINT_VAL").type().optional().intType()
-          .name("SMALLINT_VAL").type().optional().intType()
-          .name("INTEGER_VAL").type().optional().intType()
-          .name("BIGINT_VAL").type().optional().longType()
-          .name("DECIMAL_VAL").type().optional().type(
-              LogicalTypes.decimal(3, 1).addToSchema(Schema.create(Type.BYTES)))
-          .name("FLOAT_VAL").type().optional().doubleType()
-          .name("REAL_VAL").type().optional().doubleType()
-          .name("DOUBLE_VAL").type().optional().doubleType()
-          .name("CHAR_VAL").type().optional().stringType()
-          .name("VARCHAR_VAL").type().optional().stringType()
-          .name("LONGVARCHAR_VAL").type().optional().stringType()
-          .name("TIMESTAMP_VAL").type().optional().type(
-              LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG)))
-          .name("TIMESTAMP_WITH_TIMEZONE_VAL").type().optional().type(
-              LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG)))
-          .name("BINARY_VAL").type().optional().bytesType()
-          .endRecord();
+      Schema expectedSchema =
+          SchemaBuilder.record("testName")
+              .namespace("namespace")
+              .fields()
+              .name("BOOLEAN_VAL")
+              .type()
+              .optional()
+              .booleanType()
+              .name("BIT_VAL")
+              .type()
+              .optional()
+              .booleanType()
+              .name("TINYINT_VAL")
+              .type()
+              .optional()
+              .intType()
+              .name("SMALLINT_VAL")
+              .type()
+              .optional()
+              .intType()
+              .name("INTEGER_VAL")
+              .type()
+              .optional()
+              .intType()
+              .name("BIGINT_VAL")
+              .type()
+              .optional()
+              .longType()
+              .name("DECIMAL_VAL")
+              .type()
+              .optional()
+              .type(LogicalTypes.decimal(3, 1).addToSchema(Schema.create(Type.BYTES)))
+              .name("FLOAT_VAL")
+              .type()
+              .optional()
+              .doubleType()
+              .name("REAL_VAL")
+              .type()
+              .optional()
+              .doubleType()
+              .name("DOUBLE_VAL")
+              .type()
+              .optional()
+              .doubleType()
+              .name("CHAR_VAL")
+              .type()
+              .optional()
+              .stringType()
+              .name("VARCHAR_VAL")
+              .type()
+              .optional()
+              .stringType()
+              .name("LONGVARCHAR_VAL")
+              .type()
+              .optional()
+              .stringType()
+              .name("TIMESTAMP_VAL")
+              .type()
+              .optional()
+              .type(LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG)))
+              .name("TIMESTAMP_WITH_TIMEZONE_VAL")
+              .type()
+              .optional()
+              .type(LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG)))
+              .name("BINARY_VAL")
+              .type()
+              .optional()
+              .bytesType()
+              .endRecord();
       assertThat(schema).isEqualTo(expectedSchema);
 
       // Add a row in the table and verify result.
@@ -321,13 +377,17 @@ public final class ScriptRunnerImplTest {
                   + "'varchar', " // VARCHAR_VAL
                   + "'longvarchar', " // LONGVARCHAR_VAL
                   + "TIMESTAMP '2021-07-01 18:23:42', " // TIMESTAMP_VAL
-                  + "TIMESTAMP '2021-07-01 18:23:42' AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE, " // TIMESTAMP_WITH_TIMEZONE_VAL
+                  + "TIMESTAMP '2021-07-01 18:23:42' AT TIME ZONE"
+                  + " INTERVAL '0:00'"
+                  + " HOUR TO MINUTE,"
+                  + " " // TIMESTAMP_WITH_TIMEZONE_VAL
                   + "?" // BINARY_VAL
                   + ")");
       statement.setBytes(1, new byte[] {1});
       statement.execute();
+      ResultSet resultSet = connection.createStatement().executeQuery(testScript);
       ImmutableList<GenericRecord> records =
-          scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ testScript, schema);
+          scriptRunner.processResultsToAvro(/*sqlScript=*/ resultSet, schema, 0);
       assertThat(records)
           .containsExactly(
               new GenericRecordBuilder(schema)

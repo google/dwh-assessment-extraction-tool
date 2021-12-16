@@ -23,6 +23,7 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityM
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -65,7 +66,7 @@ public final class ScriptManagerImplTest {
   }
 
   @Test
-  public void executeScript_simpleTable_success() throws Exception, SQLException {
+  public void executeScript_simpleTable_success() throws Exception {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap);
     Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_0");
     Statement baseStmt = connection.createStatement();
@@ -74,7 +75,13 @@ public final class ScriptManagerImplTest {
     baseStmt.close();
     connection.commit();
     scriptManager.executeScript(
-        connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager);
+        connection,
+        /*dryRun=*/ false,
+        sqlTemplateRenderer,
+        "default",
+        dataEntityManager,
+        Paths.get("/tmp"),
+        5000);
 
     String sqlScript = "SELECT * FROM TestTable";
     Schema testSchema = scriptRunner.extractSchema(connection, sqlScript, "default", "namespace");
@@ -87,7 +94,7 @@ public final class ScriptManagerImplTest {
   }
 
   @Test
-  public void executeScript_emptyTable_success() throws Exception, SQLException {
+  public void executeScript_emptyTable_success() throws Exception {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap);
     Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_1");
     Statement baseStmt = connection.createStatement();
@@ -95,7 +102,13 @@ public final class ScriptManagerImplTest {
     baseStmt.close();
     connection.commit();
     scriptManager.executeScript(
-        connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager);
+        connection,
+        /*dryRun=*/ false,
+        sqlTemplateRenderer,
+        "default",
+        dataEntityManager,
+        Paths.get("/tmp"),
+        5000);
 
     String sqlScript = "SELECT * FROM TestTable";
     Schema testSchema = scriptRunner.extractSchema(connection, sqlScript, "default", "namespace");
@@ -107,7 +120,7 @@ public final class ScriptManagerImplTest {
   }
 
   @Test
-  public void getAllScriptNames_fail() throws Exception, SQLException {
+  public void getAllScriptNames_fail() throws Exception {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap);
     Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_2");
     Statement baseStmt = connection.createStatement();
@@ -123,7 +136,9 @@ public final class ScriptManagerImplTest {
                 /*dryRun=*/ false,
                 sqlTemplateRenderer,
                 "not_existing_script_name",
-                dataEntityManager));
+                dataEntityManager,
+                Paths.get("/tmp"),
+                5000));
   }
 
   @Test

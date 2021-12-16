@@ -20,5 +20,10 @@ public class DataEntityManagerDirectoryImpl implements DataEntityManager {
   }
 
   @Override
+  public boolean isResumable() {
+    return true;
+  }
+
+  @Override
   public void close() throws IOException {}
 }

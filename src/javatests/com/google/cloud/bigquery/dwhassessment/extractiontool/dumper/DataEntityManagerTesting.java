@@ -41,7 +41,13 @@ public class DataEntityManagerTesting implements DataEntityManager {
   }
 
   @Override
+  public boolean isResumable() {
+    return false;
+  }
+
+  @Override
   public void close() throws IOException {
     outputStream.close();
   }
+
 }

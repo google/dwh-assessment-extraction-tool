@@ -18,6 +18,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
@@ -59,6 +60,26 @@ public class AvroHelper {
   }
 
   /**
+   * Dump generic records to file.
+   *
+   * @param records A list of generic records to write to output stream.
+   * @param file A file to write the records to.
+   * @param schema Schema definition of the data to write.
+   */
+  public static void dumpResults(ImmutableList<GenericRecord> records, File file, Schema schema)
+      throws IOException {
+    GenericDatumWriter<GenericRecord> writer = new GenericDatumWriter<>(schema);
+    DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<>(writer);
+    if (file.exists()) {
+      dataFileWriter = dataFileWriter.appendTo(file);
+    } else {
+      dataFileWriter = dataFileWriter.create(schema, file);
+    }
+    dumpRecords(records, dataFileWriter);
+    dataFileWriter.close();
+  }
+
+  /**
    * Dump generic records to output stream.
    *
    * @param records A list of generic records to write to output stream.
@@ -72,6 +93,13 @@ public class AvroHelper {
     DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<>(writer);
     dataFileWriter.create(schema, outputStream);
 
+    dumpRecords(records, dataFileWriter);
+    dataFileWriter.close();
+    outputStream.close();
+  }
+
+  private static void dumpRecords(
+      ImmutableList<GenericRecord> records, DataFileWriter<GenericRecord> dataFileWriter) {
     records.stream()
         .forEach(
             record -> {
@@ -84,8 +112,6 @@ public class AvroHelper {
                         record.toString(), e.getMessage()));
               }
             });
-    dataFileWriter.close();
-    outputStream.close();
   }
 
   /**

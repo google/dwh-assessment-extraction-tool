@@ -110,7 +110,8 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
   @Override
   public int run(Arguments arguments) throws SQLException, IOException {
-    DataEntityManager dataEntityManager = dataEntityManagerFactory.apply(arguments.outputPath());
+    Path outputPath = arguments.outputPath();
+    DataEntityManager dataEntityManager = dataEntityManagerFactory.apply(outputPath);
 
     SqlScriptVariables.QueryLogsVariables.Builder qryLogVarsBuilder =
         SqlScriptVariables.QueryLogsVariables.builder();
@@ -129,7 +130,13 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
           DriverManager.getConnection(
               arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
       scriptManager.executeScript(
-          connection, arguments.dryRun(), sqlTemplateRenderer, scriptName, dataEntityManager);
+          connection,
+          arguments.dryRun(),
+          sqlTemplateRenderer,
+          scriptName,
+          dataEntityManager,
+          outputPath,
+          5000);
       connection.close();
       LOGGER.log(Level.INFO, "Finished extracting {0}.", scriptName);
     }

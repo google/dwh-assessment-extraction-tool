@@ -33,12 +33,17 @@ import org.apache.avro.generic.GenericRecord;
 public class ScriptRunnerImpl implements ScriptRunner {
 
   @Override
-  public ImmutableList<GenericRecord> executeScriptToAvro(
-      Connection connection, String sqlScript, Schema schema) throws SQLException {
+  public ImmutableList<GenericRecord> processResultsToAvro(
+      ResultSet resultSet, Schema schema, Integer maxRows) throws SQLException {
     ImmutableList.Builder<GenericRecord> recordsBuilder = ImmutableList.builder();
-    ResultSet resultSet = connection.createStatement().executeQuery(sqlScript);
+    Integer processedRows = 0;
+    boolean isRowLimited = maxRows > 0;
     while (resultSet.next()) {
       recordsBuilder.add(parseRowToAvro(resultSet, schema));
+      processedRows++;
+      if (isRowLimited && processedRows >= maxRows) {
+        break;
+      }
     }
     return recordsBuilder.build();
   }

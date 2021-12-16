@@ -154,8 +154,9 @@ public final class AvroHelperTest {
     ResultSetMetaData simpleTestMetadata =
         connection.createStatement().executeQuery("SELECT * FROM SIMPLE_TABLE").getMetaData();
     Schema schema = getAvroSchema("schemaName", "namespace", simpleTestMetadata);
+    ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM SIMPLE_TABLE");
     ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, "SELECT * FROM SIMPLE_TABLE", schema);
+        scriptRunner.processResultsToAvro(resultSet, schema, 0);
 
     dumpResults(records, outputStream, schema);
 

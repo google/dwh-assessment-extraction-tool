@@ -17,6 +17,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import com.google.common.collect.ImmutableList;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
@@ -27,14 +28,14 @@ public interface ScriptRunner {
   /**
    * Executes a script against a DB connection and writes the output to a stream.
    *
-   * @param connection The JDBC connection to the database.
-   * @param sqlScript The full SQL script to execute.
+   * @param resultSet The full SQL script to execute.
    * @param schema The schema corresponding to the script. If the schema is missing, run the
    *     extractSchema method first to get the schema of the query.
+   * @param maxRows
    * @return a collection of Avro records.
    */
-  ImmutableList<GenericRecord> executeScriptToAvro(
-      Connection connection, String sqlScript, Schema schema) throws SQLException;
+  ImmutableList<GenericRecord> processResultsToAvro(
+      ResultSet resultSet, Schema schema, Integer maxRows) throws SQLException;
 
   /**
    * Extracts the schema based on a SQL query. This method can extract the schema of a table by

@@ -46,6 +46,11 @@ public class DataEntityManagerZipImpl implements DataEntityManager {
   }
 
   @Override
+  public boolean isResumable() {
+    return false;
+  }
+
+  @Override
   public OutputStream getEntityOutputStream(String name) {
     if (!isEntityOutputStreamOpen.compareAndSet(false, true)) {
       throw new IllegalStateException("Previous EntityOutputStream is not closed. "

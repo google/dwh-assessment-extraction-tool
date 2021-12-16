@@ -18,6 +18,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -27,31 +28,37 @@ public interface ScriptManager {
   /**
    * Executes a script against a DB connection and writes the output to a stream.
    *
+   * @param sqlTemplateRenderer A transformer to apply on the SQL script before execution.
    * @param connection The JDBC connection to the database.
    * @param dryRun Whether to just perform a dry run, which just logs out the action to perform.
-   * @param sqlTransformer A transformer to apply on the SQL script before execution.
    * @param scriptName The name of the script. This is not a file name. The interpretation of the
    *     name is left to the implementation but can also map to several files (e.g., an SQL file and
    *     a schema definition file).
    * @param dataEntityManager The data entity manager to use to write the output.
+   * @param basePath
+   * @param chunkRows
    */
   void executeScript(
       Connection connection,
       boolean dryRun,
       SqlTemplateRenderer sqlTemplateRenderer,
       String scriptName,
-      DataEntityManager dataEntityManager)
+      DataEntityManager dataEntityManager,
+      Path basePath,
+      Integer chunkRows)
       throws SQLException, IOException;
 
   default void executeScript(
-      Connection connection, String scriptName, DataEntityManager dataEntityManager)
+      Connection connection, String scriptName, DataEntityManager dataEntityManager, Path basePath)
       throws SQLException, IOException {
     executeScript(
         connection,
         /* dryRun= */ false,
         /* sqlTransformer= */ (name, script) -> script,
         scriptName,
-        dataEntityManager);
+        dataEntityManager,
+        basePath,
+        5000);
   }
 
   /** Gets a list of names of all available scripts. */
