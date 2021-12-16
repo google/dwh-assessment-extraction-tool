@@ -3,6 +3,9 @@
 # Fail on any error.
 set -e
 
+# Display commands being run.
+set -x
+
 #Variables
 GCP_PROJECT=$(gcloud config get-value project)
 GCP_PROJECT_ID=$(gcloud projects list --filter="${GCP_PROJECT}" --format="value(PROJECT_NUMBER)")
@@ -10,10 +13,7 @@ GCP_SERVICE_ACCOUNT=$("${GCP_PROJECT_ID}"-compute@developer.gserviceaccount.com)
 GCP_IMAGE=$(projects/"${GCP_PROJECT}"/global/images/teradata1610-ubuntu20)
 GCP_SCOPES='https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,'\
             'https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,'   \
-            'https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append' 
-
-# Display commands being run.
-#set -x
+            'https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append'
 
 # Display commands being run.
 # WARNING: please only enable 'set -x' if necessary for debugging, and be very
