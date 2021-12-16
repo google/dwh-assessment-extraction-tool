@@ -15,6 +15,9 @@ GCP_SCOPES="https://www.googleapis.com/auth/devstorage.read_only,https://www.goo
 "https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,"\
 "https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append"
 
+gcloud version
+gcloud components update
+
 # Display commands being run.
 # WARNING: please only enable 'set -x' if necessary for debugging, and be very
 #  careful if you handle credentials (e.g. from Keystore) with 'set -x':
@@ -27,7 +30,7 @@ GCP_SCOPES="https://www.googleapis.com/auth/devstorage.read_only,https://www.goo
 #Create Kokoro Teradata instance
 gcloud compute instances create teradata-kokoro --project="${GCP_PROJECT}" --zone=us-central1-a --machine-type=n2-standard-2 \
 --network-interface=subnet=default,no-address --maintenance-policy=MIGRATE --service-account="${GCP_SERVICE_ACCOUNT}" \
---scopes="${GCP_SCOPES}" --create-disk=auto-delete=yes,device-name=teradata-kokoro,image="${GCP_IMAGE}",mode=rw,size=300,type=projects/"${GCP_PROJECT}"/zones/us-central1-a/diskTypes/pd-balanced \
+--scopes="${GCP_SCOPES}" --create-disk=auto-delete=yes,boot=yes,device-name=teradata-kokoro,image="${GCP_IMAGE}",mode=rw,size=300,type=projects/"${GCP_PROJECT}"/zones/us-central1-a/diskTypes/pd-balanced \
 --reservation-affinity=any
 
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
