@@ -3,6 +3,15 @@
 # Fail on any error.
 set -e
 
+#Variables
+GCP_PROJECT         =$(gcloud config get-value project)
+GCP_PROJECT_ID      =$(gcloud config get-value project)
+GCP_SERVICE_ACCOUNT =$("${GCP_PROJECT_ID}"-compute@developer.gserviceaccount.com)
+GCP_IMAGE           =$(projects/"${GCP_PROJECT_ID}"/global/images/teradata1610-ubuntu20)
+GCP_SCOPES          ='https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,'\
+                     'https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,'   \
+                     'https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append' 
+
 # Display commands being run.
 #set -x
 
@@ -16,7 +25,10 @@ set -e
 # set -x
 
 #Create Kokoro Teradata instance
-gcloud config get-value project
+gcloud compute instances create teradata-kokoro --project=${GCP_PROJECT_ID} --zone=us-central1-a --machine-type=n2-standard-2 \
+        --network-interface=subnet=default,no-address --maintenance-policy=MIGRATE --service-account=${GCP_PROJECT_ID}        \
+        --scopes=${GCP_SCOPES} --create-disk=auto-delete=yes,boot=yes,device-name=teradata-kokoro,image=${GCP_IMAGE},mode=rw,size=300,\
+        type=projects/${GCP_PROJECT}/zones/us-central1-a/diskTypes/pd-balanced --reservation-affinity=any
 
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
