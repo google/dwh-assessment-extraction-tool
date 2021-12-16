@@ -25,9 +25,9 @@ GCP_SCOPES="https://www.googleapis.com/auth/devstorage.read_only,https://www.goo
 # set -x
 
 #Create Kokoro Teradata instance
-gcloud alpha compute instances create teradata-kokoro --project="${GCP_PROJECT}" --zone=us-central1-a --machine-type=n2-standard-2 \
+gcloud compute instances create teradata-kokoro --project="${GCP_PROJECT}" --zone=us-central1-a --machine-type=n2-standard-2 \
 --network-interface=subnet=default,no-address --maintenance-policy=MIGRATE --service-account="${GCP_SERVICE_ACCOUNT}" \
---scopes="${GCP_SCOPES}" --create-disk=auto-delete=yes,boot=yes,device-name=teradata-kokoro,image="${GCP_IMAGE}",mode=rw,size=300,type=projects/"${GCP_PROJECT}"/zones/us-central1-a/diskTypes/pd-balanced \
+--scopes="${GCP_SCOPES}" --create-disk=auto-delete=yes,device-name=teradata-kokoro,image="${GCP_IMAGE}",mode=rw,size=300,type=projects/"${GCP_PROJECT}"/zones/us-central1-a/diskTypes/pd-balanced \
 --reservation-affinity=any
 
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
