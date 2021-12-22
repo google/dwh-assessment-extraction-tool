@@ -38,7 +38,7 @@ sleep 5m
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
-cd "${KOKORO_ARTIFACTS_DIR}/piper/"
+cd "${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/"
 
 ls -la
 
@@ -46,4 +46,4 @@ cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
 mvn test
 
 #delete instance after tests
-gcloud compute instances delete teradata-kokoro
+gcloud compute instances delete teradata-kokoro --zone us-central1-a --project="${GCP_PROJECT}" --quiet    
