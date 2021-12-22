@@ -33,8 +33,17 @@ gcloud compute instances create teradata-kokoro --project="${GCP_PROJECT}" --zon
 --scopes="${GCP_SCOPES}" --create-disk=auto-delete=yes,boot=yes,device-name=teradata-kokoro,image="${GCP_IMAGE}",mode=rw,size=300,type=projects/"${GCP_PROJECT}"/zones/us-central1-a/diskTypes/pd-balanced \
 --reservation-affinity=any
 
+sleep 5m
+
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
+cd "${KOKORO_ARTIFACTS_DIR}/piper/"
+
+ls -la
+
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
 mvn test
+
+#delete instance after tests
+gcloud compute instances delete teradata-kokoro
