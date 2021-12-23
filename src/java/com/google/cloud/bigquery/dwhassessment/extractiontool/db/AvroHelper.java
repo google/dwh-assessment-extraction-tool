@@ -22,12 +22,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.regex.Pattern;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
@@ -38,6 +38,8 @@ import org.apache.avro.generic.GenericRecordBuilder;
 
 /** A helper to convert sql result set to avro format and dump the avro result to output stream. */
 public class AvroHelper {
+
+  private static final Pattern TRAILING_SPACES_REGEX = Pattern.compile("\\s++$");
 
   private AvroHelper() {}
 
@@ -192,8 +194,16 @@ public class AvroHelper {
           byte[] blob = row.getBytes(columnIndex);
           return blob == null ? null : ByteBuffer.wrap(blob);
         }
+      case Types.CHAR:
+        {
+          return trimTrailingSpaces(row.getString(columnIndex));
+        }
       default:
         return row.getObject(columnIndex);
     }
+  }
+
+  private static String trimTrailingSpaces(String s) {
+    return s == null ? null : TRAILING_SPACES_REGEX.matcher(s).replaceFirst("");
   }
 }
