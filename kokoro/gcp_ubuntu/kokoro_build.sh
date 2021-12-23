@@ -40,17 +40,13 @@ sleep 5m
 # in the job configuration.
 cd "${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/"
 
-ls -la
-
 cp "${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/terajdbc4.jar" "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/"
-ls -la
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
 mvn test -B
 
-ls -la
 
 #delete instance after tests
 gcloud compute instances delete teradata-kokoro --zone us-central1-a --project="${GCP_PROJECT}" --quiet    
