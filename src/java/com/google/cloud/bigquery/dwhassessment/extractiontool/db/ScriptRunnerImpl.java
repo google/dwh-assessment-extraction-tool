@@ -18,11 +18,11 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.getAvroSchema;
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.parseRowToAvro;
 
-import com.google.common.collect.ImmutableList;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.function.Consumer;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
@@ -33,14 +33,16 @@ import org.apache.avro.generic.GenericRecord;
 public class ScriptRunnerImpl implements ScriptRunner {
 
   @Override
-  public ImmutableList<GenericRecord> executeScriptToAvro(
-      Connection connection, String sqlScript, Schema schema) throws SQLException {
-    ImmutableList.Builder<GenericRecord> recordsBuilder = ImmutableList.builder();
+  public void executeScriptToAvro(
+      Connection connection,
+      String sqlScript,
+      Schema schema,
+      Consumer<GenericRecord> recordConsumer)
+      throws SQLException {
     ResultSet resultSet = connection.createStatement().executeQuery(sqlScript);
     while (resultSet.next()) {
-      recordsBuilder.add(parseRowToAvro(resultSet, schema));
+      recordConsumer.accept(parseRowToAvro(resultSet, schema));
     }
-    return recordsBuilder.build();
   }
 
   @Override
