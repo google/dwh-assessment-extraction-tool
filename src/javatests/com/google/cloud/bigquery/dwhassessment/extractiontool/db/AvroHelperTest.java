@@ -160,10 +160,11 @@ public final class AvroHelperTest {
     ResultSetMetaData simpleTestMetadata =
         connection.createStatement().executeQuery("SELECT * FROM SIMPLE_TABLE").getMetaData();
     Schema schema = getAvroSchema("schemaName", "namespace", simpleTestMetadata);
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, "SELECT * FROM SIMPLE_TABLE", schema);
+    ImmutableList.Builder<GenericRecord> records = ImmutableList.builder();
+    scriptRunner.executeScriptToAvro(
+        connection, "SELECT * FROM SIMPLE_TABLE", schema, records::add);
 
-    dumpResults(records, outputStream, schema);
+    dumpResults(records.build(), outputStream, schema);
 
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     DataFileReader<Record> reader =
