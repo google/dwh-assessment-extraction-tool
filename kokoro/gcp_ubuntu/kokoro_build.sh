@@ -7,6 +7,7 @@ set -e
 set -x
 
 ls "${KOKORO_KEYSTORE_DIR}"
+cat "${KOKORO_KEYSTORE_DIR}"/76474_teradata-12232021
 #Variables
 TD_PSW=$(<"${KOKORO_KEYSTORE_DIR}"/76474_teradata-12232021)
 GCP_PROJECT=$(gcloud config get-value project)
