@@ -45,10 +45,11 @@ cd "${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/"
 cp "${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/terajdbc4.jar" "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/"
+mkdir output
+./run-td-extract.sh -j <terajdbc4.jar> --db-address teradata-kokoro --output ./output --db-user "${TD_PSW}" --db-password "${TD_PSW}"
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
 mvn test -B
-echo "${TD_PSW}"
 
 
 #delete instance after tests
