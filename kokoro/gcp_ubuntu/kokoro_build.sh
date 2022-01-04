@@ -7,6 +7,7 @@ set -e
 set -x
 
 #Variables
+TD_PSW=$(<"${KOKORO_KEYSTORE_DIR}"/76474_teradata-12232021)
 GCP_PROJECT=$(gcloud config get-value project)
 GCP_PROJECT_ID=$(gcloud projects describe "${GCP_PROJECT}" --format 'value(projectNumber)')
 GCP_SERVICE_ACCOUNT="${GCP_PROJECT_ID}"-compute@developer.gserviceaccount.com
@@ -46,6 +47,7 @@ cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/"
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
 mvn test -B
+echo "${TD_PSW}"
 
 
 #delete instance after tests
