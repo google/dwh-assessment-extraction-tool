@@ -39,6 +39,7 @@ sleep 5m
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
 export CLASSPATH="${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/terajdbc4.jar"
+set -x
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
 mkdir output
@@ -50,6 +51,12 @@ ls -la
 #cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
 #mvn test -B
 
+termInstance() {
+  gcloud compute instances delete teradata-kokoro --zone us-central1-a --project="${GCP_PROJECT}" --quiet
+}
+
+#delete instance after error
+trap 'termInstance' ERR
 
 #delete instance after tests
-gcloud compute instances delete teradata-kokoro --zone us-central1-a --project="${GCP_PROJECT}" --quiet    
+termInstance 
