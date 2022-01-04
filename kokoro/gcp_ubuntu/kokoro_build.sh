@@ -40,11 +40,11 @@ sleep 5m
 # in the job configuration.
 cd "${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/"
 
-cp "${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/terajdbc4.jar" "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/src/scripts"
+export CLASSPATH="${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/terajdbc4.jar"
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/src/scripts/"
 mkdir output
-./run-td-extract.sh -j <terajdbc4.jar> --db-address teradata-kokoro --output ./output --db-user "${TD_PSW}" --db-password "${TD_PSW}"
+./dwh-assessment-extraction-tool td-extract --db-address jdbc:teradata://teradata-kokoro/DBS_PORT=1025,DATABASE=dbc --output ./output  --db-user "${TD_PSW}" --db-password "${TD_PSW}"
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
 mvn test -B
