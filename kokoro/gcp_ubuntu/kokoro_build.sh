@@ -4,6 +4,13 @@
 set -e
 set +x
 
+termInstance() {
+  gcloud compute instances delete teradata-kokoro --zone us-central1-a --project="${GCP_PROJECT}" --quiet
+}
+
+#delete instance after error
+trap 'termInstance' ERR
+
 ls "${KOKORO_KEYSTORE_DIR}"
 #Variables
 TD_PSW=$(<"${KOKORO_KEYSTORE_DIR}"/76474_teradata-12232021)
@@ -46,17 +53,11 @@ mkdir output
 
 bazel build dist:all
 ls -la
+rm -r /home/kbuilder/.cache/bazel/_bazel_kbuilder/install/4cfcf40fe067e89c8f5c38e156f8d8ca
 #./dwh-assessment-extraction-tool.sh td-extract --db-address jdbc:teradata://teradata-kokoro/DBS_PORT=1025,DATABASE=dbc --output ./output  --db-user "${TD_PSW}" --db-password "${TD_PSW}"
 
 #cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
 #mvn test -B
-
-termInstance() {
-  gcloud compute instances delete teradata-kokoro --zone us-central1-a --project="${GCP_PROJECT}" --quiet
-}
-
-#delete instance after error
-trap 'termInstance' ERR
 
 #delete instance after tests
 termInstance 
