@@ -38,16 +38,17 @@ sleep 5m
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
-cd "${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/"
-
 export CLASSPATH="${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/terajdbc4.jar"
 
-cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/src/scripts/"
+cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
 mkdir output
-./dwh-assessment-extraction-tool.sh td-extract --db-address jdbc:teradata://teradata-kokoro/DBS_PORT=1025,DATABASE=dbc --output ./output  --db-user "${TD_PSW}" --db-password "${TD_PSW}"
 
-cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
-mvn test -B
+bazel build dist:all
+ls -la
+#./dwh-assessment-extraction-tool.sh td-extract --db-address jdbc:teradata://teradata-kokoro/DBS_PORT=1025,DATABASE=dbc --output ./output  --db-user "${TD_PSW}" --db-password "${TD_PSW}"
+
+#cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
+#mvn test -B
 
 
 #delete instance after tests
