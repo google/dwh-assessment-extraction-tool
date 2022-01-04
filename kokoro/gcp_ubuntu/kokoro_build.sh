@@ -6,6 +6,7 @@ set -e
 # Display commands being run.
 set -x
 
+ls "${KOKORO_KEYSTORE_DIR}"
 #Variables
 TD_PSW=$(<"${KOKORO_KEYSTORE_DIR}"/76474_teradata-12232021)
 GCP_PROJECT=$(gcloud config get-value project)
