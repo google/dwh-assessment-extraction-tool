@@ -2,12 +2,9 @@
 
 # Fail on any error.
 set -e
-
-# Display commands being run.
-set -x
+set +x
 
 ls "${KOKORO_KEYSTORE_DIR}"
-cat "${KOKORO_KEYSTORE_DIR}"/76474_teradata-12232021
 #Variables
 TD_PSW=$(<"${KOKORO_KEYSTORE_DIR}"/76474_teradata-12232021)
 GCP_PROJECT=$(gcloud config get-value project)
@@ -18,7 +15,9 @@ GCP_SCOPES="https://www.googleapis.com/auth/devstorage.read_only,https://www.goo
 "https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,"\
 "https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append"
 
-gcloud version
+# Display commands being run.
+set -x
+
 gcloud components update
 
 # Display commands being run.
