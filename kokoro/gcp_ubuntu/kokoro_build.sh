@@ -50,10 +50,11 @@ set -x
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
 mkdir output
+rm -r /home/kbuilder/.cache/bazel/_bazel_kbuilder/install/4cfcf40fe067e89c8f5c38e156f8d8ca
 
 bazel build dist:all
 ls -la
-rm -r /home/kbuilder/.cache/bazel/_bazel_kbuilder/install/4cfcf40fe067e89c8f5c38e156f8d8ca
+
 #./dwh-assessment-extraction-tool.sh td-extract --db-address jdbc:teradata://teradata-kokoro/DBS_PORT=1025,DATABASE=dbc --output ./output  --db-user "${TD_PSW}" --db-password "${TD_PSW}"
 
 #cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
