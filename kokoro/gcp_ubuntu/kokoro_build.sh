@@ -53,15 +53,18 @@ command -v bazel
 bazel version
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
-mkdir output
 
 rm -r /home/kbuilder/.cache/bazel/_bazel_kbuilder/install/4cfcf40fe067e89c8f5c38e156f8d8ca
 
 #bazel build dist:all
 bazel build dist:all
-ls -LR
+unzip ./bazel-bin/dist/dwh-assessment-extraction-tool.zip
 
-#./dwh-assessment-extraction-tool.sh td-extract --db-address jdbc:teradata://teradata-kokoro/DBS_PORT=1025,DATABASE=dbc --output ./output  --db-user "${TD_PSW}" --db-password "${TD_PSW}"
+cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/bazel-bin/dist"
+mkdir output
+ls -la
+
+./dwh-assessment-extraction-tool td-extract --db-address jdbc:teradata://teradata-kokoro/DBS_PORT=1025,DATABASE=dbc --output ./output  --db-user "${TD_PSW}" --db-password "${TD_PSW}"
 
 #cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
 #mvn test -B
