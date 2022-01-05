@@ -2,7 +2,6 @@
 
 # Fail on any error.
 set -e
-set +x
 
 termInstance() {
   gcloud compute instances delete teradata-kokoro --zone us-central1-a --project="${GCP_PROJECT}" --quiet
@@ -58,12 +57,14 @@ rm -r /home/kbuilder/.cache/bazel/_bazel_kbuilder/install/4cfcf40fe067e89c8f5c38
 
 #bazel build dist:all
 bazel build dist:all
-unzip ./bazel-bin/dist/dwh-assessment-extraction-tool.zip
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/bazel-bin/dist"
+unzip ./dwh-assessment-extraction-tool.zip
+
 mkdir output
 ls -la
 
+set +x
 ./dwh-assessment-extraction-tool td-extract --db-address jdbc:teradata://teradata-kokoro/DBS_PORT=1025,DATABASE=dbc --output ./output  --db-user "${TD_PSW}" --db-password "${TD_PSW}"
 
 #cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
