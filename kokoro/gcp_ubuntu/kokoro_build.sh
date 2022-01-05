@@ -59,7 +59,7 @@ rm -r /home/kbuilder/.cache/bazel/_bazel_kbuilder/install/4cfcf40fe067e89c8f5c38
 
 #bazel build dist:all
 bazel build dist:all
-ls -la
+ls -LR
 
 #./dwh-assessment-extraction-tool.sh td-extract --db-address jdbc:teradata://teradata-kokoro/DBS_PORT=1025,DATABASE=dbc --output ./output  --db-user "${TD_PSW}" --db-password "${TD_PSW}"
 
