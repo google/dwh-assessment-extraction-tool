@@ -30,7 +30,7 @@ the Extraction tool binary (i.e., ExtractionTool_deploy.jar) and its run script.
 
 **Step 3:** Create a folder for output files and run the Extraction tool:
 ```build
-./run-td-extract.sh -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user> --db-password <db password>
+./run-td-extract.sh -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user>
 ```
 
 **Optional parameters:**
