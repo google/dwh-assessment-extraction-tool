@@ -95,7 +95,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
   @Option(names = "--db-user", description = "The user name for the database.")
   private String dbUserName = "";
 
-  @Option(names = "--db-password", description = "The password for the database.")
+  @Option(names = "--db-password", description = "The password for the database.", arity = "0..1", interactive = true)
   private String dbPassword = "";
 
   @Option(
