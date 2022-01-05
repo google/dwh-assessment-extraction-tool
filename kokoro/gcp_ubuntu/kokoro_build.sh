@@ -68,6 +68,7 @@ ls -la
 
 set +x
 ./dwh-assessment-extraction-tool td-extract --db-address jdbc:teradata://teradata-kokoro/DBS_PORT=1025,DATABASE=dbc --output ./output  --db-user "${TD_PSW}" --db-password "${TD_PSW}"
+ls -la ./output
 
 #cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/"
 #mvn test -B
