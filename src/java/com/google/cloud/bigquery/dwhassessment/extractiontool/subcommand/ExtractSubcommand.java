@@ -108,7 +108,8 @@ public final class ExtractSubcommand implements Callable<Integer> {
       names = "--time-zone",
       defaultValue = "Z",
       description =
-          "The time-zone id for specified timestamps, with format complying with java.time.ZoneID's default options"
+          "The time-zone id for specified timestamps, with format complying with java.time.ZoneID's"
+              + " default options"
               + " (https://docs.oracle.com/javase/8/docs/api/java/time/ZoneId.html#of-java.lang.String-)."
               + " If unspecified, evaluates to time-zone UTC.")
   private String timeZone;
@@ -142,6 +143,20 @@ public final class ExtractSubcommand implements Callable<Integer> {
       })
   private void setDryRun(boolean dryRun) {
     argumentsBuilder.setDryRun(dryRun);
+  }
+
+  @Option(
+      names = "--rows-per-chunk",
+      defaultValue = "0",
+      description = {
+        "If larger than 0, the tool will attempt to use a chunked processing mode for scripts that"
+            + " support this, where the results for a supporting script are saved in chunks; this"
+            + " number defines the maximum rows per chunk holds. Currently, only querylogs.sql"
+            + " supports chunk mode. Chunk mode is not available if the target output is a zip"
+            + " file."
+      })
+  private void setChunkRows(Integer chunkRows) {
+    argumentsBuilder.setChunkRows(chunkRows);
   }
 
   @Option(

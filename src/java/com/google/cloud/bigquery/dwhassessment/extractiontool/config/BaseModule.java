@@ -29,6 +29,7 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractEx
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutorImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand.AboutSubcommand;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand.ExtractSubcommand;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
@@ -75,8 +76,10 @@ public final class BaseModule extends AbstractModule {
   @Provides
   @Singleton
   ScriptManager scriptManager(
-      ScriptRunner scriptRunner, ImmutableMap<String, Supplier<String>> scriptsMap) {
-    return new ScriptManagerImpl(scriptRunner, scriptsMap);
+      ScriptRunner scriptRunner,
+      ImmutableMap<String, Supplier<String>> scriptsMap,
+      ImmutableMap<String, ImmutableList<String>> sortingColumnsMap) {
+    return new ScriptManagerImpl(scriptRunner, scriptsMap, sortingColumnsMap);
   }
 
   @Provides
@@ -101,6 +104,12 @@ public final class BaseModule extends AbstractModule {
   @Singleton
   ImmutableMap<String, Supplier<String>> getScriptsMap(ScriptLoader scriptLoader) {
     return scriptLoader.loadScripts();
+  }
+
+  @Provides
+  @Singleton
+  ImmutableMap<String, ImmutableList<String>> getSortingColumnsMap(ScriptLoader scriptLoader) {
+    return scriptLoader.getSortingColumnsMap();
   }
 
   @Override

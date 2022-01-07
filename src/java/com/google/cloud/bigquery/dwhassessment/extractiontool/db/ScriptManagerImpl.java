@@ -15,15 +15,26 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
+import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.parseRowToAvro;
+import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
+
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
@@ -36,12 +47,16 @@ public class ScriptManagerImpl implements ScriptManager {
   private static final Logger LOGGER = Logger.getLogger(ScriptManagerImpl.class.getName());
 
   private final ImmutableMap<String, Supplier<String>> scriptsMap;
+  private final ImmutableMap<String, ImmutableList<String>> sortingColumnsMap;
   private final ScriptRunner scriptRunner;
 
   public ScriptManagerImpl(
-      ScriptRunner scriptRunner, ImmutableMap<String, Supplier<String>> scriptsMap) {
+      ScriptRunner scriptRunner,
+      ImmutableMap<String, Supplier<String>> scriptsMap,
+      ImmutableMap<String, ImmutableList<String>> sortingColumnsMap) {
     this.scriptRunner = scriptRunner;
     this.scriptsMap = scriptsMap;
+    this.sortingColumnsMap = sortingColumnsMap;
   }
 
   @Override
@@ -50,17 +65,87 @@ public class ScriptManagerImpl implements ScriptManager {
       boolean dryRun,
       SqlTemplateRenderer sqlTemplateRenderer,
       String scriptName,
-      DataEntityManager dataEntityManager)
+      DataEntityManager dataEntityManager,
+      Integer chunkRows)
       throws SQLException, IOException {
-    String script = getScript(sqlTemplateRenderer, scriptName);
+    boolean chunkMode =
+        chunkRows > 0
+            && dataEntityManager.isResumable()
+            && sortingColumnsMap.containsKey(scriptName);
+    ImmutableList<String> sortingColumns =
+        chunkMode ? sortingColumnsMap.get(scriptName) : ImmutableList.of();
+    String script = getScript(sqlTemplateRenderer, scriptName, sortingColumns);
     if (dryRun) {
       LOGGER.info(String.format("Should execute script '%s':\n%s", scriptName, script));
       return;
     }
-
     /* TODO(xshang): figure out how to set schema name and namespace in the schema extraction. */
     Schema schema =
         scriptRunner.extractSchema(connection, script, scriptName, /* namespace= */ "namespace");
+    if (chunkMode) {
+      ResultSet resultSet = connection.createStatement().executeQuery(script);
+      if (!resultSet.next()) {
+        return;
+      }
+      Integer chunkNumber = 0;
+      String labelColumn = sortingColumns.get(0);
+      while (!resultSet.isAfterLast()) {
+        executeScriptChunk(
+            resultSet, schema, dataEntityManager, chunkRows, labelColumn, scriptName, chunkNumber);
+        chunkNumber++;
+      }
+      return;
+    }
+    executeScriptOneSwoop(connection, scriptName, script, schema, dataEntityManager);
+  }
+
+  private void executeScriptChunk(
+      ResultSet resultSet,
+      Schema schema,
+      DataEntityManager dataEntityManager,
+      Integer chunkRows,
+      String labelColumn,
+      String scriptName,
+      Integer chunkNumber)
+      throws SQLException, IOException {
+    String firstRowStamp = getUtcTimeStringFromTimestamp(resultSet.getTimestamp(labelColumn));
+    String tempFileName =
+        String.format("%s-%s_%d_temp.avro", scriptName, firstRowStamp, chunkNumber);
+    Timestamp latestTimestamp = resultSet.getTimestamp(labelColumn);
+    oneChunk:
+    try (ResultSetRecorder<GenericRecord> dumper =
+        AvroResultSetRecorder.create(
+            schema, dataEntityManager.getEntityOutputStream(tempFileName))) {
+      for (int i = 0; i < chunkRows; i++) {
+        // Process first, then advance the row.
+        latestTimestamp = resultSet.getTimestamp(labelColumn);
+        dumper.add(parseRowToAvro(resultSet, schema));
+        if (!resultSet.next()) {
+          break oneChunk;
+        }
+      }
+    } catch (IOException | SQLException e) {
+      throw e;
+    } catch (Exception e) {
+      // Cannot happen.
+      throw new IllegalStateException("Got unexpected exception.", e);
+    }
+    String lastRowStamp = getUtcTimeStringFromTimestamp(latestTimestamp);
+    Files.move(
+        dataEntityManager.getAbsolutePath(tempFileName),
+        dataEntityManager.getAbsolutePath(
+            String.format(
+                "%s-%s-%s_%d.avro", scriptName, firstRowStamp, lastRowStamp, chunkNumber)),
+        ATOMIC_MOVE);
+  }
+
+  private void executeScriptOneSwoop(
+      Connection connection,
+      String scriptName,
+      String script,
+      Schema schema,
+      DataEntityManager dataEntityManager)
+      throws SQLException, IOException {
     try (ResultSetRecorder<GenericRecord> dumper =
         AvroResultSetRecorder.create(
             schema, dataEntityManager.getEntityOutputStream(scriptName + ".avro"))) {
@@ -73,12 +158,41 @@ public class ScriptManagerImpl implements ScriptManager {
     }
   }
 
+  private String getUtcTimeStringFromTimestamp(Timestamp timestamp) {
+    Instant instant = timestamp.toInstant();
+    // Replace the "Z" that signifies UTC timezone with "S" that signifies the separator between
+    // seconds and fractional seconds; remove separators that are not necessary for human
+    // interpretation.
+    String instantWithoutNanoseconds =
+        instant
+            .truncatedTo(ChronoUnit.SECONDS)
+            .toString()
+            .replaceAll("[\\-:]", "")
+            .replaceAll("[Z]", "S")
+            .trim();
+    // Keep 6 digits of the fractional seconds from nano, which is equivalent to round(nanos / 10^9
+    // * 10^6) with left-padded zeros.
+    String sixDigitNanos =
+        String.format((Locale) null, "%06d", Math.round(timestamp.getNanos() / Math.pow(10, 3)));
+    return instantWithoutNanoseconds + sixDigitNanos;
+  }
+
   @Override
-  public String getScript(SqlTemplateRenderer sqlTemplateRenderer, String scriptName) {
+  public String getScript(
+      SqlTemplateRenderer sqlTemplateRenderer,
+      String scriptName,
+      ImmutableList<String> sortingColumns) {
     Preconditions.checkArgument(
         scriptsMap.containsKey(scriptName),
         String.format("Script name %s is not available.", scriptName));
-    return sqlTemplateRenderer.renderTemplate(scriptName, scriptsMap.get(scriptName).get());
+    String rawScript = scriptsMap.get(scriptName).get();
+    if (!sortingColumns.isEmpty()) {
+      String orderClause =
+          sortingColumns.stream()
+              .collect(Collectors.joining(", ", "\nORDER BY ", " ASC NULLS FIRST"));
+      return sqlTemplateRenderer.renderTemplate(scriptName, rawScript + orderClause);
+    }
+    return sqlTemplateRenderer.renderTemplate(scriptName, rawScript);
   }
 
   @Override

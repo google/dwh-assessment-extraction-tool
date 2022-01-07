@@ -66,7 +66,8 @@ public class InternalScriptLoaderTest {
 
   private final ScriptLoader scriptLoader = new InternalScriptLoader();
   private final ScriptManager scriptManager =
-      new ScriptManagerImpl(new ScriptRunnerImpl(), scriptLoader.loadScripts());
+      new ScriptManagerImpl(
+          new ScriptRunnerImpl(), scriptLoader.loadScripts(), scriptLoader.getSortingColumnsMap());
   private final ScriptRunner scriptRunner = new ScriptRunnerImpl();
   private final SqlTemplateRenderer sqlTemplateRenderer =
       new SqlTemplateRendererImpl(
@@ -753,7 +754,7 @@ public class InternalScriptLoaderTest {
   private DataFileReader<Record> getAvroDataOutputReader(ByteArrayOutputStream outputStream)
       throws IOException {
     DatumReader<Record> datumReader = new GenericDatumReader<>();
-    return new DataFileReader<Record>(
+    return new DataFileReader<>(
         new SeekableByteArrayInput(outputStream.toByteArray()), datumReader);
   }
 
@@ -762,7 +763,7 @@ public class InternalScriptLoaderTest {
   }
 
   private String getScript(String scriptName, SqlTemplateRenderer renderer) {
-    return scriptManager.getScript(renderer, scriptName);
+    return scriptManager.getScript(renderer, scriptName, ImmutableList.of());
   }
 
   private void executeScript(String scriptName, ByteArrayOutputStream outputStream)
@@ -772,7 +773,8 @@ public class InternalScriptLoaderTest {
         /*dryRun=*/ false,
         sqlTemplateRenderer,
         scriptName,
-        new DataEntityManagerTesting(outputStream));
+        new DataEntityManagerTesting(outputStream),
+        5000);
   }
 
   private ImmutableList<GenericRecord> executeScriptToAvro(String scriptName, Schema schema)

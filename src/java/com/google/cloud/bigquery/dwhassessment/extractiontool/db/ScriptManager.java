@@ -16,6 +16,7 @@
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.sql.Connection;
@@ -27,20 +28,22 @@ public interface ScriptManager {
   /**
    * Executes a script against a DB connection and writes the output to a stream.
    *
+   * @param sqlTemplateRenderer A transformer to apply on the SQL script before execution.
    * @param connection The JDBC connection to the database.
    * @param dryRun Whether to just perform a dry run, which just logs out the action to perform.
-   * @param sqlTransformer A transformer to apply on the SQL script before execution.
    * @param scriptName The name of the script. This is not a file name. The interpretation of the
    *     name is left to the implementation but can also map to several files (e.g., an SQL file and
    *     a schema definition file).
    * @param dataEntityManager The data entity manager to use to write the output.
+   * @param chunkRows The maximum number of rows (records) in one output file.
    */
   void executeScript(
       Connection connection,
       boolean dryRun,
       SqlTemplateRenderer sqlTemplateRenderer,
       String scriptName,
-      DataEntityManager dataEntityManager)
+      DataEntityManager dataEntityManager,
+      Integer chunkRows)
       throws SQLException, IOException;
 
   default void executeScript(
@@ -51,12 +54,16 @@ public interface ScriptManager {
         /* dryRun= */ false,
         /* sqlTransformer= */ (name, script) -> script,
         scriptName,
-        dataEntityManager);
+        dataEntityManager,
+        0);
   }
 
   /** Gets a list of names of all available scripts. */
   ImmutableSet<String> getAllScriptNames();
 
   /** Gets a SQL script based on a script name. */
-  String getScript(SqlTemplateRenderer sqlTemplateRenderer, String scriptName);
+  String getScript(
+      SqlTemplateRenderer sqlTemplateRenderer,
+      String scriptName,
+      ImmutableList<String> sortingColumns);
 }

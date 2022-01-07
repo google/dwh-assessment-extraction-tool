@@ -86,26 +86,26 @@ public final class ExtractExecutorImplTest {
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("one"),
-            eq(dataEntityManager));
+            eq(dataEntityManager), eq(0));
     verify(scriptManager)
         .executeScript(
             any(Connection.class),
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("two"),
-            eq(dataEntityManager));
+            eq(dataEntityManager), eq(0));
     verify(scriptManager)
         .executeScript(
             any(Connection.class),
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("three"),
-            eq(dataEntityManager));
+            eq(dataEntityManager), eq(0));
     verifyNoMoreInteractions(scriptManager);
   }
 
   @Test
-  public void run_selectSomeScripts_success() throws Exception, SQLException {
+  public void run_selectSomeScripts_success() throws Exception {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
     when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
         .thenReturn(ImmutableSet.of());
@@ -127,19 +127,19 @@ public final class ExtractExecutorImplTest {
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("one"),
-            eq(dataEntityManager));
+            eq(dataEntityManager), eq(0));
     verify(scriptManager)
         .executeScript(
             any(Connection.class),
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("three"),
-            eq(dataEntityManager));
+            eq(dataEntityManager), eq(0));
     verifyNoMoreInteractions(scriptManager);
   }
 
   @Test
-  public void run_skipSomeScripts_success() throws Exception, SQLException {
+  public void run_skipSomeScripts_success() throws Exception {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
     when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
         .thenReturn(ImmutableSet.of());
@@ -161,12 +161,12 @@ public final class ExtractExecutorImplTest {
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("two"),
-            eq(dataEntityManager));
+            eq(dataEntityManager), eq(0));
     verifyNoMoreInteractions(scriptManager);
   }
 
   @Test
-  public void run_failOnUnknownScripts() throws Exception, SQLException {
+  public void run_failOnUnknownScripts() {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
     when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
         .thenReturn(ImmutableSet.of());
@@ -186,7 +186,7 @@ public final class ExtractExecutorImplTest {
   }
 
   @Test
-  public void run_filterScripts_success() throws Exception, SQLException {
+  public void run_filterScripts_success() throws Exception {
     ImmutableList<SchemaFilter> filters =
         ImmutableList.of(SchemaFilter.builder().setDatabaseName(Pattern.compile("foo")).build());
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of());
@@ -219,7 +219,7 @@ public final class ExtractExecutorImplTest {
   }
 
   @Test
-  public void run_failOnUnknownSkipScripts() throws Exception, SQLException {
+  public void run_failOnUnknownSkipScripts() {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two", "three"));
     when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
         .thenReturn(ImmutableSet.of());

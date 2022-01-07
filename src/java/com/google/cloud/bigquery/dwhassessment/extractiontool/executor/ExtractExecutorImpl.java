@@ -129,7 +129,12 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
           DriverManager.getConnection(
               arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
       scriptManager.executeScript(
-          connection, arguments.dryRun(), sqlTemplateRenderer, scriptName, dataEntityManager);
+          connection,
+          arguments.dryRun(),
+          sqlTemplateRenderer,
+          scriptName,
+          dataEntityManager,
+          arguments.chunkRows());
       connection.close();
       LOGGER.log(Level.INFO, "Finished extracting {0}.", scriptName);
     }

@@ -20,5 +20,15 @@ public class DataEntityManagerDirectoryImpl implements DataEntityManager {
   }
 
   @Override
+  public boolean isResumable() {
+    return true;
+  }
+
+  @Override
+  public Path getAbsolutePath(String name) {
+    return basePath.resolve(name);
+  }
+
+  @Override
   public void close() throws IOException {}
 }

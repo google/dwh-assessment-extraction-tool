@@ -56,6 +56,9 @@ public interface ExtractExecutor {
     /** Whether to do a dry run. */
     public abstract boolean dryRun();
 
+    /** Number of records per chunk file (if chunk mode is available). */
+    public abstract Integer chunkRows();
+
     public abstract Optional<Instant> qryLogStartTime();
 
     public abstract Optional<Instant> qryLogEndTime();
@@ -64,6 +67,7 @@ public interface ExtractExecutor {
       return new AutoValue_ExtractExecutor_Arguments.Builder()
           .setDryRun(false)
           .setBaseDatabase("DBC")
+          .setChunkRows(0)
           .setSchemaFilters(ImmutableList.of())
           .setSqlScripts(ImmutableList.of())
           .setSkipSqlScripts(ImmutableList.of());
@@ -86,6 +90,8 @@ public interface ExtractExecutor {
       public abstract Builder setBaseDatabase(String baseDatabase);
 
       public abstract Builder setDryRun(boolean dryRun);
+
+      public abstract Builder setChunkRows(Integer chunkRows);
 
       public abstract Builder setQryLogStartTime(Instant timestampInUtc);
 
