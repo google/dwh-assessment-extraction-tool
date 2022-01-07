@@ -8,7 +8,7 @@
 set -e
 
 termInstance() {
-  gcloud compute instances delete teradata-kokoro --zone us-central1-a --project="${GCP_PROJECT}" --quiet
+  gcloud compute instances delete teradata-kokoro-presubmit --zone us-central1-a --project="${GCP_PROJECT}" --quiet
 }
 
 #delete instance after error
@@ -19,7 +19,7 @@ ls "${KOKORO_KEYSTORE_DIR}"
 export TD_PSW=$(<"${KOKORO_KEYSTORE_DIR}"/76474_teradata-12232021)
 export TD_USR="dbc"
 export TD_DB="dbc"
-export TD_HOST="teradata-kokoro"
+export TD_HOST="teradata-kokoro-presubmit"
 export EXPORT_PATH="${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/bazel-bin/dist/dwh-assessment-extraction-tool/output"
 export JDBC_PATH="${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/terajdbc4.jar"
 export CLASSPATH="${JDBC_PATH}"
