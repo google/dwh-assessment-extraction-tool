@@ -84,7 +84,8 @@ public final class AvroHelperTest {
           + " \"name\": \"schemaName\",\n"
           + " \"fields\": [\n"
           + "     {\"name\": \"ID\", \"type\": [\"null\", \"int\"], \"default\":null},\n"
-          + "     {\"name\": \"NAME\", \"type\": [\"null\", \"string\"], \"default\":null}\n"
+          + "     {\"name\": \"NAME\", \"type\": [\"null\", \"string\"], \"default\":null},\n"
+          + "     {\"name\": \"CHAR_COL\", \"type\": [\"null\", \"string\"], \"default\":null}\n"
           + " ]\n"
           + "}";
 
@@ -110,8 +111,9 @@ public final class AvroHelperTest {
             + "BOOLEAN_COL BOOLEAN, "
             + "TINYINT_COL TINYINT, "
             + "REAL_COL REAL)");
-    baseStmt.execute("CREATE TABLE SIMPLE_TABLE (ID INTEGER, NAME VARCHAR(100))");
-    baseStmt.execute("INSERT INTO SIMPLE_TABLE VALUES (0, 'name_0')");
+    baseStmt.execute(
+        "CREATE TABLE SIMPLE_TABLE (ID INTEGER, NAME VARCHAR(100), CHAR_COL CHAR(20))");
+    baseStmt.execute("INSERT INTO SIMPLE_TABLE VALUES (0, 'name_0', '  two  words')");
     baseStmt.close();
     connection.commit();
 
@@ -143,7 +145,11 @@ public final class AvroHelperTest {
       GenericRecord result = parseRowToAvro(resultSet, testSchema);
       assertThat(result)
           .isEqualTo(
-              new GenericRecordBuilder(testSchema).set("ID", 0).set("NAME", "name_0").build());
+              new GenericRecordBuilder(testSchema)
+                  .set("ID", 0)
+                  .set("NAME", "name_0")
+                  .set("CHAR_COL", "  two  words")
+                  .build());
     }
   }
 
@@ -154,15 +160,21 @@ public final class AvroHelperTest {
     ResultSetMetaData simpleTestMetadata =
         connection.createStatement().executeQuery("SELECT * FROM SIMPLE_TABLE").getMetaData();
     Schema schema = getAvroSchema("schemaName", "namespace", simpleTestMetadata);
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, "SELECT * FROM SIMPLE_TABLE", schema);
+    ImmutableList.Builder<GenericRecord> records = ImmutableList.builder();
+    scriptRunner.executeScriptToAvro(
+        connection, "SELECT * FROM SIMPLE_TABLE", schema, records::add);
 
-    dumpResults(records, outputStream, schema);
+    dumpResults(records.build(), outputStream, schema);
 
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     DataFileReader<Record> reader =
         new DataFileReader<>(new SeekableByteArrayInput(outputStream.toByteArray()), datumReader);
     assertThat(reader.next())
-        .isEqualTo(new GenericRecordBuilder(schema).set("ID", 0).set("NAME", "name_0").build());
+        .isEqualTo(
+            new GenericRecordBuilder(schema)
+                .set("ID", 0)
+                .set("NAME", "name_0")
+                .set("CHAR_COL", "  two  words")
+                .build());
   }
 }

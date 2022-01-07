@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.*;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerTesting;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.faketd.TeradataSimulator;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -121,8 +120,7 @@ public class InternalScriptLoaderTest {
     fields = fields.name("TempSkew").type().optional().intType();
     Schema schema = fields.endRecord();
 
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
 
     assertThat(records)
         .containsExactly(
@@ -161,8 +159,7 @@ public class InternalScriptLoaderTest {
     executeScript(scriptName, outputStream);
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
 
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
 
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
@@ -173,7 +170,7 @@ public class InternalScriptLoaderTest {
             .set("NumParameters", 3)
             .set("ParameterDataTypes", "I1BF")
             .set("FunctionType", "F")
-            .set("ExternalName", Strings.padEnd("JSONGETVALUE", 30, ' '))
+            .set("ExternalName", "JSONGETVALUE")
             .set("SrcFileLanguage", "P")
             .set("NoSQLDataAccess", "Y")
             .set("ParameterStyle", "I")
@@ -183,7 +180,7 @@ public class InternalScriptLoaderTest {
             .set("ExecProtectionMode", "S")
             .set("ExtFileReference", "SS!TD_GetFunctionContext!/var")
             .set("CharacterType", 1)
-            .set("Platform", "LINUX64 ")
+            .set("Platform", "LINUX64")
             .set("InterimFldSize", 0)
             .set("RoutineKind", "C")
             .set(
@@ -206,8 +203,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(/*sqlScript=*/ sqlScript, schema);
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
             .set("DatabaseName", "test_database")
@@ -234,8 +230,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
 
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
 
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
@@ -266,8 +261,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
 
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
 
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
@@ -293,8 +287,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
 
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
 
     GenericRecord expectedQueryLogsRecord1 =
         new GenericRecordBuilder(schema)
@@ -311,12 +304,12 @@ public class InternalScriptLoaderTest {
             .set("SessionID", 9)
             .set("LogicalHostID", 2)
             .set("LogonDateTime", Instant.parse("2021-07-01T18:05:06Z").toEpochMilli())
-            .set("LogonSource", Strings.padEnd("logon source", 128, ' '))
-            .set("AppID", Strings.padEnd("app_id", 30, ' '))
-            .set("ClientID", Strings.padEnd("client_id", 30, ' '))
-            .set("ClientAddr", Strings.padEnd("client_address", 45, ' '))
+            .set("LogonSource", "logon source")
+            .set("AppID", "app_id")
+            .set("ClientID", "client_id")
+            .set("ClientAddr", "client_address")
             .set("QueryText", "SELECT * FROM MyTable; SELECT * FROM YourTable;")
-            .set("StatementType", Strings.padEnd("Select", 20, ' '))
+            .set("StatementType", "Select")
             .set("StatementGroup", "Select")
             .set("StartTime", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
             .set("FirstRespTime", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
@@ -347,12 +340,12 @@ public class InternalScriptLoaderTest {
             .set("SessionID", 9)
             .set("LogicalHostID", 2)
             .set("LogonDateTime", Instant.parse("2021-07-01T23:23:46Z").toEpochMilli())
-            .set("LogonSource", Strings.padEnd("logon source", 128, ' '))
-            .set("AppID", Strings.padEnd("app_id", 30, ' '))
-            .set("ClientID", Strings.padEnd("client_id", 30, ' '))
-            .set("ClientAddr", Strings.padEnd("client_address", 45, ' '))
+            .set("LogonSource", "logon source")
+            .set("AppID", "app_id")
+            .set("ClientID", "client_id")
+            .set("ClientAddr", "client_address")
             .set("QueryText", "SELECT * FROM MyTable; SELECT * FROM YourTable;")
-            .set("StatementType", Strings.padEnd("Select", 20, ' '))
+            .set("StatementType", "Select")
             .set("StatementGroup", "Select")
             .set("StartTime", Instant.parse("2021-07-01T23:23:46Z").toEpochMilli())
             .set("FirstRespTime", Instant.parse("2021-07-01T23:23:47Z").toEpochMilli())
@@ -396,8 +389,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName, sqlTemplateRendererWithTimeRange);
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
 
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
 
     GenericRecord expectedQueryLogsRecord1 =
         new GenericRecordBuilder(schema)
@@ -414,12 +406,12 @@ public class InternalScriptLoaderTest {
             .set("SessionID", 9)
             .set("LogicalHostID", 2)
             .set("LogonDateTime", Instant.parse("2021-07-01T18:05:06Z").toEpochMilli())
-            .set("LogonSource", Strings.padEnd("logon source", 128, ' '))
-            .set("AppID", Strings.padEnd("app_id", 30, ' '))
-            .set("ClientID", Strings.padEnd("client_id", 30, ' '))
-            .set("ClientAddr", Strings.padEnd("client_address", 45, ' '))
+            .set("LogonSource", "logon source")
+            .set("AppID", "app_id")
+            .set("ClientID", "client_id")
+            .set("ClientAddr", "client_address")
             .set("QueryText", "SELECT * FROM MyTable; SELECT * FROM YourTable;")
-            .set("StatementType", Strings.padEnd("Select", 20, ' '))
+            .set("StatementType", "Select")
             .set("StatementGroup", "Select")
             .set("StartTime", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
             .set("FirstRespTime", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
@@ -450,8 +442,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(/*sqlScript=*/ sqlScript, schema);
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
             .set("DatabaseName", "test_database")
@@ -482,8 +473,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(/*sqlScript=*/ sqlScript, schema);
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
             .set("DatabaseName", "test_database")
@@ -505,8 +495,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(/*sqlScript=*/ sqlScript, schema);
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
             .set("DatabaseName", "test_database")
@@ -515,7 +504,7 @@ public class InternalScriptLoaderTest {
             .set("ColumnFormat", "test_format")
             .set("ColumnTitle", "test_title")
             .set("ColumnLength", 1000)
-            .set("ColumnType", "I ")
+            .set("ColumnType", "I")
             .set("DefaultValue", "0")
             .set("ColumnConstraint", "test constraint")
             .set("ConstraintCount", 1)
@@ -536,8 +525,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(/*sqlScript=*/ sqlScript, schema);
     GenericRecord expectedRecordUser1 =
         new GenericRecordBuilder(schema)
             .set("UserName", "user_1")
@@ -567,8 +555,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(/*sqlScript=*/ sqlScript, schema);
     GenericRecord expectedRecordRole1 =
         new GenericRecordBuilder(schema)
             .set("RoleName", "test_role_1")
@@ -612,8 +599,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(/*sqlScript=*/ sqlScript, schema);
     GenericRecord expectedRecord1 =
         new GenericRecordBuilder(schema)
             .set("IndexId", 0)
@@ -657,8 +643,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
             .set("DatabaseName", "db1")
@@ -693,8 +678,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(/*sqlScript=*/ sqlScript, schema);
     GenericRecord expectedRecord1 =
         new GenericRecordBuilder(schema)
             .set("IndexId", 0)
@@ -738,8 +722,7 @@ public class InternalScriptLoaderTest {
     String sqlScript = getScript(scriptName);
     // Get schema and verify records.
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, /*sqlScript=*/ sqlScript, schema);
+    ImmutableList<GenericRecord> records = executeScriptToAvro(/*sqlScript=*/ sqlScript, schema);
     GenericRecord expectedRecord =
         new GenericRecordBuilder(schema)
             .set("HostNo", 1)
@@ -790,5 +773,12 @@ public class InternalScriptLoaderTest {
         sqlTemplateRenderer,
         scriptName,
         new DataEntityManagerTesting(outputStream));
+  }
+
+  private ImmutableList<GenericRecord> executeScriptToAvro(String scriptName, Schema schema)
+      throws SQLException {
+    ImmutableList.Builder<GenericRecord> output = ImmutableList.builder();
+    scriptRunner.executeScriptToAvro(connection, scriptName, schema, output::add);
+    return output.build();
   }
 }

@@ -15,11 +15,8 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
-import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.dumpResults;
-
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
@@ -64,9 +61,16 @@ public class ScriptManagerImpl implements ScriptManager {
     /* TODO(xshang): figure out how to set schema name and namespace in the schema extraction. */
     Schema schema =
         scriptRunner.extractSchema(connection, script, scriptName, /* namespace= */ "namespace");
-    ImmutableList<GenericRecord> records =
-        scriptRunner.executeScriptToAvro(connection, script, schema);
-    dumpResults(records, dataEntityManager.getEntityOutputStream(scriptName + ".avro"), schema);
+    try (ResultSetRecorder<GenericRecord> dumper =
+        AvroResultSetRecorder.create(
+            schema, dataEntityManager.getEntityOutputStream(scriptName + ".avro"))) {
+      scriptRunner.executeScriptToAvro(connection, script, schema, dumper::add);
+    } catch (IOException | SQLException e) {
+      throw e;
+    } catch (Exception e) {
+      // Cannot happen.
+      throw new IllegalStateException("Got unexpected exception.", e);
+    }
   }
 
   @Override
