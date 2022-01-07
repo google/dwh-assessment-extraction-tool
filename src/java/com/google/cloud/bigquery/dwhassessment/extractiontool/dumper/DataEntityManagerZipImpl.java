@@ -18,6 +18,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.dumper;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -56,6 +57,16 @@ public class DataEntityManagerZipImpl implements DataEntityManager {
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  @Override
+  public boolean isResumable() {
+    return false;
+  }
+
+  @Override
+  public Path getAbsolutePath(String name) {
+    return null;
   }
 
   @Override

@@ -116,12 +116,12 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
         SqlScriptVariables.QueryLogsVariables.builder();
     maybeAddTimeRange(qryLogVarsBuilder, arguments);
 
-    SqlScriptVariables sqlScriptVariables =
+    SqlScriptVariables.Builder sqlScriptVariablesBuilder =
         SqlScriptVariables.builder()
             .setBaseDatabase(arguments.baseDatabase())
-            .setQueryLogsVariables(qryLogVarsBuilder.build())
-            .build();
-    SqlTemplateRenderer sqlTemplateRenderer = new SqlTemplateRendererImpl(sqlScriptVariables);
+            .setQueryLogsVariables(qryLogVarsBuilder.build());
+    SqlTemplateRenderer sqlTemplateRenderer =
+        new SqlTemplateRendererImpl(sqlScriptVariablesBuilder);
 
     for (String scriptName : getScriptNames(arguments)) {
       LOGGER.log(Level.INFO, "Start extracting {0}...", scriptName);
@@ -129,7 +129,12 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
           DriverManager.getConnection(
               arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
       scriptManager.executeScript(
-          connection, arguments.dryRun(), sqlTemplateRenderer, scriptName, dataEntityManager);
+          connection,
+          arguments.dryRun(),
+          sqlTemplateRenderer,
+          scriptName,
+          dataEntityManager,
+          arguments.chunkRows());
       connection.close();
       LOGGER.log(Level.INFO, "Finished extracting {0}.", scriptName);
     }

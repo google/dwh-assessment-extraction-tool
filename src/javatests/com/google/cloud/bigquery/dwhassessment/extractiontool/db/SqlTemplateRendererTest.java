@@ -19,6 +19,7 @@ import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScrip
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,9 +40,7 @@ public class SqlTemplateRendererTest {
   public void render_base_success() {
     underTest =
         new SqlTemplateRendererImpl(
-            baseVariablesBuilder
-                .setQueryLogsVariables(QueryLogsVariables.builder().build())
-                .build());
+            baseVariablesBuilder.setQueryLogsVariables(QueryLogsVariables.builder().build()));
     assertThat(
             underTest.renderTemplate(
                 /* name= */ "test",
@@ -53,17 +52,18 @@ public class SqlTemplateRendererTest {
   public void render_missing_optional_parameter_success() {
     underTest =
         new SqlTemplateRendererImpl(
-            baseVariablesBuilder
-                .setQueryLogsVariables(QueryLogsVariables.builder().build())
-                .build());
+            baseVariablesBuilder.setQueryLogsVariables(QueryLogsVariables.builder().build()));
     assertThat(
             underTest.renderTemplate(
                 /* name= */ "test",
-                /* sql= */ "SELECT t.a AS b FROM \"{{baseDatabase}}\".bar"
-                    + "{{#if queryLogsVariables.timeRange}}\n"
+                /* sql= */ "SELECT t.a AS b FROM \"{{baseDatabase}}\".bar{{#if"
+                    + " queryLogsVariables.timeRange}}\n"
                     + "WHERE t.timestamp BETWEEN"
                     + " \"{{queryLogsVariables.timeRange.startTimestamp}}\" AND"
                     + " \"{{queryLogsVariables.timeRange.endTimestamp}}\"\n"
+                    + "{{/if}}{{#if sortingColumns}}\n"
+                    + "ORDER BY {{#each sortingColumns}}{{this}}{{#unless"
+                    + " @last}},{{/unless}}{{/each}} ASC NULLS FIRST\n"
                     + "{{/if}}"))
         .isEqualTo("SELECT t.a AS b FROM \"test-db\".bar");
   }
@@ -81,27 +81,30 @@ public class SqlTemplateRendererTest {
                                 .setEndTimestamp("2022-01-01 23:23:46")
                                 .build())
                         .build())
-                .build());
+                .setSortingColumns(ImmutableList.of("COLUMN1", "COLUMN2")));
     assertThat(
             underTest.renderTemplate(
                 /* name= */ "test",
                 /* sql= */ "SELECT t.a AS b FROM \"{{baseDatabase}}\".bar {{#if"
-                    + " queryLogsVariables.timeRange}}WHERE t.timestamp BETWEEN TIMESTAMP"
-                    + " '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP"
-                    + " '{{queryLogsVariables.timeRange.endTimestamp}}'{{/if}}"))
+                    + " queryLogsVariables.timeRange}}WHERE t.timestamp BETWEEN"
+                    + " TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND"
+                    + " TIMESTAMP"
+                    + " '{{queryLogsVariables.timeRange.endTimestamp}}'{{/if}}{{#if"
+                    + " sortingColumns}}\n"
+                    + "ORDER BY {{#each sortingColumns}}{{this}}{{#unless"
+                    + " @last}},{{/unless}}{{/each}} ASC NULLS FIRST"
+                    + "{{/if}}"))
         .isEqualTo(
             "SELECT t.a AS b FROM \"test-db\".bar "
                 + "WHERE t.timestamp BETWEEN TIMESTAMP '2021-01-01 23:23:46.123456' "
-                + "AND TIMESTAMP '2022-01-01 23:23:46'");
+                + "AND TIMESTAMP '2022-01-01 23:23:46'\nORDER BY COLUMN1,COLUMN2 ASC NULLS FIRST");
   }
 
   @Test
   public void render_invalidTemplateThrows() {
     underTest =
         new SqlTemplateRendererImpl(
-            baseVariablesBuilder
-                .setQueryLogsVariables(QueryLogsVariables.builder().build())
-                .build());
+            baseVariablesBuilder.setQueryLogsVariables(QueryLogsVariables.builder().build()));
     IllegalStateException e =
         assertThrows(
             IllegalStateException.class,

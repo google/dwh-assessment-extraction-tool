@@ -19,40 +19,40 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.dumper;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 
 /**
  * Implementation of a DataEntityManger for unit test purposes.
  */
-public class DataEntityManagerTesting implements DataEntityManager {
+public class DataEntityManagerTempTestImpl implements DataEntityManager {
 
-  private final ByteArrayOutputStream outputStream;
+  private final Path tmpDir;
 
   /**
-   * Constructs a new DataEntityManagerTesting.
+   * Constructs a new DataEntityManagerTempTestImpl.
    */
-  public DataEntityManagerTesting(ByteArrayOutputStream outputStream) {
-    this.outputStream = outputStream;
+  public DataEntityManagerTempTestImpl(String testDirName) throws IOException {
+    this.tmpDir = Files.createTempDirectory(testDirName);
   }
 
   @Override
-  public OutputStream getEntityOutputStream(String name) {
-    return this.outputStream;
+  public OutputStream getEntityOutputStream(String name) throws IOException {
+    return Files.newOutputStream(tmpDir.resolve(name));
   }
 
   @Override
   public boolean isResumable() {
-    return false;
+    return true;
   }
 
   @Override
   public Path getAbsolutePath(String name) {
-    return null;
+    return tmpDir.resolve(name);
   }
 
   @Override
   public void close() throws IOException {
-    outputStream.close();
   }
 }

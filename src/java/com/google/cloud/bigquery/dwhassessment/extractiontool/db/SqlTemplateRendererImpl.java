@@ -23,10 +23,10 @@ import java.io.IOException;
 public class SqlTemplateRendererImpl implements SqlTemplateRenderer {
 
   private final Handlebars handlebars = new Handlebars();
-  private final SqlScriptVariables sqlScriptVariables;
+  private SqlScriptVariables.Builder sqlScriptVariablesBuilder;
 
-  public SqlTemplateRendererImpl(SqlScriptVariables sqlScriptVariables) {
-    this.sqlScriptVariables = sqlScriptVariables;
+  public SqlTemplateRendererImpl(SqlScriptVariables.Builder sqlScriptVariablesBuilder) {
+    this.sqlScriptVariablesBuilder = sqlScriptVariablesBuilder;
   }
 
   @Override
@@ -38,9 +38,14 @@ public class SqlTemplateRendererImpl implements SqlTemplateRenderer {
       throw new IllegalStateException(String.format("Failed to compile SQL template '%s'.", name));
     }
     try {
-      return template.apply(sqlScriptVariables);
+      return template.apply(sqlScriptVariablesBuilder.build());
     } catch (IOException e) {
       throw new IllegalStateException(String.format("Failed to apply SQL template '%s'.", name));
     }
+  }
+
+  @Override
+  public SqlScriptVariables.Builder getSqlScriptVariablesBuilder() {
+    return sqlScriptVariablesBuilder;
   }
 }

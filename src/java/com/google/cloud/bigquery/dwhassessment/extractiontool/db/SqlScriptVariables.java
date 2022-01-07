@@ -16,16 +16,22 @@
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Optional;
 
 @AutoValue
 public abstract class SqlScriptVariables {
 
   public static Builder builder() {
-    return new AutoValue_SqlScriptVariables.Builder().setBaseDatabase("DBC");
+    return new AutoValue_SqlScriptVariables.Builder()
+        .setBaseDatabase("DBC")
+        .setSortingColumns(ImmutableList.of());
   }
 
   public abstract String getBaseDatabase();
+
+  public abstract List<String> getSortingColumns();
 
   public abstract QueryLogsVariables getQueryLogsVariables();
 
@@ -83,6 +89,8 @@ public abstract class SqlScriptVariables {
   public abstract static class Builder {
 
     public abstract Builder setBaseDatabase(String value);
+
+    public abstract Builder setSortingColumns(List<String> value);
 
     public abstract Builder setQueryLogsVariables(QueryLogsVariables value);
 

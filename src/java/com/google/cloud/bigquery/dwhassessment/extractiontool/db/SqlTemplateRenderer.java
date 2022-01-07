@@ -25,4 +25,10 @@ public interface SqlTemplateRenderer {
    * @return The rendered SQL expression.
    */
   String renderTemplate(String name, String sql);
+
+  /**
+   * Returns the current builder for SqlScriptVariables of the renderer.
+   * @return The renderer's current SqlScriptVariables.Builder
+   */
+  SqlScriptVariables.Builder getSqlScriptVariablesBuilder();
 }

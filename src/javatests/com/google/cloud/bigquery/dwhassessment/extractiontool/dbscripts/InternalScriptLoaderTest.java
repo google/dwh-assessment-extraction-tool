@@ -18,6 +18,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.dbscripts;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.*;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables.QueryLogsVariables;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerTesting;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.faketd.TeradataSimulator;
 import com.google.common.collect.ImmutableList;
@@ -66,14 +67,14 @@ public class InternalScriptLoaderTest {
 
   private final ScriptLoader scriptLoader = new InternalScriptLoader();
   private final ScriptManager scriptManager =
-      new ScriptManagerImpl(new ScriptRunnerImpl(), scriptLoader.loadScripts());
+      new ScriptManagerImpl(
+          new ScriptRunnerImpl(), scriptLoader.loadScripts(), scriptLoader.getSortingColumnsMap());
   private final ScriptRunner scriptRunner = new ScriptRunnerImpl();
   private final SqlTemplateRenderer sqlTemplateRenderer =
       new SqlTemplateRendererImpl(
           SqlScriptVariables.builder()
               .setBaseDatabase("DBC")
-              .setQueryLogsVariables(SqlScriptVariables.QueryLogsVariables.builder().build())
-              .build());
+              .setQueryLogsVariables(SqlScriptVariables.QueryLogsVariables.builder().build()));
 
   @BeforeClass
   public static void setUpConnection() throws IOException, SQLException {
@@ -277,7 +278,14 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+
+    scriptManager.executeScript(
+        connection,
+        new SqlTemplateRendererImpl(
+            SqlScriptVariables.builder()
+                .setQueryLogsVariables(QueryLogsVariables.builder().build())),
+        scriptName,
+        new DataEntityManagerTesting(outputStream));
     assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
@@ -384,8 +392,7 @@ public class InternalScriptLoaderTest {
                             SqlScriptVariables.QueryLogsVariables.TimeRange.builder()
                                 .setEndTimestamp("2021-07-01 23:23:23.23")
                                 .build())
-                        .build())
-                .build());
+                        .build()));
     String sqlScript = getScript(scriptName, sqlTemplateRendererWithTimeRange);
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
 
@@ -753,7 +760,7 @@ public class InternalScriptLoaderTest {
   private DataFileReader<Record> getAvroDataOutputReader(ByteArrayOutputStream outputStream)
       throws IOException {
     DatumReader<Record> datumReader = new GenericDatumReader<>();
-    return new DataFileReader<Record>(
+    return new DataFileReader<>(
         new SeekableByteArrayInput(outputStream.toByteArray()), datumReader);
   }
 
@@ -762,7 +769,7 @@ public class InternalScriptLoaderTest {
   }
 
   private String getScript(String scriptName, SqlTemplateRenderer renderer) {
-    return scriptManager.getScript(renderer, scriptName);
+    return scriptManager.getScript(renderer, scriptName, ImmutableList.of());
   }
 
   private void executeScript(String scriptName, ByteArrayOutputStream outputStream)
@@ -772,7 +779,8 @@ public class InternalScriptLoaderTest {
         /*dryRun=*/ false,
         sqlTemplateRenderer,
         scriptName,
-        new DataEntityManagerTesting(outputStream));
+        new DataEntityManagerTesting(outputStream),
+        5000);
   }
 
   private ImmutableList<GenericRecord> executeScriptToAvro(String scriptName, Schema schema)
