@@ -35,7 +35,7 @@ public final class SqlReader {
       return FileUtils.readFileToString(new File(sqlPath), StandardCharsets.UTF_8);
     } catch (IOException exception) {
       throw new IllegalStateException(
-          String.format("Error reading for sql file {0}", sqlPath), exception);
+          String.format("Error while reading sql file %s", sqlPath), exception);
     }
   }
 }

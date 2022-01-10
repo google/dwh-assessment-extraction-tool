@@ -15,26 +15,34 @@
  */
 package com.google.integration;
 
+import static com.google.avro.AvroHelper.extractAvroDataFromFile;
+import static java.lang.String.format;
+
 import com.google.avro.AvroHelper;
 import com.google.base.TestBase;
 import com.google.pojo.UserTableRow;
 import com.google.sql.SqlReader;
 import com.google.tdjdbc.JdbcHelper;
-import org.apache.avro.file.DataFileReader;
-import org.apache.avro.generic.GenericRecord;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.google.avro.AvroHelper.extractAvroDataFromFile;
+import org.apache.avro.file.DataFileReader;
+import org.apache.avro.generic.GenericRecord;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IntegrationTests extends TestBase {
 
+  private static final Logger logger = LoggerFactory.getLogger(IntegrationTests.class);
   private static Connection connection;
 
   @BeforeClass
@@ -45,8 +53,10 @@ public class IntegrationTests extends TestBase {
 
   @Test
   public void usersTest() throws SQLException, IOException {
-    String query =
-        MessageFormat.format(SqlReader.getSql("src/main/java/com/google/sql/users.sql"), DB_NAME);
+    final String sql = "src/main/java/com/google/sql/users.sql";
+    final String avroFile = ET_OUTPUT_PATH + "users.avro";
+    final String query = MessageFormat.format(SqlReader.getSql(sql), DB_NAME);
+
     List<UserTableRow> dbList = new ArrayList<>();
     List<UserTableRow> avroList = new ArrayList<>();
 
@@ -65,8 +75,7 @@ public class IntegrationTests extends TestBase {
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader =
-        extractAvroDataFromFile(ET_OUTPUT_PATH + "users.avro");
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFile);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = null;
@@ -79,6 +88,35 @@ public class IntegrationTests extends TestBase {
       avroRow.lastAccessTimeStamp.timestamp =
           AvroHelper.getLongNotNull(record, "LastAccessTimeStamp");
       avroList.add(avroRow);
+    }
+
+    List<UserTableRow> dbListCopy = new ArrayList<>(dbList);
+    avroList.forEach(dbList::remove);
+    dbListCopy.forEach(avroList::remove);
+
+    StringBuilder dbListOutput = new StringBuilder().append('\n');
+    StringBuilder avroListOutput = new StringBuilder().append('\n');
+
+    dbList.forEach(e -> dbListOutput.append(e.toString()));
+    avroList.forEach(e -> avroListOutput.append(e.toString()));
+
+    if (dbList.isEmpty() && avroList.isEmpty()) {
+      logger.info("DB view and Avro file are equal");
+    } else if (!dbList.isEmpty() && !avroList.isEmpty()) {
+      Assert.fail(
+          format(
+              "DB view and Avro file have mutually exclusive row(s) \n"
+                  + "DB view '%s' has %d different row(s): %s"
+                  + "\nAvro file %s has %d different row(s): %s",
+              sql, dbList.size(), dbListOutput, avroFile, avroList.size(), avroListOutput));
+    } else if (!dbList.isEmpty()) {
+      Assert.fail(
+          format("DB view '%s' has %d extra row(s): \n %s", sql, dbList.size(), dbListOutput));
+    } else if (!avroList.isEmpty()) {
+      Assert.fail(
+          format(
+              "Avro file %s has %d extra row(s): \n %s",
+              avroFile, avroList.size(), avroListOutput));
     }
   }
 }
