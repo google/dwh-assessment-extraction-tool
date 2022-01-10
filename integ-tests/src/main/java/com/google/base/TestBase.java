@@ -19,14 +19,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static java.lang.String.format;
+import static java.lang.System.getenv;
+
 /** Base class with general values for all Junit test suites */
 public abstract class TestBase {
 
-  public static final String DB_NAME = ""; // TODO get from a parameter
-  public static final String USERNAME_DB = ""; // TODO get from a parameter
-  public static final String PASSWORD_DB = ""; // TODO get from a parameter
-  public static final String URL_DB = "jdbc:teradata://localhost/DBS_PORT=1025";
-  public static final String ET_OUTPUT_PATH = "" + "/"; // TODO get from a parameter
+  public static final String DB_NAME = getenv("TD_DB");
+  public static final String USERNAME_DB = getenv("TD_USR");
+  public static final String PASSWORD_DB = getenv("TD_PSW");
+  public static final String URL_DB = format("jdbc:teradata://%s/DBS_PORT=1025", getenv("TD_HOST"));
+  public static final String ET_OUTPUT_PATH = getenv("EXPORT_PATH");
 
   /**
    * @param dateString Date passed as String.

@@ -15,6 +15,8 @@
  */
 package com.google.pojo;
 
+import java.util.Objects;
+
 /** POJO class for serialization data from DB and Avro files. */
 public class UserTableRow {
 
@@ -25,59 +27,127 @@ public class UserTableRow {
 
   @Override
   public String toString() {
-    return "UserTableRow: {"
-        + "userName: {"
+    return "{"
+        + "UserName: {"
         + userName.toString()
         + "}"
-        + ", creatorName: {"
+        + ", CreatorName: {"
         + creatorName.toString()
         + "}"
-        + ", createTimeStamp: {"
+        + ", CreateTimeStamp: {"
         + createTimeStamp.toString()
         + "}"
-        + ", lastAccessTimeStamp: {"
+        + ", LastAccessTimeStamp: {"
         + lastAccessTimeStamp.toString()
         + "}"
-        + '}';
+        + "}\n";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof UserTableRow)) return false;
+    UserTableRow that = (UserTableRow) o;
+    return Objects.equals(userName, that.userName)
+        && Objects.equals(creatorName, that.creatorName)
+        && Objects.equals(createTimeStamp, that.createTimeStamp)
+        && Objects.equals(lastAccessTimeStamp, that.lastAccessTimeStamp);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(userName, creatorName, createTimeStamp, lastAccessTimeStamp);
   }
 
   /** Inner POJO class for serialization data from DB and Avro files. */
-  public class UserName {
+  public static class UserName {
     public String name;
 
     @Override
     public String toString() {
-      return name.getClass().getSimpleName() + ": " + name;
+      return "string: " + name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof UserName)) return false;
+      UserName userName = (UserName) o;
+      return Objects.equals(name, userName.name);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name);
     }
   }
 
   /** Inner POJO class for serialization data from DB and Avro files. */
-  public class CreatorName {
+  public static class CreatorName {
     public String name;
 
     @Override
     public String toString() {
-      return name.getClass().getSimpleName() + ": " + name;
+      return "string: " + name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof CreatorName)) return false;
+      CreatorName that = (CreatorName) o;
+      return Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name);
     }
   }
 
   /** Inner POJO class for serialization data from DB and Avro files. */
-  public class CreateTimeStamp {
+  public static class CreateTimeStamp {
     public long timestamp;
 
     @Override
     public String toString() {
-      return Long.class.getSimpleName() + ": " + timestamp;
+      return "long: " + timestamp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof CreateTimeStamp)) return false;
+      CreateTimeStamp that = (CreateTimeStamp) o;
+      return timestamp == that.timestamp;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(timestamp);
     }
   }
 
   /** Inner POJO class for serialization data from DB and Avro files. */
-  public class LastAccessTimeStamp {
+  public static class LastAccessTimeStamp {
     public long timestamp;
 
     @Override
     public String toString() {
-      return Long.class.getSimpleName() + ": " + timestamp;
+      return "long: " + timestamp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof LastAccessTimeStamp)) return false;
+      LastAccessTimeStamp that = (LastAccessTimeStamp) o;
+      return timestamp == that.timestamp;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(timestamp);
     }
   }
 }
