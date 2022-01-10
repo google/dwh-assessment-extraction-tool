@@ -38,7 +38,7 @@
             <artifactId>terajdbc4</artifactId>
             <version>16.20</version>
             <scope>system</scope>
-            <systemPath>${basedir}/../terajdbc4.jar</systemPath>
+            <systemPath>${env.JDBC_PATH}</systemPath>
         </dependency>
     </dependencies>
 
