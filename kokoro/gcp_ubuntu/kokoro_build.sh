@@ -69,6 +69,7 @@ gcloud compute instances create "${TD_HOST}" \
     --create-disk=auto-delete=yes,boot=yes,device-name="${TD_HOST}",image="${GCP_IMAGE}",mode=rw,size=300,type=projects/"${GCP_PROJECT}"/zones/us-central1-a/diskTypes/pd-balanced \
     --reservation-affinity=any
 
+echo "PreSubmit"
 
 #Bugfix for bazel
 use_bazel.sh 4.1.0
