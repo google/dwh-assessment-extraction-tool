@@ -21,46 +21,43 @@ import static java.lang.String.format;
 import com.google.avro.AvroHelper;
 import com.google.base.TestBase;
 import com.google.pojo.UserTableRow;
-import com.google.sql.SqlReader;
+import com.google.sql.SqlHelper;
 import com.google.tdjdbc.JdbcHelper;
+import com.google.testdata.TestDataHelper;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericRecord;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class IntegrationTests extends TestBase {
 
-  private static final Logger logger = LoggerFactory.getLogger(IntegrationTests.class);
   private static Connection connection;
 
   @BeforeClass
-  public static void beforeClass() throws ClassNotFoundException, SQLException {
-    Class.forName("com.teradata.jdbc.TeraDriver");
+  public static void beforeClass() throws SQLException {
     connection = DriverManager.getConnection(URL_DB, USERNAME_DB, PASSWORD_DB);
   }
 
   @Test
   public void usersTest() throws SQLException, IOException {
-    final String sql = "src/main/java/com/google/sql/users.sql";
-    final String avroFile = ET_OUTPUT_PATH + "users.avro";
-    final String query = MessageFormat.format(SqlReader.getSql(sql), DB_NAME);
+    final String sqlPath = "src/main/java/com/google/sql/users.sql";
+    final String avroFilePath = ET_OUTPUT_PATH + "users.avro";
 
     List<UserTableRow> dbList = new ArrayList<>();
     List<UserTableRow> avroList = new ArrayList<>();
 
-    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+    TestDataHelper.generateUsers(connection, 10);
+
+    try (PreparedStatement preparedStatement =
+        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
@@ -75,7 +72,7 @@ public class IntegrationTests extends TestBase {
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFile);
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = null;
@@ -94,29 +91,6 @@ public class IntegrationTests extends TestBase {
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
-    StringBuilder dbListOutput = new StringBuilder().append('\n');
-    StringBuilder avroListOutput = new StringBuilder().append('\n');
-
-    dbList.forEach(e -> dbListOutput.append(e.toString()));
-    avroList.forEach(e -> avroListOutput.append(e.toString()));
-
-    if (dbList.isEmpty() && avroList.isEmpty()) {
-      logger.info("DB view and Avro file are equal");
-    } else if (!dbList.isEmpty() && !avroList.isEmpty()) {
-      Assert.fail(
-          format(
-              "DB view and Avro file have mutually exclusive row(s) \n"
-                  + "DB view '%s' has %d different row(s): %s"
-                  + "\nAvro file %s has %d different row(s): %s",
-              sql, dbList.size(), dbListOutput, avroFile, avroList.size(), avroListOutput));
-    } else if (!dbList.isEmpty()) {
-      Assert.fail(
-          format("DB view '%s' has %d extra row(s): \n %s", sql, dbList.size(), dbListOutput));
-    } else if (!avroList.isEmpty()) {
-      Assert.fail(
-          format(
-              "Avro file %s has %d extra row(s): \n %s",
-              avroFile, avroList.size(), avroListOutput));
-    }
+    assertListsEqual(dbList, avroList, sqlPath, avroFilePath);
   }
 }

@@ -1,0 +1,6 @@
+CREATE USER
+  "test_user_%s" AS
+  PERMANENT = 64000,
+  PASSWORD = "test",
+  TEMPORARY = 64000,
+  SPOOL = 64000;

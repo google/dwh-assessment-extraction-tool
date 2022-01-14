@@ -15,16 +15,19 @@
  */
 package com.google.sql;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+import org.apache.commons.io.FileUtils;
 
 /** A helper class for reading .sql files. */
-public final class SqlReader {
+public final class SqlHelper {
 
-  private SqlReader() {}
+  private SqlHelper() {}
 
   /**
    * @param sqlPath Path to an .sql file.
@@ -36,6 +39,20 @@ public final class SqlReader {
     } catch (IOException exception) {
       throw new IllegalStateException(
           String.format("Error while reading sql file %s", sqlPath), exception);
+    }
+  }
+
+  /**
+   * @param queries List of strings each of the contains a parametrized SQL request
+   * @param connection DB connection parameter
+   * @throws SQLException
+   */
+  public static void executeQueries(Connection connection, List<String> queries)
+      throws SQLException {
+    for (String query : queries) {
+      try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        preparedStatement.execute();
+      }
     }
   }
 }

@@ -3,5 +3,5 @@ SELECT
   "CreatorName",
   "CreateTimeStamp",
   "LastAccessTimeStamp"
-FROM "{0}"."DatabasesV"
-WHERE "DBKind"=''U''
+FROM "%s"."DatabasesV"
+WHERE "DBKind"='U'

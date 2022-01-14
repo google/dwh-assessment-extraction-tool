@@ -15,15 +15,22 @@
  */
 package com.google.base;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import static java.lang.String.format;
 import static java.lang.System.getenv;
 
+import com.google.common.base.Joiner;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /** Base class with general values for all Junit test suites */
 public abstract class TestBase {
+
+  private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
 
   public static final String DB_NAME = getenv("TD_DB");
   public static final String USERNAME_DB = getenv("TD_USR");
@@ -47,6 +54,37 @@ public abstract class TestBase {
         throw new IllegalStateException(
             "Date format doesn't correspond to 'yyyy-MM-dd HH:mm:ss.SSS'", exception);
       }
+    }
+  }
+
+  /**
+   * @param dbList List of extracted from DB items
+   * @param avroList List of uploaded from Avro items
+   * @param sqlPath Path to an SQL request that queries from DB
+   * @param avroFilePath Path to exported Avro file
+   */
+  public static void assertListsEqual(
+      final List dbList, final List avroList, String sqlPath, String avroFilePath) {
+    String dbListOutput = "\n" + Joiner.on("").join(dbList);
+    String avroListOutput = "\n" + Joiner.on("").join(avroList);
+
+    if (dbList.isEmpty() && avroList.isEmpty()) {
+      logger.info("DB view and Avro file are equal");
+    } else if (!dbList.isEmpty() && !avroList.isEmpty()) {
+      Assert.fail(
+          format(
+              "DB view and Avro file have mutually exclusive row(s) \n"
+                  + "DB view '%s' has %d different row(s): %s"
+                  + "\nAvro file %s has %d different row(s): %s",
+              sqlPath, dbList.size(), dbListOutput, avroFilePath, avroList.size(), avroListOutput));
+    } else if (!dbList.isEmpty()) {
+      Assert.fail(
+          format("DB view '%s' has %d extra row(s): \n %s", sqlPath, dbList.size(), dbListOutput));
+    } else if (!avroList.isEmpty()) {
+      Assert.fail(
+          format(
+              "Avro file %s has %d extra row(s): \n %s",
+              avroFilePath, avroList.size(), avroListOutput));
     }
   }
 }
