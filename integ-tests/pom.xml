@@ -52,6 +52,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>31.0.1-jre</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.teradata.jdbc</groupId>
             <artifactId>terajdbc4</artifactId>
             <version>16.20</version>
