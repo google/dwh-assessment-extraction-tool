@@ -69,13 +69,10 @@ gcloud compute instances create "${TD_HOST}" \
     --create-disk=auto-delete=yes,boot=yes,device-name="${TD_HOST}",image="${GCP_IMAGE}",mode=rw,size=300,type=projects/"${GCP_PROJECT}"/zones/us-central1-a/diskTypes/pd-balanced \
     --reservation-affinity=any
 
-
 #Bugfix for bazel
 use_bazel.sh 4.1.0
 command -v bazel
 bazel version
-
-
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
 
@@ -92,7 +89,6 @@ cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/bazel-bin/dist
 
 mkdir output
 
-
 #Extract data from TD instance
 set +x
 ./dwh-assessment-extraction-tool td-extract \
@@ -100,6 +96,16 @@ set +x
     --output "${EXPORT_PATH}" \
     --db-user "${TD_USR}" \
     --db-password "${TD_PSW}"
+#How many exported avro files
+exported_avro=$(ls "${EXPORT_PATH}" | wc -l)
+
+if ((exported_avro != 16)); then
+  printf '%s\n' "ERROR! Not all avro files have been exported! ${exported_avro} exported" >&2  # write error message to stderr
+  termInstance
+  exit 1
+else
+  printf '%s\n' "${exported_avro} avro files successfully exported."
+fi
 
 #delete instance after tests
 termInstance
