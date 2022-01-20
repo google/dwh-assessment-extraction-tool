@@ -114,6 +114,7 @@ fi
 #Execute integration tests
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests"
 mvn clean test -B -e
+mvn surefire-report:report-only
 
 #delete instance after tests
 termInstance
