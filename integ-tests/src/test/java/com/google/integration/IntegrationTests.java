@@ -23,7 +23,6 @@ import com.google.base.TestBase;
 import com.google.pojo.UserTableRow;
 import com.google.sql.SqlHelper;
 import com.google.tdjdbc.JdbcHelper;
-import com.google.testdata.TestDataHelper;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -53,8 +52,6 @@ public class IntegrationTests extends TestBase {
 
     List<UserTableRow> dbList = new ArrayList<>();
     List<UserTableRow> avroList = new ArrayList<>();
-
-    TestDataHelper.generateUsers(connection, 10);
 
     try (PreparedStatement preparedStatement =
         connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
