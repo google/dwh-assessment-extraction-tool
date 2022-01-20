@@ -114,6 +114,17 @@ fi
 #Execute integration tests
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests"
 mvn clean test -B -e
+mvn surefire-report:report-only -B -e
+
+#Rename Maven-surefire test reports for suitable for Sponge format
+cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/target/surefire-reports/"
+for f in *.xml; do
+    mv -- "$f" "${f%.xml}_sponge_log.xml"
+done
+
+for f in *.txt; do
+    mv -- "$f" "${f%.txt}_sponge_log.log"
+done
 
 #delete instance after tests
 termInstance
