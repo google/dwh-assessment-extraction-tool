@@ -44,7 +44,7 @@ export TD_PSW="$(<${KOKORO_KEYSTORE_DIR}/76474_teradata-12232021)"
 export TD_USR="dbc"
 export TD_DB="dbc"
 export TD_HOST="teradata-kokoro-${KOKORO_PROJECT_NAME}"
-export EXPORT_PATH="${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/bazel-bin/dist/dwh-assessment-extraction-tool/output"
+export EXPORT_PATH="${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/bazel-bin/dist/dwh-assessment-extraction-tool/output/"
 export JDBC_PATH="${KOKORO_ARTIFACTS_DIR}/piper/google3/third_party/java/jdbc/teradata/terajdbc4.jar"
 export CLASSPATH="${JDBC_PATH}"
 export GCP_PROJECT="$(gcloud config get-value project)"
@@ -85,6 +85,10 @@ unzip ./dwh-assessment-extraction-tool.zip
 #Time to allow TD to recover
 sleep 4m
 
+#Generate Test Data
+cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests"
+mvn clean compile exec:java -e -B
+
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/bazel-bin/dist/dwh-assessment-extraction-tool"
 
 mkdir output
@@ -106,6 +110,10 @@ if ((exported_avro != 16)); then
 else
   printf '%s\n' "${exported_avro} avro files successfully exported."
 fi
+
+#Execute integration tests
+cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests"
+mvn clean test -B -e
 
 #delete instance after tests
 termInstance
