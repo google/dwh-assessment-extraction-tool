@@ -19,10 +19,10 @@ import static java.lang.String.format;
 import static java.lang.System.getenv;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.LinkedHashMultiset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +64,7 @@ public abstract class TestBase {
    * @param avroFilePath Path to exported Avro file
    */
   public static void assertListsEqual(
-      final List dbList, final List avroList, String sqlPath, String avroFilePath) {
+      final LinkedHashMultiset dbList, final LinkedHashMultiset avroList, String sqlPath, String avroFilePath) {
     String dbListOutput = "\n" + Joiner.on("").join(dbList);
     String avroListOutput = "\n" + Joiner.on("").join(avroList);
 

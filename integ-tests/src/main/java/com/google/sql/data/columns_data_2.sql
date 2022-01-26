@@ -1,0 +1,4 @@
+CREATE SET TABLE
+  %s.%s, FALLBACK
+  (Test_Id     INTEGER)
+  UNIQUE PRIMARY INDEX (Test_Id);

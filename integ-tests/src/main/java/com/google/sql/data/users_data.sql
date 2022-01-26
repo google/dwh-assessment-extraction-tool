@@ -1,5 +1,5 @@
 CREATE USER
-  "test_user_%s" AS
+  test_user_%s AS
   PERMANENT = 64000,
   PASSWORD = "%s",
   TEMPORARY = 64000,
