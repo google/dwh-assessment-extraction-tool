@@ -33,28 +33,17 @@ public abstract class ColumnRow {
   @Override
   public String toString() {
     return "{"
-        + "dataBaseName='"
-        + dataBaseName()
-        + ", tableName='"
-        + tableName()
-        + ", columnName='"
-        + columnName()
-        + ", columnFormat='"
-        + columnFormat()
-        + ", columnTitle='"
-        + columnTitle()
-        + ", columnLength="
-        + columnLength()
-        + ", columnType='"
-        + columnType()
-        + ", defaultValue='"
-        + defaultValue()
-        + ", columnConstraint='"
-        + columnConstraint()
-        + ", constraintCount="
-        + constraintCount()
-        + ", nullable='"
-        + nullable()
+        + "dataBaseName=" + dataBaseName()
+        + ", tableName=" + tableName()
+        + ", columnName=" + columnName()
+        + ", columnFormat=" + columnFormat()
+        + ", columnTitle=" + columnTitle()
+        + ", columnLength=" + columnLength()
+        + ", columnType=" + columnType()
+        + ", defaultValue=" + defaultValue()
+        + ", columnConstraint=" + columnConstraint()
+        + ", constraintCount=" + constraintCount()
+        + ", nullable=" + nullable()
         + "}\n";
   }
 
