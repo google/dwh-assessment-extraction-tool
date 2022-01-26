@@ -26,7 +26,7 @@ public final class JdbcHelper {
   /**
    * @param rs A row with SELECT results.
    * @param column Database column name.
-   * @return String or an empty string.
+   * @return String or an empty string if null.
    * @throws SQLException
    */
   public static String getStringNotNull(ResultSet rs, String column) throws SQLException {
@@ -35,6 +35,21 @@ public final class JdbcHelper {
       return "";
     } else {
       return string;
+    }
+  }
+
+  /**
+   * @param rs A row with SELECT results.
+   * @param column Database column name.
+   * @return int or 0 if null.
+   * @throws SQLException
+   */
+  public static int getIntNotNull(ResultSet rs, String column) throws SQLException {
+    int integer = rs.getInt(column);
+    if (rs.wasNull()) {
+      return 0;
+    } else {
+      return integer;
     }
   }
 }

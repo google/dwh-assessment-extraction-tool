@@ -15,13 +15,12 @@
  */
 package com.google.avro;
 
+import java.io.File;
+import java.io.IOException;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
-
-import java.io.File;
-import java.io.IOException;
 
 public final class AvroHelper {
 
@@ -43,7 +42,7 @@ public final class AvroHelper {
   /**
    * @param record GenericRecord containing value.
    * @param columnName Database column name.
-   * @return String or an empty string.
+   * @return String or an empty string if null.
    */
   public static String getStringNotNull(GenericRecord record, String columnName) {
     if (record.get(columnName) == null) {
@@ -53,7 +52,25 @@ public final class AvroHelper {
     }
   }
 
-  public static Long getLongNotNull(GenericRecord record, String columnName) {
+  /**
+   * @param record GenericRecord containing value.
+   * @param columnName Database column name.
+   * @return int or 0 if null.
+   */
+  public static int getIntNotNull(GenericRecord record, String columnName) {
+    if (record.get(columnName) == null) {
+      return 0;
+    } else {
+      return Integer.parseInt(record.get(columnName).toString());
+    }
+  }
+
+  /**
+   * @param record
+   * @param columnName
+   * @return long or 0L if null.
+   */
+  public static long getLongNotNull(GenericRecord record, String columnName) {
     if (record.get(columnName) == null) {
       return 0L;
     } else {

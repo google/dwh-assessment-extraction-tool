@@ -16,27 +16,27 @@
 package com.google.integration;
 
 import static com.google.avro.AvroHelper.extractAvroDataFromFile;
+import static com.google.avro.AvroHelper.getLongNotNull;
+import static com.google.avro.AvroHelper.getStringNotNull;
+import static com.google.tdjdbc.JdbcHelper.getStringNotNull;
 import static java.lang.String.format;
 
-import com.google.avro.AvroHelper;
 import com.google.base.TestBase;
-import com.google.pojo.UserTableRow;
+import com.google.common.collect.LinkedHashMultiset;
+import com.google.pojo.UserRow;
 import com.google.sql.SqlHelper;
-import com.google.tdjdbc.JdbcHelper;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericRecord;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class IntegrationTests extends TestBase {
+public class UsersTest extends TestBase {
 
   private static Connection connection;
 
@@ -50,21 +50,19 @@ public class IntegrationTests extends TestBase {
     final String sqlPath = "src/main/java/com/google/sql/users.sql";
     final String avroFilePath = ET_OUTPUT_PATH + "users.avro";
 
-    List<UserTableRow> dbList = new ArrayList<>();
-    List<UserTableRow> avroList = new ArrayList<>();
+    LinkedHashMultiset<UserRow> dbList = LinkedHashMultiset.create();
+    LinkedHashMultiset<UserRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
         connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        UserTableRow dbRow = new UserTableRow();
-        dbRow.userName.name = rs.getString("UserName");
-        dbRow.creatorName.name = rs.getString("CreatorName");
-        dbRow.createTimeStamp.timestamp =
-            getTimestampByDate(JdbcHelper.getStringNotNull(rs, "CreateTimeStamp"));
-        dbRow.lastAccessTimeStamp.timestamp =
-            getTimestampByDate(JdbcHelper.getStringNotNull(rs, "LastAccessTimeStamp"));
+        UserRow dbRow = UserRow.create(
+            getStringNotNull(rs, "UserName"),
+            getStringNotNull(rs, "CreatorName"),
+            getTimestampByDate(getStringNotNull(rs, "CreateTimeStamp")),
+            getTimestampByDate(getStringNotNull(rs, "LastAccessTimeStamp")));
         dbList.add(dbRow);
       }
     }
@@ -75,16 +73,15 @@ public class IntegrationTests extends TestBase {
       GenericRecord record = null;
       record = dataFileReader.next(record);
 
-      UserTableRow avroRow = new UserTableRow();
-      avroRow.userName.name = record.get("UserName").toString();
-      avroRow.creatorName.name = record.get("CreatorName").toString();
-      avroRow.createTimeStamp.timestamp = AvroHelper.getLongNotNull(record, "CreateTimeStamp");
-      avroRow.lastAccessTimeStamp.timestamp =
-          AvroHelper.getLongNotNull(record, "LastAccessTimeStamp");
+      UserRow avroRow = UserRow.create(
+          getStringNotNull(record, "UserName"),
+          getStringNotNull(record, "CreatorName"),
+          getLongNotNull(record, "CreateTimeStamp"),
+          getLongNotNull(record, "LastAccessTimeStamp"));
       avroList.add(avroRow);
     }
 
-    List<UserTableRow> dbListCopy = new ArrayList<>(dbList);
+    LinkedHashMultiset<UserRow> dbListCopy = LinkedHashMultiset.create(dbList);
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 

@@ -2,15 +2,18 @@ package com.google.testdata;
 
 import static com.google.common.base.Suppliers.memoize;
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static com.google.sql.SqlHelper.executeQueries;
+import static com.google.sql.SqlHelper.getSql;
 import static java.lang.String.format;
 import static java.lang.System.nanoTime;
+import static java.util.UUID.randomUUID;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.sql.SqlHelper;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,20 +31,51 @@ public final class TestDataHelper {
    * @throws SQLException
    */
   public static void generateUsers(Connection connection, int userCount) throws SQLException {
-    final String sqlDataPath = "src/main/java/com/google/sql/data/users_data.sql";
-    final String password = UUID.randomUUID().toString();
+    final String usersDataPath = "src/main/java/com/google/sql/data/users_data.sql";
+    final String userData = getSql(usersDataPath);
+    final String password = randomUUID().toString();
 
-    ImmutableList<String> sqlQueries =
-        Stream.generate(memoize(() -> SqlHelper.getSql(sqlDataPath)))
+    ImmutableList<String> usersQueries =
+        Stream.generate(memoize(() -> userData))
             .limit(userCount)
             .map(sqlQuery -> format(sqlQuery, nanoTime(), password))
             .collect(toImmutableList());
 
-    SqlHelper.executeQueries(connection, sqlQueries);
+    executeQueries(connection, usersQueries);
 
     logger.info(
         format(
-            "Generated %s new Users:\n%s",
-            sqlQueries.size(), Joiner.on("\n").join(sqlQueries).replaceAll(password, "####")));
+            "Generated %s new User(s):\n%s",
+            usersQueries.size(), Joiner.on("\n").join(usersQueries).replaceAll(password, "####")));
+  }
+
+  /**
+   * @param connection DB connection parameter
+   * @param dbTablePairsCount Repetition count
+   * @throws SQLException
+   */
+  public static void generateDbTablePairs(Connection connection, int dbTablePairsCount)
+      throws SQLException {
+    final String columnsDataPath1 = "src/main/java/com/google/sql/data/columns_data_1.sql";
+    final String columnsDataPath2 = "src/main/java/com/google/sql/data/columns_data_2.sql";
+    final String dbData = getSql(columnsDataPath1);
+    final String tableData = getSql(columnsDataPath2);
+
+    List<String> dbTableQueries = new ArrayList<>();
+    while (dbTablePairsCount > 0) {
+      String dbName = "test_" + dbTablePairsCount;
+      String tableName = "test_" + dbTablePairsCount;
+
+      dbTableQueries.add(format(dbData, dbName));
+      dbTableQueries.add(format(tableData, dbName, tableName));
+      dbTablePairsCount--;
+    }
+
+    executeQueries(connection, dbTableQueries);
+
+    logger.info(
+        format(
+            "Generated %s new DB and Table pair(s):\n%s",
+            dbTableQueries.size() / 2, Joiner.on("\n").join(dbTableQueries)));
   }
 }
