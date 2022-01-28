@@ -86,21 +86,24 @@ public final class ExtractExecutorImplTest {
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("one"),
-            eq(dataEntityManager), eq(0));
+            eq(dataEntityManager),
+            eq(0));
     verify(scriptManager)
         .executeScript(
             any(Connection.class),
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("two"),
-            eq(dataEntityManager), eq(0));
+            eq(dataEntityManager),
+            eq(0));
     verify(scriptManager)
         .executeScript(
             any(Connection.class),
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("three"),
-            eq(dataEntityManager), eq(0));
+            eq(dataEntityManager),
+            eq(0));
     verifyNoMoreInteractions(scriptManager);
   }
 
@@ -127,14 +130,16 @@ public final class ExtractExecutorImplTest {
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("one"),
-            eq(dataEntityManager), eq(0));
+            eq(dataEntityManager),
+            eq(0));
     verify(scriptManager)
         .executeScript(
             any(Connection.class),
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("three"),
-            eq(dataEntityManager), eq(0));
+            eq(dataEntityManager),
+            eq(0));
     verifyNoMoreInteractions(scriptManager);
   }
 
@@ -161,7 +166,8 @@ public final class ExtractExecutorImplTest {
             /*dryRun=*/ eq(false),
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("two"),
-            eq(dataEntityManager), eq(0));
+            eq(dataEntityManager),
+            eq(0));
     verifyNoMoreInteractions(scriptManager);
   }
 

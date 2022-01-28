@@ -28,9 +28,9 @@ public interface ScriptManager {
   /**
    * Executes a script against a DB connection and writes the output to a stream.
    *
-   * @param sqlTemplateRenderer A transformer to apply on the SQL script before execution.
    * @param connection The JDBC connection to the database.
    * @param dryRun Whether to just perform a dry run, which just logs out the action to perform.
+   * @param sqlTemplateRenderer A transformer to apply on the SQL script before execution.
    * @param scriptName The name of the script. This is not a file name. The interpretation of the
    *     name is left to the implementation but can also map to several files (e.g., an SQL file and
    *     a schema definition file).
@@ -47,7 +47,10 @@ public interface ScriptManager {
       throws SQLException, IOException;
 
   default void executeScript(
-      Connection connection, SqlTemplateRenderer sqlTemplateRenderer, String scriptName, DataEntityManager dataEntityManager)
+      Connection connection,
+      SqlTemplateRenderer sqlTemplateRenderer,
+      String scriptName,
+      DataEntityManager dataEntityManager)
       throws SQLException, IOException {
     executeScript(
         connection,

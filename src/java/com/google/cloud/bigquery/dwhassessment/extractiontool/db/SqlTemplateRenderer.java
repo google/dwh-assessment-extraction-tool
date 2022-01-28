@@ -28,6 +28,7 @@ public interface SqlTemplateRenderer {
 
   /**
    * Returns the current builder for SqlScriptVariables of the renderer.
+   *
    * @return The renderer's current SqlScriptVariables.Builder
    */
   SqlScriptVariables.Builder getSqlScriptVariablesBuilder();

@@ -78,13 +78,13 @@ public final class ExtractSubcommandTest {
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
 
     assertThat(
-        cmd.execute(
-            "--db-address",
-            "jdbc:hsqldb:mem:my-animalclinic.example",
-            "--output",
-            outputPath.toString(),
-            "--rows-per-chunk",
-            "5000"))
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "--output",
+                outputPath.toString(),
+                "--rows-per-chunk",
+                "5000"))
         .isEqualTo(0);
 
     ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
@@ -215,24 +215,23 @@ public final class ExtractSubcommandTest {
 
     assertThat(
             cmd.execute(
-                    "--db-address",
-                    "jdbc:hsqldb:mem:my-animalclinic.example",
-                    "--output",
-                    outputPath.toString(),
-                    "--qrylog-timerange-start",
-                    "2021-01-01"))
-            .isEqualTo(0);
+                "--db-address",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "--output",
+                outputPath.toString(),
+                "--qrylog-timerange-start",
+                "2021-01-01"))
+        .isEqualTo(0);
 
     ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
-            ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
 
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.skipSqlScripts()).isEmpty();
     assertThat(arguments.schemaFilters()).isEmpty();
-    assertThat(arguments.qryLogStartTime())
-            .hasValue(Instant.parse("2021-01-01T00:00:00.00Z"));
+    assertThat(arguments.qryLogStartTime()).hasValue(Instant.parse("2021-01-01T00:00:00.00Z"));
     assertThat(arguments.qryLogEndTime()).isEmpty();
   }
 
@@ -267,26 +266,26 @@ public final class ExtractSubcommandTest {
 
   @Test
   public void call_successWithTimeRangeStartDatetimeEndDateCustomTimezone()
-          throws IOException, SQLException {
+      throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
 
     assertThat(
             cmd.execute(
-                    "--db-address",
-                    "jdbc:hsqldb:mem:my-animalclinic.example",
-                    "--output",
-                    outputPath.toString(),
-                    "--qrylog-timerange-start",
-                    "2021-01-01T11:46:46.42134212",
-                    "--qrylog-timerange-end",
-                    "2022-01-01",
-                    "--time-zone",
-                    "Europe/Warsaw"))
-            .isEqualTo(0);
+                "--db-address",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "--output",
+                outputPath.toString(),
+                "--qrylog-timerange-start",
+                "2021-01-01T11:46:46.42134212",
+                "--qrylog-timerange-end",
+                "2022-01-01",
+                "--time-zone",
+                "Europe/Warsaw"))
+        .isEqualTo(0);
 
     ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
-            ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
 
@@ -294,7 +293,7 @@ public final class ExtractSubcommandTest {
     assertThat(arguments.skipSqlScripts()).isEmpty();
     assertThat(arguments.schemaFilters()).isEmpty();
     assertThat(arguments.qryLogStartTime())
-            .hasValue(Instant.parse("2021-01-01T10:46:46.42134212Z"));
+        .hasValue(Instant.parse("2021-01-01T10:46:46.42134212Z"));
     assertThat(arguments.qryLogEndTime()).hasValue(Instant.parse("2021-12-31T23:00:00Z"));
   }
 

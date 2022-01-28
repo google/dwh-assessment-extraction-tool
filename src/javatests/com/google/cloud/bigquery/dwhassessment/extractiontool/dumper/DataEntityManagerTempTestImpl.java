@@ -22,17 +22,12 @@ import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-
-/**
- * Implementation of a DataEntityManger for unit test purposes.
- */
+/** Implementation of a DataEntityManger for unit test purposes. */
 public class DataEntityManagerTempTestImpl implements DataEntityManager {
 
   private final Path tmpDir;
 
-  /**
-   * Constructs a new DataEntityManagerTempTestImpl.
-   */
+  /** Constructs a new DataEntityManagerTempTestImpl. */
   public DataEntityManagerTempTestImpl(String testDirName) throws IOException {
     this.tmpDir = Files.createTempDirectory(testDirName);
   }
@@ -53,6 +48,5 @@ public class DataEntityManagerTempTestImpl implements DataEntityManager {
   }
 
   @Override
-  public void close() throws IOException {
-  }
+  public void close() throws IOException {}
 }

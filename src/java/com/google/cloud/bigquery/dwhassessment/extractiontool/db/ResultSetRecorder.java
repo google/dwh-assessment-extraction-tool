@@ -20,6 +20,4 @@ public interface ResultSetRecorder<T> extends AutoCloseable {
 
   /** Adds a record to the result set. */
   void add(T record);
-
-
 }

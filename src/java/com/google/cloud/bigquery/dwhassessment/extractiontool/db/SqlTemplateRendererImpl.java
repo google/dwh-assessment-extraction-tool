@@ -23,7 +23,7 @@ import java.io.IOException;
 public class SqlTemplateRendererImpl implements SqlTemplateRenderer {
 
   private final Handlebars handlebars = new Handlebars();
-  private SqlScriptVariables.Builder sqlScriptVariablesBuilder;
+  private final SqlScriptVariables.Builder sqlScriptVariablesBuilder;
 
   public SqlTemplateRendererImpl(SqlScriptVariables.Builder sqlScriptVariablesBuilder) {
     this.sqlScriptVariablesBuilder = sqlScriptVariablesBuilder;

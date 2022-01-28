@@ -22,5 +22,6 @@ import java.util.function.Supplier;
 public interface ScriptLoader {
 
   ImmutableMap<String, Supplier<String>> loadScripts();
+
   ImmutableMap<String, ImmutableList<String>> getSortingColumnsMap();
 }
