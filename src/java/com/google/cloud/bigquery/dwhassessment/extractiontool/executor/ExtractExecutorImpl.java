@@ -27,6 +27,7 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariab
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRenderer;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRendererImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableCollection;
@@ -38,9 +39,9 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.text.DecimalFormat;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,6 +50,9 @@ import org.apache.avro.generic.GenericRecord;
 
 /** Default implementation of the extract executor. */
 public final class ExtractExecutorImpl implements ExtractExecutor {
+
+  private static final DateTimeFormatter TERADATA_TIME_FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss[.SSSSSS]").withZone(ZoneOffset.UTC);
 
   private static final Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
 
@@ -77,15 +81,9 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     return input;
   }
 
-  private static String getTeradataTimestampFromInstant(Instant instant) {
-    String instantWithoutNanoseconds =
-        instant.truncatedTo(ChronoUnit.SECONDS).toString().replaceAll("[TZ]", " ").trim();
-    // Convert nanosecond representation of Instant into fraction-of-second representation with a
-    // 6-digit max precision to conform with Teradata's TIMESTAMP format.
-    DecimalFormat formatter = new DecimalFormat();
-    formatter.setMinimumIntegerDigits(0);
-    formatter.setMaximumFractionDigits(6);
-    return instantWithoutNanoseconds + formatter.format(instant.getNano() / Math.pow(10, 9));
+  @VisibleForTesting
+  static String getTeradataTimestampFromInstant(Instant instant) {
+    return TERADATA_TIME_FORMATTER.format(instant);
   }
 
   private static void maybeAddTimeRange(

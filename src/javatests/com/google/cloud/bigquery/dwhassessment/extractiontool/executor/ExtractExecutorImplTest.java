@@ -15,6 +15,7 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.executor;
 
+import static com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutorImpl.getTeradataTimestampFromInstant;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.Properties;
 import org.apache.avro.Schema;
 import org.junit.Before;
@@ -238,5 +240,13 @@ public final class ExtractExecutorImplTest {
     assertThat(e)
         .hasMessageThat()
         .contains("Got unknown SQL scripts for skip-sql-scripts: four, five");
+  }
+
+  @Test
+  public void getTeradataTimestampFromInstant_outputShouldBeCorrect() {
+    assertThat(getTeradataTimestampFromInstant(Instant.parse("2022-01-24T14:52:00Z")))
+        .isEqualTo("2022-01-24 14:52:00.000000");
+    assertThat(getTeradataTimestampFromInstant(Instant.parse("2022-01-24T14:52:00.123456Z")))
+        .isEqualTo("2022-01-24 14:52:00.123456");
   }
 }
