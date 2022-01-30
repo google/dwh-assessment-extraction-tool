@@ -34,14 +34,10 @@ public abstract class UserRow {
   @Override
   public String toString() {
     return "{"
-        + "userName='"
-        + userName()
-        + ", creatorName='"
-        + creatorName()
-        + ", createTimeStamp="
-        + createTimeStamp()
-        + ", lastAccessTimeStamp="
-        + lastAccessTimeStamp()
+        + "userName=" + userName()
+        + ", creatorName=" + creatorName()
+        + ", createTimeStamp=" + createTimeStamp()
+        + ", lastAccessTimeStamp=" + lastAccessTimeStamp()
         + "}\n";
   }
 
