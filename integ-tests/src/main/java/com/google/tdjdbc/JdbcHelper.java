@@ -55,4 +55,19 @@ public final class JdbcHelper {
       return integer;
     }
   }
+
+  /**
+   * @param rs A row with SELECT results.
+   * @param column Database column name.
+   * @return long or 0L if null.
+   * @throws SQLException
+   */
+  public static long getLongNotNull(ResultSet rs, String column) throws SQLException {
+    long longValue = rs.getLong(column);
+    if (rs.wasNull()) {
+      return 0L;
+    } else {
+      return longValue;
+    }
+  }
 }
