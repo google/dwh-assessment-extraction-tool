@@ -42,6 +42,8 @@ import org.junit.Test;
 public class DiskspaceTest extends TestBase {
 
   private static Connection connection;
+  private static final String sqlPath = "src/main/java/com/google/sql/diskspace.sql";
+  private static final String avroFilePath = ET_OUTPUT_PATH + "diskspace.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -50,9 +52,6 @@ public class DiskspaceTest extends TestBase {
 
   @Test
   public void diskspaceTest() throws SQLException, IOException {
-    final String sqlPath = "src/main/java/com/google/sql/diskspace.sql";
-    final String avroFilePath = ET_OUTPUT_PATH + "diskspace.avro";
-
     LinkedHashMultiset<DiskspaceRow> dbList = LinkedHashMultiset.create();
     LinkedHashMultiset<DiskspaceRow> avroList = LinkedHashMultiset.create();
 

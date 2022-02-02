@@ -33,20 +33,22 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Helper class providing test data generation methods */
+/**
+ * Helper class providing test data generation methods
+ */
 public final class TestDataHelper {
 
   private static final Logger logger = LoggerFactory.getLogger(TestDataHelper.class);
 
-  private TestDataHelper() {}
+  private TestDataHelper() {
+  }
 
   /**
    * @param connection DB connection parameter
    * @param userCount Repetition count
-   * @throws SQLException
    */
   public static void generateUsers(Connection connection, int userCount) throws SQLException {
-    final String usersDataPath = "src/main/java/com/google/sql/data/users_data.sql";
+    final String usersDataPath = "src/main/java/com/google/sql/testdata/users_data.sql";
     final String userData = getSql(usersDataPath);
     final String password = randomUUID().toString();
 
@@ -67,19 +69,18 @@ public final class TestDataHelper {
   /**
    * @param connection DB connection parameter
    * @param dbTablePairsCount Repetition count
-   * @throws SQLException
    */
   public static void generateDbTablePairs(Connection connection, int dbTablePairsCount)
       throws SQLException {
-    final String columnsDataPath1 = "src/main/java/com/google/sql/data/columns_data_1.sql";
-    final String columnsDataPath2 = "src/main/java/com/google/sql/data/columns_data_2.sql";
+    final String columnsDataPath1 = "src/main/java/com/google/sql/testdata/columns_data_1.sql";
+    final String columnsDataPath2 = "src/main/java/com/google/sql/testdata/columns_data_2.sql";
     final String dbData = getSql(columnsDataPath1);
     final String tableData = getSql(columnsDataPath2);
 
     List<String> dbTableQueries = new ArrayList<>();
     while (dbTablePairsCount > 0) {
-      String dbName = "test_" + dbTablePairsCount;
-      String tableName = "test_" + dbTablePairsCount;
+      String dbName = format("test_%s_%s", nanoTime(), dbTablePairsCount);
+      String tableName = format("test_%s_%s", nanoTime(), dbTablePairsCount);
 
       dbTableQueries.add(format(dbData, dbName));
       dbTableQueries.add(format(tableData, dbName, tableName));
@@ -92,5 +93,28 @@ public final class TestDataHelper {
         format(
             "Generated %s new DB and Table pair(s):\n%s",
             dbTableQueries.size() / 2, Joiner.on("\n").join(dbTableQueries)));
+  }
+
+  /**
+   * @param connection DB connection parameter
+   * @param functionCount Repetition count
+   */
+  public static void generateFunctions(Connection connection, int functionCount)
+      throws SQLException {
+    final String functioninfoPath = "src/main/java/com/google/sql/testdata/functioninfo_data.sql";
+    final String functioninfoData = getSql(functioninfoPath);
+
+    ImmutableList<String> functioninfoQueries =
+        Stream.generate(memoize(() -> functioninfoData))
+            .limit(functionCount)
+            .map(sqlQuery -> format(sqlQuery, nanoTime()))
+            .collect(toImmutableList());
+
+    executeQueries(connection, functioninfoQueries);
+
+    logger.info(
+        format(
+            "Generated %s new function(s):\n%s",
+            functioninfoQueries.size(), Joiner.on("\n").join(functioninfoQueries)));
   }
 }

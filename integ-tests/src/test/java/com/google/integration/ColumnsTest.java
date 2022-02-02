@@ -40,6 +40,8 @@ import org.junit.Test;
 public class ColumnsTest extends TestBase {
 
   private static Connection connection;
+  private static final String sqlPath = "src/main/java/com/google/sql/columns.sql";
+  private static final String avroFilePath = ET_OUTPUT_PATH + "columns.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -48,9 +50,6 @@ public class ColumnsTest extends TestBase {
 
   @Test
   public void columnsTest() throws SQLException, IOException {
-    final String sqlPath = "src/main/java/com/google/sql/columns.sql";
-    final String avroFilePath = ET_OUTPUT_PATH + "columns.avro";
-
     LinkedHashMultiset<ColumnRow> dbList = LinkedHashMultiset.create();
     LinkedHashMultiset<ColumnRow> avroList = LinkedHashMultiset.create();
 

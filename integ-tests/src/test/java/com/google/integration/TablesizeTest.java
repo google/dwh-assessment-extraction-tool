@@ -40,6 +40,8 @@ import org.junit.Test;
 public class TablesizeTest extends TestBase {
 
   private static Connection connection;
+  private static final String sqlPath = "src/main/java/com/google/sql/tablesize.sql";
+  private static final String avroFilePath = ET_OUTPUT_PATH + "tablesize.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -48,9 +50,6 @@ public class TablesizeTest extends TestBase {
 
   @Test
   public void tablesizeTest() throws SQLException, IOException {
-    final String sqlPath = "src/main/java/com/google/sql/tablesize.sql";
-    final String avroFilePath = ET_OUTPUT_PATH + "tablesize.avro";
-
     LinkedHashMultiset<TablesizeRow> dbList = LinkedHashMultiset.create();
     LinkedHashMultiset<TablesizeRow> avroList = LinkedHashMultiset.create();
 

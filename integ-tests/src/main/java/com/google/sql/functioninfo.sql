@@ -12,9 +12,32 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CREATE USER
-  test_user_%s AS
-  PERMANENT = 64000,
-  PASSWORD = "%s",
-  TEMPORARY = 64000,
-  SPOOL = 64000;
+SELECT
+  "DatabaseName",
+  "FunctionName",
+  "SpecificName",
+  "FunctionId",
+  "NumParameters",
+  "ParameterDataTypes",
+  "FunctionType",
+  "ExternalName",
+  "SrcFileLanguage",
+  "NoSQLDataAccess",
+  "ParameterStyle",
+  "DeterministicOpt",
+  "NullCall",
+  "PrepareCount",
+  "ExecProtectionMode",
+  "ExtFileReference",
+  "CharacterType",
+  "Platform",
+  "InterimFldSize",
+  "RoutineKind",
+  "ParameterUDTIds",
+  "MaxOutParameters",
+  "GLOPSetDatabaseName",
+  "GLOPSetMemberName",
+  "RefQueryband",
+  "ExecMapName",
+  "ExecMapColocName"
+FROM "%s"."FunctionsV"

@@ -39,6 +39,8 @@ import org.junit.Test;
 public class UsersTest extends TestBase {
 
   private static Connection connection;
+  private static final String sqlPath = "src/main/java/com/google/sql/users.sql";
+  private static final String avroFilePath = ET_OUTPUT_PATH + "users.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -47,9 +49,6 @@ public class UsersTest extends TestBase {
 
   @Test
   public void usersTest() throws SQLException, IOException {
-    final String sqlPath = "src/main/java/com/google/sql/users.sql";
-    final String avroFilePath = ET_OUTPUT_PATH + "users.avro";
-
     LinkedHashMultiset<UserRow> dbList = LinkedHashMultiset.create();
     LinkedHashMultiset<UserRow> avroList = LinkedHashMultiset.create();
 
