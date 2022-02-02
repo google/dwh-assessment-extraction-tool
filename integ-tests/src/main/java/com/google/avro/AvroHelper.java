@@ -82,7 +82,6 @@ public final class AvroHelper {
     }
   }
 
-
   /**
    * @param record GenericRecord containing value.
    * @param columnName Database column name.

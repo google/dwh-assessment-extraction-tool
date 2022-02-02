@@ -40,7 +40,7 @@ import org.junit.Test;
 public class IndicesTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = "src/main/java/com/google/sql/indices.sql";
+  private static final String sqlPath = SQL_PATH + "indices.sql";
   private static final String avroFilePath = ET_OUTPUT_PATH + "indices.avro";
   @BeforeClass
   public static void beforeClass() throws SQLException {

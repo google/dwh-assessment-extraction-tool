@@ -40,5 +40,9 @@ public class TestDataGenerator extends TestBase {
 
     // Generate test data for functioninfo.sql
     TestDataHelper.generateFunctions(connection, 10);
+
+    // Generate test data for all_ri_children.sql
+    // Generate test data for all_ri_parents.sql
+    TestDataHelper.generateConstraints(connection, 10);
   }
 }

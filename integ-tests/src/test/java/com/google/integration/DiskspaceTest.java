@@ -42,7 +42,7 @@ import org.junit.Test;
 public class DiskspaceTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = "src/main/java/com/google/sql/diskspace.sql";
+  private static final String sqlPath = SQL_PATH + "diskspace.sql";
   private static final String avroFilePath = ET_OUTPUT_PATH + "diskspace.avro";
 
   @BeforeClass

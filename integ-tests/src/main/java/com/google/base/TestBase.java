@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class TestBase {
 
-  private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestBase.class);
 
   public static final String DB_NAME = getenv("TD_DB");
   public static final String USERNAME_DB = getenv("TD_USR");
@@ -41,7 +41,10 @@ public abstract class TestBase {
   public static final String URL_DB = format("jdbc:teradata://%s/DBS_PORT=1025", getenv("TD_HOST"));
   public static final String ET_OUTPUT_PATH = getenv("EXPORT_PATH");
 
-  public static final Pattern TRAILING_SPACES_REGEX = Pattern.compile("\\s++$");
+  public static final String TESTDATA_SQL_PATH = "src/main/java/com/google/sql/testdata/";
+  public static final String SQL_PATH = "src/main/java/com/google/sql/";
+
+  public static final Pattern TRAILING_SPACES_REGEX = Pattern.compile("\\s+$");
 
   /**
    * @param dateString Date passed as String.
@@ -75,7 +78,7 @@ public abstract class TestBase {
     String avroListOutput = "\n" + Joiner.on("").join(avroList);
 
     if (dbList.isEmpty() && avroList.isEmpty()) {
-      logger.info("DB view and Avro file are equal");
+      LOGGER.info("DB view and Avro file are equal");
     } else if (!dbList.isEmpty() && !avroList.isEmpty()) {
       Assert.fail(
           format(

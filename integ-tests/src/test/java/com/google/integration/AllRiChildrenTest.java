@@ -17,6 +17,7 @@ package com.google.integration;
 
 import static com.google.avro.AvroHelper.extractAvroDataFromFile;
 import static com.google.avro.AvroHelper.getIntNotNull;
+import static com.google.avro.AvroHelper.getLongNotNull;
 import static com.google.avro.AvroHelper.getStringNotNull;
 import static com.google.tdjdbc.JdbcHelper.getIntNotNull;
 import static com.google.tdjdbc.JdbcHelper.getStringNotNull;
@@ -24,7 +25,7 @@ import static java.lang.String.format;
 
 import com.google.base.TestBase;
 import com.google.common.collect.LinkedHashMultiset;
-import com.google.pojo.ColumnRow;
+import com.google.pojo.AllRiChildrenRow;
 import com.google.sql.SqlHelper;
 import java.io.IOException;
 import java.sql.Connection;
@@ -37,11 +38,11 @@ import org.apache.avro.generic.GenericRecord;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ColumnsTest extends TestBase {
+public class AllRiChildrenTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "columns.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "columns.avro";
+  private static final String sqlPath = SQL_PATH + "all_ri_children.sql";
+  private static final String avroFilePath = ET_OUTPUT_PATH + "all_ri_children.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -49,27 +50,27 @@ public class ColumnsTest extends TestBase {
   }
 
   @Test
-  public void columnsTest() throws SQLException, IOException {
-    LinkedHashMultiset<ColumnRow> dbList = LinkedHashMultiset.create();
-    LinkedHashMultiset<ColumnRow> avroList = LinkedHashMultiset.create();
+  public void allRiChildrenTest() throws SQLException, IOException {
+    LinkedHashMultiset<AllRiChildrenRow> dbList = LinkedHashMultiset.create();
+    LinkedHashMultiset<AllRiChildrenRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
-        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME, DB_NAME))) {
+        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        ColumnRow dbRow = ColumnRow.create(
-            getStringNotNull(rs, "DataBaseName"),
-            getStringNotNull(rs, "TableName"),
-            getStringNotNull(rs, "ColumnName"),
-            getStringNotNull(rs, "ColumnFormat"),
-            getStringNotNull(rs, "ColumnTitle"),
-            getIntNotNull(rs, "ColumnLength"),
-            getStringNotNull(rs, "ColumnType"),
-            getStringNotNull(rs, "DefaultValue"),
-            getStringNotNull(rs, "ColumnConstraint"),
-            getIntNotNull(rs, "ConstraintCount"),
-            getStringNotNull(rs, "Nullable"));
+        AllRiChildrenRow dbRow = AllRiChildrenRow.create(
+            getIntNotNull(rs, "IndexID"),
+            getStringNotNull(rs, "IndexName"),
+            getStringNotNull(rs, "ChildDB"),
+            getStringNotNull(rs, "ChildTable"),
+            getStringNotNull(rs, "ChildKeyColumn"),
+            getStringNotNull(rs, "ParentDB"),
+            getStringNotNull(rs, "ParentTable"),
+            getStringNotNull(rs, "ParentKeyColumn"),
+            getStringNotNull(rs, "InconsistencyFlag"),
+            getStringNotNull(rs, "CreatorName"),
+            getTimestampByDate(getStringNotNull(rs, "CreateTimeStamp")));
         dbList.add(dbRow);
       }
     }
@@ -79,22 +80,22 @@ public class ColumnsTest extends TestBase {
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      ColumnRow avroRow = ColumnRow.create(
-          getStringNotNull(record, "DataBaseName"),
-          getStringNotNull(record, "TableName"),
-          getStringNotNull(record, "ColumnName"),
-          getStringNotNull(record, "ColumnFormat"),
-          getStringNotNull(record, "ColumnTitle"),
-          getIntNotNull(record, "ColumnLength"),
-          getStringNotNull(record, "ColumnType"),
-          getStringNotNull(record, "DefaultValue"),
-          getStringNotNull(record, "ColumnConstraint"),
-          getIntNotNull(record, "ConstraintCount"),
-          getStringNotNull(record, "Nullable"));
+      AllRiChildrenRow avroRow = AllRiChildrenRow.create(
+          getIntNotNull(record, "IndexID"),
+          getStringNotNull(record, "IndexName"),
+          getStringNotNull(record, "ChildDB"),
+          getStringNotNull(record, "ChildTable"),
+          getStringNotNull(record, "ChildKeyColumn"),
+          getStringNotNull(record, "ParentDB"),
+          getStringNotNull(record, "ParentTable"),
+          getStringNotNull(record, "ParentKeyColumn"),
+          getStringNotNull(record, "InconsistencyFlag"),
+          getStringNotNull(record, "CreatorName"),
+          getLongNotNull(record, "CreateTimeStamp"));
       avroList.add(avroRow);
     }
 
-    LinkedHashMultiset<ColumnRow> dbListCopy = LinkedHashMultiset.create(dbList);
+    LinkedHashMultiset<AllRiChildrenRow> dbListCopy = LinkedHashMultiset.create(dbList);
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
