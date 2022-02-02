@@ -23,11 +23,14 @@ import com.google.common.collect.LinkedHashMultiset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Pattern;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Base class with general values for all Junit test suites */
+/**
+ * Base class with general values for all Junit test suites
+ */
 public abstract class TestBase {
 
   private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
@@ -37,6 +40,8 @@ public abstract class TestBase {
   public static final String PASSWORD_DB = getenv("TD_PSW");
   public static final String URL_DB = format("jdbc:teradata://%s/DBS_PORT=1025", getenv("TD_HOST"));
   public static final String ET_OUTPUT_PATH = getenv("EXPORT_PATH");
+
+  public static final Pattern TRAILING_SPACES_REGEX = Pattern.compile("\\s++$");
 
   /**
    * @param dateString Date passed as String.
@@ -64,7 +69,8 @@ public abstract class TestBase {
    * @param avroFilePath Path to exported Avro file
    */
   public static void assertListsEqual(
-      final LinkedHashMultiset dbList, final LinkedHashMultiset avroList, String sqlPath, String avroFilePath) {
+      final LinkedHashMultiset dbList, final LinkedHashMultiset avroList, String sqlPath,
+      String avroFilePath) {
     String dbListOutput = "\n" + Joiner.on("").join(dbList);
     String avroListOutput = "\n" + Joiner.on("").join(avroList);
 

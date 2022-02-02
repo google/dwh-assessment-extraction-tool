@@ -12,9 +12,12 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CREATE USER
-  test_user_%s AS
-  PERMANENT = 64000,
-  PASSWORD = "%s",
-  TEMPORARY = 64000,
-  SPOOL = 64000;
+CREATE FUNCTION  SQLJ.test_func_%s (a INT)
+     RETURNS INT
+     LANGUAGE SQL
+     CONTAINS SQL
+     DETERMINISTIC
+     SQL SECURITY DEFINER
+     COLLATION INVOKER
+     INLINE TYPE 1
+     RETURN a;

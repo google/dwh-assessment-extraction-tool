@@ -17,7 +17,9 @@ package com.google.pojo;
 
 import com.google.auto.value.AutoValue;
 
-/** AutoValue abstract POJO class for serialization data from DB and Avro files. */
+/**
+ * AutoValue abstract POJO class for serialization data from DB and Avro files.
+ */
 @AutoValue
 public abstract class DiskspaceRow {
 

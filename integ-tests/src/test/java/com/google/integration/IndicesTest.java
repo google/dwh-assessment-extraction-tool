@@ -40,7 +40,8 @@ import org.junit.Test;
 public class IndicesTest extends TestBase {
 
   private static Connection connection;
-
+  private static final String sqlPath = "src/main/java/com/google/sql/indices.sql";
+  private static final String avroFilePath = ET_OUTPUT_PATH + "indices.avro";
   @BeforeClass
   public static void beforeClass() throws SQLException {
     connection = DriverManager.getConnection(URL_DB, USERNAME_DB, PASSWORD_DB);
@@ -48,9 +49,6 @@ public class IndicesTest extends TestBase {
 
   @Test
   public void indicesTest() throws SQLException, IOException {
-    final String sqlPath = "src/main/java/com/google/sql/indices.sql";
-    final String avroFilePath = ET_OUTPUT_PATH + "indices.avro";
-
     LinkedHashMultiset<IndicesRow> dbList = LinkedHashMultiset.create();
     LinkedHashMultiset<IndicesRow> avroList = LinkedHashMultiset.create();
 

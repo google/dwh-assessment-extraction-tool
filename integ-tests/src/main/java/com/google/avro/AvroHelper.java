@@ -15,22 +15,26 @@
  */
 package com.google.avro;
 
+import static com.google.base.TestBase.TRAILING_SPACES_REGEX;
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 
+/**
+ * A helper class for reading and extracting data from Avro files.
+ */
 public final class AvroHelper {
 
-  /** A helper class for reading and extracting data from Avro files. */
   private AvroHelper() {}
 
   /**
    * @param path Path to the folder with Extraction tool output files.
    * @return The avro schema object.
-   * @throws IOException
    */
   public static DataFileReader<GenericRecord> extractAvroDataFromFile(String path)
       throws IOException {
@@ -48,7 +52,7 @@ public final class AvroHelper {
     if (record.get(columnName) == null) {
       return "";
     } else {
-      return record.get(columnName).toString();
+      return TRAILING_SPACES_REGEX.matcher(record.get(columnName).toString()).replaceFirst("");
     }
   }
 
@@ -75,6 +79,21 @@ public final class AvroHelper {
       return 0L;
     } else {
       return Long.parseLong(record.get(columnName).toString());
+    }
+  }
+
+
+  /**
+   * @param record GenericRecord containing value.
+   * @param columnName Database column name.
+   * @return byte[] or empty byte[] if null.
+   */
+  public static byte[] getBytesNotNull(GenericRecord record, String columnName) {
+    if (record.get(columnName) == null) {
+      return new byte[0];
+    } else {
+      ByteBuffer bb = (ByteBuffer) record.get(columnName);
+      return bb.array();
     }
   }
 }

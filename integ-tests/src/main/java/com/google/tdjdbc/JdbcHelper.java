@@ -15,16 +15,15 @@
  */
 package com.google.tdjdbc;
 
+import static com.google.base.TestBase.TRAILING_SPACES_REGEX;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 /**
  * A helper class for checking Null values returned by executing SELECT request against a database.
  */
 public final class JdbcHelper {
-
-  private static final Pattern TRAILING_SPACES_REGEX = Pattern.compile("\\s++$");
 
   /**
    * @param rs A row with SELECT results.
@@ -68,6 +67,21 @@ public final class JdbcHelper {
       return 0L;
     } else {
       return longValue;
+    }
+  }
+
+  /**
+   * @param rs A row with SELECT results.
+   * @param column Database column name.
+   * @return byte[] or empty byte[] if null.
+   * @throws SQLException
+   */
+  public static byte[] getBytesNotNull(ResultSet rs, String column) throws SQLException {
+    byte[] bytesValue = rs.getBytes(column);
+    if (rs.wasNull()) {
+      return new byte[0];
+    } else {
+      return bytesValue;
     }
   }
 }
