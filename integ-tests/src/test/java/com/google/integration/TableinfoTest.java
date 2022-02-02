@@ -41,7 +41,7 @@ import org.junit.Test;
 public class TableinfoTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = "src/main/java/com/google/sql/tableinfo.sql";
+  private static final String sqlPath = SQL_PATH + "tableinfo.sql";
   private static final String avroFilePath = ET_OUTPUT_PATH + "tableinfo.avro";
 
   @BeforeClass

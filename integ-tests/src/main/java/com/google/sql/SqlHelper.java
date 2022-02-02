@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class SqlHelper {
 
-  private static final Logger logger = LoggerFactory.getLogger(SqlHelper.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SqlHelper.class);
 
   private SqlHelper() {
   }
@@ -61,7 +61,7 @@ public final class SqlHelper {
       try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
         preparedStatement.execute();
       } catch (SQLException e) {
-        logger.error(format("Cannot execute query: \n%s\n", query));
+        LOGGER.error(format("Cannot execute query: \n%s\n", query));
         throw e;
       }
     }

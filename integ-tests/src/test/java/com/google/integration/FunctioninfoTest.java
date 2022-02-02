@@ -42,7 +42,7 @@ import org.junit.Test;
 public class FunctioninfoTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = "src/main/java/com/google/sql/functioninfo.sql";
+  private static final String sqlPath = SQL_PATH + "functioninfo.sql";
   private static final String avroFilePath = ET_OUTPUT_PATH + "functioninfo.avro";
 
   @BeforeClass

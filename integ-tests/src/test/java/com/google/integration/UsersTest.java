@@ -39,7 +39,7 @@ import org.junit.Test;
 public class UsersTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = "src/main/java/com/google/sql/users.sql";
+  private static final String sqlPath = SQL_PATH + "users.sql";
   private static final String avroFilePath = ET_OUTPUT_PATH + "users.avro";
 
   @BeforeClass
@@ -69,8 +69,7 @@ public class UsersTest extends TestBase {
     DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
 
     while (dataFileReader.hasNext()) {
-      GenericRecord record = null;
-      record = dataFileReader.next(record);
+      GenericRecord record = dataFileReader.next();
 
       UserRow avroRow = UserRow.create(
           getStringNotNull(record, "UserName"),
