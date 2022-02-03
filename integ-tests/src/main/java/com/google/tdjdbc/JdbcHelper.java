@@ -89,6 +89,21 @@ public final class JdbcHelper {
   /**
    * @param rs A row with SELECT results.
    * @param column Database column name.
+   * @return double or 0.0 if null.
+   * @throws SQLException
+   */
+  public static double getDoubleNotNull(ResultSet rs, String column) throws SQLException {
+    double doubleValue = rs.getDouble(column);
+    if (rs.wasNull()) {
+      return 0.0;
+    } else {
+      return doubleValue;
+    }
+  }
+
+  /**
+   * @param rs A row with SELECT results.
+   * @param column Database column name.
    * @return long or 0L if null.
    * @throws SQLException
    */
