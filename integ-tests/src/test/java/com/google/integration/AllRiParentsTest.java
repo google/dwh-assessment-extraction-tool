@@ -21,6 +21,7 @@ import static com.google.avro.AvroHelper.getLongNotNull;
 import static com.google.avro.AvroHelper.getStringNotNull;
 import static com.google.tdjdbc.JdbcHelper.getIntNotNull;
 import static com.google.tdjdbc.JdbcHelper.getStringNotNull;
+import static com.google.tdjdbc.JdbcHelper.getTimestampNotNull;
 import static java.lang.String.format;
 
 import com.google.base.TestBase;
@@ -70,7 +71,7 @@ public class AllRiParentsTest extends TestBase {
             getStringNotNull(rs, "ParentKeyColumn"),
             getStringNotNull(rs, "InconsistencyFlag"),
             getStringNotNull(rs, "CreatorName"),
-            getTimestampByDate(getStringNotNull(rs, "CreateTimeStamp")));
+            getTimestampNotNull(rs, "CreateTimeStamp"));
         dbList.add(dbRow);
       }
     }

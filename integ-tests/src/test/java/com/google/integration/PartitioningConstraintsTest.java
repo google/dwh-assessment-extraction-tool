@@ -20,13 +20,14 @@ import static com.google.avro.AvroHelper.getIntNotNull;
 import static com.google.avro.AvroHelper.getLongNotNull;
 import static com.google.avro.AvroHelper.getStringNotNull;
 import static com.google.tdjdbc.JdbcHelper.getIntNotNull;
+import static com.google.tdjdbc.JdbcHelper.getLongNotNull;
 import static com.google.tdjdbc.JdbcHelper.getStringNotNull;
 import static com.google.tdjdbc.JdbcHelper.getTimestampNotNull;
 import static java.lang.String.format;
 
 import com.google.base.TestBase;
 import com.google.common.collect.LinkedHashMultiset;
-import com.google.pojo.TableinfoRow;
+import com.google.pojo.PartitioningConstraintsRow;
 import com.google.sql.SqlHelper;
 import java.io.IOException;
 import java.sql.Connection;
@@ -39,11 +40,11 @@ import org.apache.avro.generic.GenericRecord;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TableinfoTest extends TestBase {
+public class PartitioningConstraintsTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "tableinfo.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "tableinfo.avro";
+  private static final String sqlPath = SQL_PATH + "partitioning_constraints.sql";
+  private static final String avroFilePath = ET_OUTPUT_PATH + "partitioning_constraints.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -51,28 +52,34 @@ public class TableinfoTest extends TestBase {
   }
 
   @Test
-  public void tableinfoTest() throws SQLException, IOException {
-    LinkedHashMultiset<TableinfoRow> dbList = LinkedHashMultiset.create();
-    LinkedHashMultiset<TableinfoRow> avroList = LinkedHashMultiset.create();
+  public void partitioningConstraintsTest() throws SQLException, IOException {
+    LinkedHashMultiset<PartitioningConstraintsRow> dbList = LinkedHashMultiset.create();
+    LinkedHashMultiset<PartitioningConstraintsRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
         connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        TableinfoRow dbRow = TableinfoRow.create(
-            getStringNotNull(rs, "DataBaseName"),
+        PartitioningConstraintsRow dbRow = PartitioningConstraintsRow.create(
+            getStringNotNull(rs, "DatabaseName"),
             getStringNotNull(rs, "TableName"),
-            getIntNotNull(rs, "AccessCount"),
-            getTimestampNotNull(rs, "LastAccessTimeStamp"),
-            getTimestampNotNull(rs, "LastAlterTimeStamp"),
-            getStringNotNull(rs, "TableKind"),
+            getStringNotNull(rs, "IndexName"),
+            getIntNotNull(rs, "IndexNumber"),
+            getStringNotNull(rs, "ConstraintType"),
+            getStringNotNull(rs, "ConstraintText"),
+            getStringNotNull(rs, "ConstraintCollation"),
+            getStringNotNull(rs, "CollationName"),
             getStringNotNull(rs, "CreatorName"),
             getTimestampNotNull(rs, "CreateTimeStamp"),
-            getIntNotNull(rs, "PrimaryKeyIndexId"),
-            getIntNotNull(rs, "ParentCount"),
-            getStringNotNull(rs, "ChildCount"),
-            getStringNotNull(rs, "CommitOpt"));
+            getStringNotNull(rs, "CharSetID"),
+            getStringNotNull(rs, "SessionMode"),
+            getTimestampNotNull(rs, "ResolvedCurrent_Date"),
+            getLongNotNull(rs, "ResolvedCurrent_TimeStamp"),
+            getLongNotNull(rs, "DefinedCombinedPartitions"),
+            getLongNotNull(rs, "MaxCombinedPartitions"),
+            getIntNotNull(rs, "PartitioningLevels"),
+            getIntNotNull(rs, "ColumnPartitioningLevel"));
         dbList.add(dbRow);
       }
     }
@@ -82,23 +89,29 @@ public class TableinfoTest extends TestBase {
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      TableinfoRow avroRow = TableinfoRow.create(
-          getStringNotNull(record, "DataBaseName"),
+      PartitioningConstraintsRow avroRow = PartitioningConstraintsRow.create(
+          getStringNotNull(record, "DatabaseName"),
           getStringNotNull(record, "TableName"),
-          getIntNotNull(record, "AccessCount"),
-          getLongNotNull(record, "LastAccessTimeStamp"),
-          getLongNotNull(record, "LastAlterTimeStamp"),
-          getStringNotNull(record, "TableKind"),
+          getStringNotNull(record, "IndexName"),
+          getIntNotNull(record, "IndexNumber"),
+          getStringNotNull(record, "ConstraintType"),
+          getStringNotNull(record, "ConstraintText"),
+          getStringNotNull(record, "ConstraintCollation"),
+          getStringNotNull(record, "CollationName"),
           getStringNotNull(record, "CreatorName"),
           getLongNotNull(record, "CreateTimeStamp"),
-          getIntNotNull(record, "PrimaryKeyIndexId"),
-          getIntNotNull(record, "ParentCount"),
-          getStringNotNull(record, "ChildCount"),
-          getStringNotNull(record, "CommitOpt"));
+          getStringNotNull(record, "CharSetID"),
+          getStringNotNull(record, "SessionMode"),
+          getLongNotNull(record, "ResolvedCurrent_Date"),
+          getLongNotNull(record, "ResolvedCurrent_TimeStamp"),
+          getLongNotNull(record, "DefinedCombinedPartitions"),
+          getLongNotNull(record, "MaxCombinedPartitions"),
+          getIntNotNull(record, "PartitioningLevels"),
+          getIntNotNull(record, "ColumnPartitioningLevel"));
       avroList.add(avroRow);
     }
 
-    LinkedHashMultiset<TableinfoRow> dbListCopy = LinkedHashMultiset.create(dbList);
+    LinkedHashMultiset<PartitioningConstraintsRow> dbListCopy = LinkedHashMultiset.create(dbList);
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
