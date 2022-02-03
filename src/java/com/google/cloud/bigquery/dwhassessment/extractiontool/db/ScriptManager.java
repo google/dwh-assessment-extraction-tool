@@ -29,7 +29,7 @@ public interface ScriptManager {
    *
    * @param connection The JDBC connection to the database.
    * @param dryRun Whether to just perform a dry run, which just logs out the action to perform.
-   * @param sqlTransformer A transformer to apply on the SQL script before execution.
+   * @param sqlTemplateRenderer A template renderer to apply on the SQL script before execution.
    * @param scriptName The name of the script. This is not a file name. The interpretation of the
    *     name is left to the implementation but can also map to several files (e.g., an SQL file and
    *     a schema definition file).
@@ -49,7 +49,7 @@ public interface ScriptManager {
     executeScript(
         connection,
         /* dryRun= */ false,
-        /* sqlTransformer= */ (name, script) -> script,
+        /* sqlTemplateRenderer= */ (name, script) -> script,
         scriptName,
         dataEntityManager);
   }

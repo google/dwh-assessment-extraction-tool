@@ -24,6 +24,7 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager.SchemaKey;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables.QueryLogsVariables;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRenderer;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRendererImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
@@ -114,18 +115,13 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
         SqlScriptVariables.QueryLogsVariables.builder();
     maybeAddTimeRange(qryLogVarsBuilder, arguments);
 
-    SqlScriptVariables sqlScriptVariables =
-        SqlScriptVariables.builder()
-            .setBaseDatabase(arguments.baseDatabase())
-            .setQueryLogsVariables(qryLogVarsBuilder.build())
-            .build();
-    SqlTemplateRenderer sqlTemplateRenderer = new SqlTemplateRendererImpl(sqlScriptVariables);
-
     for (String scriptName : getScriptNames(arguments)) {
       LOGGER.log(Level.INFO, "Start extracting {0}...", scriptName);
       Connection connection =
           DriverManager.getConnection(
               arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
+      SqlTemplateRenderer sqlTemplateRenderer =
+          getSqlTemplateRenderer(scriptName, arguments, qryLogVarsBuilder);
       scriptManager.executeScript(
           connection, arguments.dryRun(), sqlTemplateRenderer, scriptName, dataEntityManager);
       connection.close();
@@ -146,6 +142,18 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
     dataEntityManager.close();
     return 0;
+  }
+
+  private SqlTemplateRenderer getSqlTemplateRenderer(
+      String scriptName, Arguments arguments, QueryLogsVariables.Builder qryLogVarsBuilder) {
+    SqlScriptVariables sqlScriptVariables =
+        SqlScriptVariables.builder()
+            .setBaseDatabase(
+                arguments.scriptBaseDatabase().getOrDefault(scriptName, arguments.baseDatabase()))
+            .setQueryLogsVariables(qryLogVarsBuilder.build())
+            .build();
+    SqlTemplateRenderer sqlTemplateRenderer = new SqlTemplateRendererImpl(sqlScriptVariables);
+    return sqlTemplateRenderer;
   }
 
   private void extractSchema(
