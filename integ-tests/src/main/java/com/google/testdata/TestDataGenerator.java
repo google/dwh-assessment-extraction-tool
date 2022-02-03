@@ -45,7 +45,10 @@ public class TestDataGenerator extends TestBase {
     // Generate test data for all_ri_parents.sql
     TestDataHelper.generateConstraints(connection, 10);
 
-    // Generate test data for
+    // Generate test data for partitioning_constraints.sql
     TestDataHelper.generatePartitioningConstraints(connection, 10);
+
+    // Generate test data for stats.sql
+    TestDataHelper.generateStats(connection, 10);
   }
 }

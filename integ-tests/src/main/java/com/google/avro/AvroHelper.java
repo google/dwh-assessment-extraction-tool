@@ -95,4 +95,17 @@ public final class AvroHelper {
       return bb.array();
     }
   }
+
+  /**
+   * @param record
+   * @param columnName
+   * @return double or 0.0 if null.
+   */
+  public static double getDoubleNotNull(GenericRecord record, String columnName) {
+    if (record.get(columnName) == null) {
+      return 0.0;
+    } else {
+      return Double.parseDouble(record.get(columnName).toString());
+    }
+  }
 }

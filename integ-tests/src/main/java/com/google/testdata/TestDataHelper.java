@@ -173,4 +173,32 @@ public final class TestDataHelper {
             "Generated %s new partitioning constraint(s):\n%s",
             dbTableQueries.size(), Joiner.on("\n").join(dbTableQueries)));
   }
+
+  /**
+   * @param connection DB connection parameter
+   * @param statsCount Repetition count
+   */
+  public static void generateStats(Connection connection, int statsCount)
+      throws SQLException {
+    final String statsData1 = getSql(TESTDATA_SQL_PATH + "columns_data_1.sql");
+    final String statsData2 = getSql(TESTDATA_SQL_PATH + "columns_data_2.sql");
+    final String statsData3 = getSql(TESTDATA_SQL_PATH + "stats_data.sql");
+
+    List<String> dbTableQueries = new ArrayList<>();
+    while (statsCount > 0) {
+      String dbName = format("test_%s_%s", nanoTime(), statsCount);
+      String tableName = format("test_%s_%s", nanoTime(), statsCount);
+
+      dbTableQueries.add(format(statsData1, dbName));
+      dbTableQueries.add(format(statsData2, dbName, tableName));
+      dbTableQueries.add(format(statsData3, dbName, tableName));
+      statsCount--;
+    }
+    executeQueries(connection, dbTableQueries);
+
+    LOGGER.info(
+        format(
+            "Generated %s new monitoring rule(s):\n%s",
+            dbTableQueries.size() * 2, Joiner.on("\n").join(dbTableQueries)));
+  }
 }
