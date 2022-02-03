@@ -20,9 +20,6 @@ import static java.lang.System.getenv;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.LinkedHashMultiset;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.regex.Pattern;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -45,25 +42,6 @@ public abstract class TestBase {
   public static final String SQL_PATH = "src/main/java/com/google/sql/";
 
   public static final Pattern TRAILING_SPACES_REGEX = Pattern.compile("\\s+$");
-
-  /**
-   * @param dateString Date passed as String.
-   * @return Date as a timestamp as Long.
-   */
-  public static long getTimestampByDate(String dateString) {
-    if (dateString.equals("")) {
-      return 0;
-    } else {
-      try {
-        SimpleDateFormat datetimeFormatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        Date date = datetimeFormatter1.parse(dateString);
-        return date.getTime();
-      } catch (ParseException exception) {
-        throw new IllegalStateException(
-            "Date format doesn't correspond to 'yyyy-MM-dd HH:mm:ss.SSS'", exception);
-      }
-    }
-  }
 
   /**
    * @param dbList List of extracted from DB items

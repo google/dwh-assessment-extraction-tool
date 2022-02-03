@@ -147,4 +147,30 @@ public final class TestDataHelper {
             "Generated %s new constraint(s):\n%s",
             dbTableQueries.size(), Joiner.on("\n").join(dbTableQueries)));
   }
+
+  /**
+   * @param connection DB connection parameter
+   * @param constraintsCount Repetition count
+   */
+  public static void generatePartitioningConstraints(Connection connection, int constraintsCount)
+      throws SQLException {
+    final String partitioningConstraintsData1 = getSql(TESTDATA_SQL_PATH + "columns_data_1.sql");
+    final String partitioningConstraintsData2 = getSql(TESTDATA_SQL_PATH + "partitioning_constraints_data.sql");
+
+    List<String> dbTableQueries = new ArrayList<>();
+    while (constraintsCount > 0) {
+      String dbName = format("test_%s_%s", nanoTime(), constraintsCount);
+      String tableName = format("test_%s_%s", nanoTime(), constraintsCount);
+
+      dbTableQueries.add(format(partitioningConstraintsData1, dbName));
+      dbTableQueries.add(format(partitioningConstraintsData2, dbName, tableName));
+      constraintsCount--;
+    }
+    executeQueries(connection, dbTableQueries);
+
+    LOGGER.info(
+        format(
+            "Generated %s new partitioning constraint(s):\n%s",
+            dbTableQueries.size(), Joiner.on("\n").join(dbTableQueries)));
+  }
 }

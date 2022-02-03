@@ -19,6 +19,7 @@ import static com.google.base.TestBase.TRAILING_SPACES_REGEX;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 /**
  * A helper class for checking Null values returned by executing SELECT request against a database.
@@ -82,6 +83,21 @@ public final class JdbcHelper {
       return new byte[0];
     } else {
       return bytesValue;
+    }
+  }
+
+  /**
+   * @param rs A row with SELECT results.
+   * @param column Database column name.
+   * @return long or 0L if null.
+   * @throws SQLException
+   */
+  public static long getTimestampNotNull(ResultSet rs, String column) throws SQLException {
+    Timestamp timestamp = rs.getTimestamp(column);
+    if (rs.wasNull()) {
+      return 0L;
+    } else {
+      return timestamp.getTime();
     }
   }
 }

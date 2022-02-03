@@ -19,6 +19,7 @@ import static com.google.avro.AvroHelper.extractAvroDataFromFile;
 import static com.google.avro.AvroHelper.getLongNotNull;
 import static com.google.avro.AvroHelper.getStringNotNull;
 import static com.google.tdjdbc.JdbcHelper.getStringNotNull;
+import static com.google.tdjdbc.JdbcHelper.getTimestampNotNull;
 import static java.lang.String.format;
 
 import com.google.base.TestBase;
@@ -60,8 +61,8 @@ public class UsersTest extends TestBase {
         UserRow dbRow = UserRow.create(
             getStringNotNull(rs, "UserName"),
             getStringNotNull(rs, "CreatorName"),
-            getTimestampByDate(getStringNotNull(rs, "CreateTimeStamp")),
-            getTimestampByDate(getStringNotNull(rs, "LastAccessTimeStamp")));
+            getTimestampNotNull(rs, "CreateTimeStamp"),
+            getTimestampNotNull(rs, "LastAccessTimeStamp"));
         dbList.add(dbRow);
       }
     }
