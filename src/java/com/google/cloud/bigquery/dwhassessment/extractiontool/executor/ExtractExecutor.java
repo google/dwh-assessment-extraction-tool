@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -44,6 +45,9 @@ public interface ExtractExecutor {
 
     /** SQL scripts to run. */
     public abstract ImmutableList<String> sqlScripts();
+
+    /** Optional variables for the scripts. */
+    public abstract ImmutableMap<String, Map<String, String>> scriptVariables();
 
     /** SQL scripts to exclude (i.e., run the full catalog except for these scripts). */
     public abstract ImmutableList<String> skipSqlScripts();
@@ -68,6 +72,7 @@ public interface ExtractExecutor {
       return new AutoValue_ExtractExecutor_Arguments.Builder()
           .setDryRun(false)
           .setBaseDatabase("DBC")
+          .setScriptVariables(ImmutableMap.of())
           .setScriptBaseDatabase(ImmutableMap.of())
           .setSchemaFilters(ImmutableList.of())
           .setSqlScripts(ImmutableList.of())
@@ -85,6 +90,9 @@ public interface ExtractExecutor {
       public abstract Builder setSqlScripts(List<String> scripts);
 
       public abstract Builder setSkipSqlScripts(List<String> scripts);
+
+      public abstract Builder setScriptVariables(
+          ImmutableMap<String, Map<String, String>> variables);
 
       public abstract Builder setSchemaFilters(List<SchemaFilter> schemaFilters);
 

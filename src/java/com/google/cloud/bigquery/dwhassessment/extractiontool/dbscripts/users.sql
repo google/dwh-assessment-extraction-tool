@@ -17,5 +17,5 @@ SELECT
   "CreatorName",
   "CreateTimeStamp",
   "LastAccessTimeStamp"
-FROM "{{baseDatabase}}"."DatabasesV"
+FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}DatabasesV{{/if}}"
 WHERE "DBKind"='U'

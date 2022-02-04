@@ -21,6 +21,7 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.*;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerTesting;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.faketd.TeradataSimulator;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -277,7 +278,7 @@ public class InternalScriptLoaderTest {
 
     // Verify records serialization.
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    scriptManager.executeScript(connection, scriptName, new DataEntityManagerTesting(outputStream));
+    scriptManager.executeScript(connection, /* dryRun= */ false, sqlTemplateRenderer, scriptName, new DataEntityManagerTesting(outputStream));
     assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 

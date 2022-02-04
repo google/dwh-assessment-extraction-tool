@@ -38,6 +38,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.time.zone.ZoneRulesException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -124,9 +125,35 @@ public final class ExtractSubcommand implements Callable<Integer> {
     SetView<String> unknownScripts = Sets.difference(scriptBaseDatabase.keySet(), allScriptNames);
     if (!unknownScripts.isEmpty()) {
       throw new ParameterException(
-          spec.commandLine(), String.format("Got unknown script(s): %s", Joiner.on(", ").join(unknownScripts)));
+          spec.commandLine(),
+          String.format("Got unknown script(s): %s", Joiner.on(", ").join(unknownScripts)));
     }
     argumentsBuilder.setScriptBaseDatabase(ImmutableMap.copyOf(scriptBaseDatabase));
+  }
+
+  @Option(
+      names = "--script-vars",
+      description = {
+        "Provide optional script variables. The variable a for a script b is set to value v",
+        "like this: a.b=v"
+      })
+  private void scriptVars(Map<String, String> vars) {
+    Map<String, Map<String, String>> scriptVars = new HashMap<>();
+    for (Map.Entry<String, String> entry : vars.entrySet()) {
+      String[] parts = entry.getKey().split("\\.", 2);
+      if (!scriptVars.containsKey(parts[0])) {
+        scriptVars.put(parts[0], new HashMap<>());
+      }
+      scriptVars.get(parts[0]).put(parts[1], entry.getValue());
+    }
+    ImmutableSet<String> allScriptNames = ImmutableSet.copyOf(scriptManager.getAllScriptNames());
+    SetView<String> unknownScripts = Sets.difference(scriptVars.keySet(), allScriptNames);
+    if (!unknownScripts.isEmpty()) {
+      throw new ParameterException(
+          spec.commandLine(),
+          String.format("Got unknown script(s): %s", Joiner.on(", ").join(unknownScripts)));
+    }
+    argumentsBuilder.setScriptVariables(ImmutableMap.copyOf(scriptVars));
   }
 
   @Option(
@@ -157,7 +184,8 @@ public final class ExtractSubcommand implements Callable<Integer> {
       })
   private String endTimeString;
 
-  public ExtractSubcommand(Supplier<ExtractExecutor> executorSupplier, ScriptManager scriptManager) {
+  public ExtractSubcommand(
+      Supplier<ExtractExecutor> executorSupplier, ScriptManager scriptManager) {
     this.executorSupplier = executorSupplier;
     this.scriptManager = scriptManager;
   }

@@ -19,4 +19,4 @@ SELECT
   "B_DatabaseName",
   "B_TableName",
   "E_TableId"
-FROM "{{baseDatabase}}"."AllTempTablesVX"
+FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}AllTempTablesVX{{/if}}"
