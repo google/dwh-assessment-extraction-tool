@@ -33,6 +33,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -151,9 +152,9 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
             .setBaseDatabase(
                 arguments.scriptBaseDatabase().getOrDefault(scriptName, arguments.baseDatabase()))
             .setQueryLogsVariables(qryLogVarsBuilder.build())
+            .setVars(arguments.scriptVariables().getOrDefault(scriptName, ImmutableMap.of()))
             .build();
-    SqlTemplateRenderer sqlTemplateRenderer = new SqlTemplateRendererImpl(sqlScriptVariables);
-    return sqlTemplateRenderer;
+    return new SqlTemplateRendererImpl(sqlScriptVariables);
   }
 
   private void extractSchema(

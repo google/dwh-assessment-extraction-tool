@@ -19,4 +19,4 @@ SELECT
   "RowCount",
   "UniqueValueCount",
   "CreateTimeStamp" AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS "CreateTimeStamp"
-FROM DBC."StatsV"
+FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}StatsV{{/if}}"

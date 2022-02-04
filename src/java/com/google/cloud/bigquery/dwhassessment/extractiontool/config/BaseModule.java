@@ -57,8 +57,7 @@ public final class BaseModule extends AbstractModule {
   @Provides
   @Singleton
   ExtractSubcommand extractSubcommand(
-      Provider<ExtractExecutor> extractExecutorProvider,
-      ScriptManager scriptManager) {
+      Provider<ExtractExecutor> extractExecutorProvider, ScriptManager scriptManager) {
     return new ExtractSubcommand(extractExecutorProvider::get, scriptManager);
   }
 

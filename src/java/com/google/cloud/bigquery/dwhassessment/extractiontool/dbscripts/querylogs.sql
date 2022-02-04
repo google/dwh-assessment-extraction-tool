@@ -141,7 +141,8 @@ SELECT
   "VHPhysIOKB",
   "WarningOnly",
   "WDName"
-FROM "{{baseDatabase}}"."QryLogV"
+FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}"
 {{#if queryLogsVariables.timeRange}}
-WHERE "{{baseDatabase}}"."QryLogV"."StartTime" BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
+WHERE "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}"."StartTime"
+  BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
 {{/if}}

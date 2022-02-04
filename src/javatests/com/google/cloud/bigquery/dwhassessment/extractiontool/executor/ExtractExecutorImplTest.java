@@ -109,7 +109,7 @@ public final class ExtractExecutorImplTest {
   }
 
   @Test
-  public void run_overwriteScriptBaseDb_success() throws Exception, SQLException {
+  public void run_overwriteScriptBaseDbAndTableName_success() throws Exception, SQLException {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two"));
     when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
         .thenReturn(ImmutableSet.of());
@@ -122,6 +122,8 @@ public final class ExtractExecutorImplTest {
                     .setOutputPath(Paths.get("/tmp"))
                     .setBaseDatabase("base-db")
                     .setScriptBaseDatabase(ImmutableMap.of("two", "two-db"))
+                    .setScriptVariables(
+                        ImmutableMap.of("one", ImmutableMap.of("tableName", "one-table")))
                     .build()))
         .isEqualTo(0);
 
@@ -138,8 +140,8 @@ public final class ExtractExecutorImplTest {
     assertThat(
             sqlTemplateRendererArgumentCaptorOne
                 .getValue()
-                .renderTemplate("one", "{{baseDatabase}}.QryLogV"))
-        .isEqualTo("base-db.QryLogV");
+                .renderTemplate("one", "{{baseDatabase}}.{{vars.tableName}}"))
+        .isEqualTo("base-db.one-table");
 
     ArgumentCaptor<SqlTemplateRenderer> sqlTemplateRendererArgumentCaptorTwo =
         ArgumentCaptor.forClass(SqlTemplateRenderer.class);
