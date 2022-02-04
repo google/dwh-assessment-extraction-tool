@@ -16,9 +16,15 @@
 package com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 import com.google.re2j.Pattern;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,14 +33,13 @@ import java.nio.file.Paths;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.*;
-import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.time.temporal.TemporalAccessor;
 import java.time.zone.ZoneRulesException;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
@@ -49,6 +54,7 @@ import picocli.CommandLine.Spec;
 public final class ExtractSubcommand implements Callable<Integer> {
 
   private final Supplier<ExtractExecutor> executorSupplier;
+  private final ScriptManager scriptManager;
   private final ExtractExecutor.Arguments.Builder argumentsBuilder =
       ExtractExecutor.Arguments.builder();
 
@@ -95,20 +101,40 @@ public final class ExtractSubcommand implements Callable<Integer> {
   @Option(names = "--db-user", description = "The user name for the database.")
   private String dbUserName = "";
 
-  @Option(names = "--db-password", description = "The password for the database.", arity = "0..1", interactive = true)
+  @Option(
+      names = "--db-password",
+      description = "The password for the database.",
+      arity = "0..1",
+      interactive = true)
   private String dbPassword = "";
 
   @Option(
       names = "--base-db",
       defaultValue = "DBC",
       description = "The base database from which to extract the metadata.")
-  private String baseDatabase;
+  private void setBaseDatabase(String baseDatabase) {
+    argumentsBuilder.setBaseDatabase(baseDatabase);
+  }
+
+  @Option(
+      names = "--script-base-db",
+      description = "Overwrite the base database for a specific script.")
+  private void scriptBaseDatabase(Map<String, String> scriptBaseDatabase) {
+    ImmutableSet<String> allScriptNames = ImmutableSet.copyOf(scriptManager.getAllScriptNames());
+    SetView<String> unknownScripts = Sets.difference(scriptBaseDatabase.keySet(), allScriptNames);
+    if (!unknownScripts.isEmpty()) {
+      throw new ParameterException(
+          spec.commandLine(), String.format("Got unknown script(s): %s", Joiner.on(", ").join(unknownScripts)));
+    }
+    argumentsBuilder.setScriptBaseDatabase(ImmutableMap.copyOf(scriptBaseDatabase));
+  }
 
   @Option(
       names = "--time-zone",
       defaultValue = "Z",
       description =
-          "The time-zone id for specified timestamps, with format complying with java.time.ZoneID's default options"
+          "The time-zone id for specified timestamps, with format complying with java.time.ZoneID's"
+              + " default options"
               + " (https://docs.oracle.com/javase/8/docs/api/java/time/ZoneId.html#of-java.lang.String-)."
               + " If unspecified, evaluates to time-zone UTC.")
   private String timeZone;
@@ -131,8 +157,9 @@ public final class ExtractSubcommand implements Callable<Integer> {
       })
   private String endTimeString;
 
-  public ExtractSubcommand(Supplier<ExtractExecutor> executorSupplier) {
+  public ExtractSubcommand(Supplier<ExtractExecutor> executorSupplier, ScriptManager scriptManager) {
     this.executorSupplier = executorSupplier;
+    this.scriptManager = scriptManager;
   }
 
   @Option(
@@ -239,9 +266,9 @@ public final class ExtractSubcommand implements Callable<Integer> {
     Properties connectionProperties = new Properties();
     connectionProperties.put("user", dbUserName);
     connectionProperties.put("password", dbPassword);
-    argumentsBuilder.setDbConnectionProperties(connectionProperties);
-    argumentsBuilder.setDbConnectionAddress(dbAddress);
-    argumentsBuilder.setBaseDatabase(baseDatabase);
+    argumentsBuilder
+        .setDbConnectionProperties(connectionProperties)
+        .setDbConnectionAddress(dbAddress);
 
     if (!Strings.isNullOrEmpty(startTimeString)) {
       argumentsBuilder.setQryLogStartTime(

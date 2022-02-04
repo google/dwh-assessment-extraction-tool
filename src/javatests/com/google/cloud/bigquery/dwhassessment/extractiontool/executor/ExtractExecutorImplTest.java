@@ -32,6 +32,7 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRenderer;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.re2j.Pattern;
 import java.io.ByteArrayOutputStream;
@@ -45,6 +46,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.ArgumentCaptor;
 
 @RunWith(JUnit4.class)
 public final class ExtractExecutorImplTest {
@@ -103,6 +105,57 @@ public final class ExtractExecutorImplTest {
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("three"),
             eq(dataEntityManager));
+    verifyNoMoreInteractions(scriptManager);
+  }
+
+  @Test
+  public void run_overwriteScriptBaseDb_success() throws Exception, SQLException {
+    when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one", "two"));
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
+
+    assertThat(
+            executor.run(
+                ExtractExecutor.Arguments.builder()
+                    .setDbConnectionProperties(properties)
+                    .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
+                    .setOutputPath(Paths.get("/tmp"))
+                    .setBaseDatabase("base-db")
+                    .setScriptBaseDatabase(ImmutableMap.of("two", "two-db"))
+                    .build()))
+        .isEqualTo(0);
+
+    ArgumentCaptor<SqlTemplateRenderer> sqlTemplateRendererArgumentCaptorOne =
+        ArgumentCaptor.forClass(SqlTemplateRenderer.class);
+    verify(scriptManager).getAllScriptNames();
+    verify(scriptManager)
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            sqlTemplateRendererArgumentCaptorOne.capture(),
+            /*scriptName=*/ eq("one"),
+            eq(dataEntityManager));
+    assertThat(
+            sqlTemplateRendererArgumentCaptorOne
+                .getValue()
+                .renderTemplate("one", "{{baseDatabase}}.QryLogV"))
+        .isEqualTo("base-db.QryLogV");
+
+    ArgumentCaptor<SqlTemplateRenderer> sqlTemplateRendererArgumentCaptorTwo =
+        ArgumentCaptor.forClass(SqlTemplateRenderer.class);
+    verify(scriptManager)
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            sqlTemplateRendererArgumentCaptorTwo.capture(),
+            /*scriptName=*/ eq("two"),
+            eq(dataEntityManager));
+    assertThat(
+            sqlTemplateRendererArgumentCaptorTwo
+                .getValue()
+                .renderTemplate("two", "{{baseDatabase}}.QryLogV"))
+        .isEqualTo("two-db.QryLogV");
+
     verifyNoMoreInteractions(scriptManager);
   }
 

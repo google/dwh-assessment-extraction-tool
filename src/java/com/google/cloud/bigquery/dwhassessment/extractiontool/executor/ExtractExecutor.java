@@ -18,6 +18,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.executor;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -53,6 +54,9 @@ public interface ExtractExecutor {
     /** The base database from which to extract the metadata. */
     public abstract String baseDatabase();
 
+    /** Base DB overwrites per script. */
+    public abstract ImmutableMap<String, String> scriptBaseDatabase();
+
     /** Whether to do a dry run. */
     public abstract boolean dryRun();
 
@@ -64,6 +68,7 @@ public interface ExtractExecutor {
       return new AutoValue_ExtractExecutor_Arguments.Builder()
           .setDryRun(false)
           .setBaseDatabase("DBC")
+          .setScriptBaseDatabase(ImmutableMap.of())
           .setSchemaFilters(ImmutableList.of())
           .setSqlScripts(ImmutableList.of())
           .setSkipSqlScripts(ImmutableList.of());
@@ -84,6 +89,9 @@ public interface ExtractExecutor {
       public abstract Builder setSchemaFilters(List<SchemaFilter> schemaFilters);
 
       public abstract Builder setBaseDatabase(String baseDatabase);
+
+      public abstract Builder setScriptBaseDatabase(
+          ImmutableMap<String, String> scriptBaseDatabase);
 
       public abstract Builder setDryRun(boolean dryRun);
 
