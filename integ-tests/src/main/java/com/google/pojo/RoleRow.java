@@ -23,28 +23,34 @@ import com.google.auto.value.AutoValue;
  * POJO class for serialization data from DB and Avro files.
  */
 @AutoValue
-public abstract class UserRow {
+public abstract class RoleRow {
 
-  public abstract String userName();
+  public abstract String roleName();
 
-  public abstract String creatorName();
+  public abstract String grantor();
 
-  public abstract long createTimeStamp();
+  public abstract String grantee();
 
-  public abstract long lastAccessTimeStamp();
+  public abstract long whenGranted();
+
+  public abstract String defaultRole();
+
+  public abstract String withAdmin();
 
   @Override
   public String toString() {
     return "{"
-        + "userName=" + userName()
-        + ", creatorName=" + creatorName()
-        + ", createTimeStamp=" + createTimeStamp()
-        + ", lastAccessTimeStamp=" + lastAccessTimeStamp()
+        + "roleName=" + roleName()
+        + ", grantor=" + grantor()
+        + ", grantee=" + grantee()
+        + ", whenGranted=" + whenGranted()
+        + ", defaultRole=" + defaultRole()
+        + ", withAdmin=" + withAdmin()
         + "}" + lineSeparator();
   }
 
-  public static UserRow create(String userName, String creatorName, long createTimeStamp,
-      long lastAccessTimeStamp) {
-    return new AutoValue_UserRow(userName, creatorName, createTimeStamp, lastAccessTimeStamp);
+  public static RoleRow create(String roleName, String grantor, String grantee, long whenGranted,
+      String defaultRole, String withAdmin) {
+    return new AutoValue_RoleRow(roleName, grantor, grantee, whenGranted, defaultRole, withAdmin);
   }
 }

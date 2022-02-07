@@ -15,6 +15,8 @@
  */
 package com.google.pojo;
 
+import static java.lang.System.lineSeparator;
+
 import com.google.auto.value.AutoValue;
 
 /**
@@ -49,7 +51,7 @@ public abstract class AllRiChildrenRow {
         + ", inconsistencyFlag=" + inconsistencyFlag()
         + ", creatorName=" + creatorName()
         + ", createTimeStamp=" + createTimeStamp()
-        + "}\n";
+        + "}" + lineSeparator();
   }
 
   public static AllRiChildrenRow create(int indexID, String indexName, String childDB,

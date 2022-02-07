@@ -15,6 +15,8 @@
  */
 package com.google.pojo;
 
+import static java.lang.System.lineSeparator;
+
 import com.google.auto.value.AutoValue;
 
 /**
@@ -59,7 +61,7 @@ public abstract class ColumnRow {
         + ", columnConstraint=" + columnConstraint()
         + ", constraintCount=" + constraintCount()
         + ", nullable=" + nullable()
-        + "}\n";
+        + "}" + lineSeparator();
   }
 
   public static ColumnRow create(String dataBaseName, String tableName, String columnName,

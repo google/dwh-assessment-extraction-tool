@@ -15,6 +15,8 @@
  */
 package com.google.pojo;
 
+import static java.lang.System.lineSeparator;
+
 import com.google.auto.value.AutoValue;
 
 /**
@@ -107,7 +109,7 @@ public abstract class FunctioninfoRow {
         + ", refQueryband=" + refQueryband()
         + ", execMapName=" + execMapName()
         + ", execMapColocName=" + execMapColocName()
-        + "}\n";
+        + "}" + lineSeparator();
   }
 
   public static FunctioninfoRow create(String databaseName, String functionName,

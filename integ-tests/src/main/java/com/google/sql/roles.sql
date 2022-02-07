@@ -12,9 +12,13 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CREATE USER
-  %s AS
-  PERMANENT = 10000,
-  PASSWORD = "%s",
-  TEMPORARY = 10000,
-  SPOOL = 10000;
+SELECT  "RoleName",
+  "Grantor",
+  "Grantee",
+  "WhenGranted",
+  "DefaultRole",
+  "WithAdmin"
+FROM "%s"."RoleMembersV"
+WHERE "Grantee" NOT IN (
+  'TDPUSER', 'Crashdumps', 'tdwm', 'DBC', 'LockLogShredder', 'TDMaps',
+  'Sys_Calendar', 'SysAdmin', 'SystemFe', 'External_AP')

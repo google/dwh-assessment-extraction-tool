@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CREATE FUNCTION  SQLJ.test_func_%s (a INT)
+CREATE FUNCTION  SQLJ.%s (a INT)
      RETURNS INT
      LANGUAGE SQL
      CONTAINS SQL

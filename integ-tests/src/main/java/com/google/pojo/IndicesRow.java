@@ -15,6 +15,8 @@
  */
 package com.google.pojo;
 
+import static java.lang.System.lineSeparator;
+
 import com.google.auto.value.AutoValue;
 
 /**
@@ -53,7 +55,7 @@ public abstract class IndicesRow {
         + ", columnPosition=" + columnPosition()
         + ", accessCount=" + accessCount()
         + ", uniqueFlag=" + uniqueFlag()
-        + "}\n";
+        + "}" + lineSeparator();
   }
 
   public static IndicesRow create(String dataBaseName, String tableName, int indexNumber,

@@ -15,12 +15,15 @@
  */
 package com.google.sql;
 
+import static com.google.base.TestBase.URL_DB;
 import static java.lang.String.format;
+import static java.lang.System.lineSeparator;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
@@ -61,9 +64,27 @@ public final class SqlHelper {
       try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
         preparedStatement.execute();
       } catch (SQLException e) {
-        LOGGER.error(format("Cannot execute query: \n%s\n", query));
+        LOGGER.error(
+            format("Cannot execute query: " + lineSeparator() + "%s" + lineSeparator(), query));
         throw e;
       }
+    }
+  }
+
+  /**
+   * @param username DB username
+   * @param password DB password
+   * @param query A single string of a parametrized SQL request
+   */
+  public static void connectAndExecuteQueryAsUser(String username, String password, String query)
+      throws SQLException {
+    Connection connection = DriverManager.getConnection(URL_DB, username, password);
+    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+      preparedStatement.execute();
+    } catch (SQLException e) {
+      LOGGER.error(
+          format("Cannot execute query: " + lineSeparator() + "%s" + lineSeparator(), query));
+      throw e;
     }
   }
 }
