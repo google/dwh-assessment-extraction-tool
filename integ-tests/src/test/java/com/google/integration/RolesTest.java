@@ -16,17 +16,15 @@
 package com.google.integration;
 
 import static com.google.avro.AvroHelper.extractAvroDataFromFile;
-import static com.google.avro.AvroHelper.getDoubleNotNull;
 import static com.google.avro.AvroHelper.getLongNotNull;
 import static com.google.avro.AvroHelper.getStringNotNull;
-import static com.google.tdjdbc.JdbcHelper.getDoubleNotNull;
 import static com.google.tdjdbc.JdbcHelper.getStringNotNull;
 import static com.google.tdjdbc.JdbcHelper.getTimestampNotNull;
 import static java.lang.String.format;
 
 import com.google.base.TestBase;
 import com.google.common.collect.LinkedHashMultiset;
-import com.google.pojo.StatsRow;
+import com.google.pojo.RoleRow;
 import com.google.sql.SqlHelper;
 import java.io.IOException;
 import java.sql.Connection;
@@ -39,11 +37,11 @@ import org.apache.avro.generic.GenericRecord;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class StatsTest extends TestBase {
+public class RolesTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "stats.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "stats.avro";
+  private static final String sqlPath = SQL_PATH + "roles.sql";
+  private static final String avroFilePath = ET_OUTPUT_PATH + "roles.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -51,22 +49,22 @@ public class StatsTest extends TestBase {
   }
 
   @Test
-  public void statsTest() throws SQLException, IOException {
-    LinkedHashMultiset<StatsRow> dbList = LinkedHashMultiset.create();
-    LinkedHashMultiset<StatsRow> avroList = LinkedHashMultiset.create();
+  public void rolesTest() throws SQLException, IOException {
+    LinkedHashMultiset<RoleRow> dbList = LinkedHashMultiset.create();
+    LinkedHashMultiset<RoleRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
         connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        StatsRow dbRow = StatsRow.create(
-            getStringNotNull(rs, "DatabaseName"),
-            getStringNotNull(rs, "TableName"),
-            getStringNotNull(rs, "ColumnName"),
-            getDoubleNotNull(rs, "RowCount"),
-            getDoubleNotNull(rs, "UniqueValueCount"),
-            getTimestampNotNull(rs, "CreateTimeStamp"));
+        RoleRow dbRow = RoleRow.create(
+            getStringNotNull(rs, "RoleName"),
+            getStringNotNull(rs, "Grantor"),
+            getStringNotNull(rs, "Grantee"),
+            getTimestampNotNull(rs, "WhenGranted"),
+            getStringNotNull(rs, "DefaultRole"),
+            getStringNotNull(rs, "WithAdmin"));
         dbList.add(dbRow);
       }
     }
@@ -76,17 +74,17 @@ public class StatsTest extends TestBase {
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      StatsRow avroRow = StatsRow.create(
-          getStringNotNull(record, "DatabaseName"),
-          getStringNotNull(record, "TableName"),
-          getStringNotNull(record, "ColumnName"),
-          getDoubleNotNull(record, "RowCount"),
-          getDoubleNotNull(record, "UniqueValueCount"),
-          getLongNotNull(record, "CreateTimeStamp"));
+      RoleRow avroRow = RoleRow.create(
+          getStringNotNull(record, "RoleName"),
+          getStringNotNull(record, "Grantor"),
+          getStringNotNull(record, "Grantee"),
+          getLongNotNull(record, "WhenGranted"),
+          getStringNotNull(record, "DefaultRole"),
+          getStringNotNull(record, "WithAdmin"));
       avroList.add(avroRow);
     }
 
-    LinkedHashMultiset<StatsRow> dbListCopy = LinkedHashMultiset.create(dbList);
+    LinkedHashMultiset<RoleRow> dbListCopy = LinkedHashMultiset.create(dbList);
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 

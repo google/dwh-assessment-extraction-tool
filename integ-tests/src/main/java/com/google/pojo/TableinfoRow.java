@@ -15,6 +15,8 @@
  */
 package com.google.pojo;
 
+import static java.lang.System.lineSeparator;
+
 import com.google.auto.value.AutoValue;
 
 /**
@@ -51,7 +53,7 @@ public abstract class TableinfoRow {
         + ", parentCount=" + parentCount()
         + ", childCount=" + childCount()
         + ", commitOpt=" + commitOpt()
-        + "}\n";
+        + "}" + lineSeparator();
   }
 
   public static TableinfoRow create(String dataBaseName, String tableName, int accessCount,

@@ -16,6 +16,8 @@
  */
 package com.google.pojo;
 
+import static java.lang.System.lineSeparator;
+
 import com.google.auto.value.AutoValue;
 
 /**
@@ -40,7 +42,7 @@ public abstract class StatsRow {
         + ", RowCount=" + rowCount()
         + ", UniqueValueCount=" + uniqueValueCount()
         + ", CreateTimeStamp=" + createTimeStamp()
-        + "}\n";
+        + "}" + lineSeparator();
   }
 
   public static StatsRow create(String databaseName, String tableName, String columnName,

@@ -15,6 +15,8 @@
  */
 package com.google.pojo;
 
+import static java.lang.System.lineSeparator;
+
 import com.google.auto.value.AutoValue;
 
 /**
@@ -38,7 +40,7 @@ public abstract class TablesizeRow {
         + ", TableName=" + tableName()
         + ", CurrentPerm=" + currentPerm()
         + ", PeakPerm=" + peakPerm()
-        + '}';
+        + "}" + lineSeparator();
   }
 
   public static TablesizeRow create(String dataBaseName, String tableName, long currentPerm,

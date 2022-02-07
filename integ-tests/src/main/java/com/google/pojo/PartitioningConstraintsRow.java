@@ -15,6 +15,8 @@
  */
 package com.google.pojo;
 
+import static java.lang.System.lineSeparator;
+
 import com.google.auto.value.AutoValue;
 
 /**
@@ -80,7 +82,7 @@ public abstract class PartitioningConstraintsRow {
         + ", maxCombinedPartitions=" + maxCombinedPartitions()
         + ", partitioningLevels=" + partitioningLevels()
         + ", columnPartitioningLevel=" + columnPartitioningLevel()
-        + "}\n";
+        + "}" + lineSeparator();
   }
 
   public static PartitioningConstraintsRow create(String databaseName, String tableName,

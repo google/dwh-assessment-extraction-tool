@@ -15,6 +15,8 @@
  */
 package com.google.pojo;
 
+import static java.lang.System.lineSeparator;
+
 import com.google.auto.value.AutoValue;
 
 /**
@@ -87,7 +89,7 @@ public abstract class DiskspaceRow {
         + ", PermSkew=" + permSkew()
         + ", SpoolSkew=" + spoolSkew()
         + ", TempSkew=" + tempSkew()
-        + "}\n";
+        + "}" + lineSeparator();
   }
 
   public static DiskspaceRow create(int newVproc, String newDatabaseName, String newAccountName,

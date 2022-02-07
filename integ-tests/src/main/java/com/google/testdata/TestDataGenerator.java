@@ -50,5 +50,8 @@ public class TestDataGenerator extends TestBase {
 
     // Generate test data for stats.sql
     TestDataHelper.generateStats(connection, 10);
+
+    // Generate test data for roles.sql
+    TestDataHelper.generateRoles(connection, 10);
   }
 }
