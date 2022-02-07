@@ -16,6 +16,7 @@
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManagerImpl.getUtcTimeStringFromTimestamp;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 
@@ -32,6 +33,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
@@ -262,5 +264,27 @@ public final class ScriptManagerImplTest {
     assertRecordEqualsExpected(reader.next(), 15, "2008-08-08T20:08:23.007000000Z");
     assertRecordEqualsExpected(reader.next(), 16, "2008-08-08T20:08:24.007000000Z");
     assertFalse(reader.hasNext());
+  }
+
+  @Test
+  public void getUtcTimeStringFromTimestamp_outputShouldBeCorrect() {
+    assertThat(getUtcTimeStringFromTimestamp(Timestamp.from(Instant.parse("2022-01-24T14:52:00Z"))))
+        .isEqualTo("20220124T145200S000000");
+    assertThat(
+            getUtcTimeStringFromTimestamp(
+                Timestamp.from(Instant.parse("2022-01-24T14:52:00.000Z"))))
+        .isEqualTo("20220124T145200S000000");
+    assertThat(
+            getUtcTimeStringFromTimestamp(
+                Timestamp.from(Instant.parse("2022-01-24T14:52:00.123456Z"))))
+        .isEqualTo("20220124T145200S123456");
+    assertThat(
+            getUtcTimeStringFromTimestamp(
+                Timestamp.from(Instant.parse("2022-01-24T14:52:00.123Z"))))
+        .isEqualTo("20220124T145200S123000");
+    assertThat(
+            getUtcTimeStringFromTimestamp(
+                Timestamp.from(Instant.parse("2022-01-24T14:52:00.123456789Z"))))
+        .isEqualTo("20220124T145200S123457");
   }
 }

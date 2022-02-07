@@ -19,6 +19,7 @@ import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelp
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -157,7 +158,8 @@ public class ScriptManagerImpl implements ScriptManager {
     }
   }
 
-  private String getUtcTimeStringFromTimestamp(Timestamp timestamp) {
+  @VisibleForTesting
+  static String getUtcTimeStringFromTimestamp(Timestamp timestamp) {
     Instant instant = timestamp.toInstant();
     // Remove the "Z" (that signifies UTC timezone) and the separators that are not necessary for
     // human interpretation.
