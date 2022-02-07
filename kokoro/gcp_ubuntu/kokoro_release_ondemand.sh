@@ -66,4 +66,5 @@ elif [ "${INSTANCE_OPERATION}" = "stop" ]; then
   termInstance
 else
   echo "Value for INSTANCE_OPERATION not correct. Should be start/stop"
+  exit 1
 fi
