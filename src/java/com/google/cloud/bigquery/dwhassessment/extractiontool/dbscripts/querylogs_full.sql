@@ -14,7 +14,7 @@
 
 -- This SQL extracts all non-truncated SQL statements from DBC.QryLogSQLV by default
 SELECT
-  {{#if vars.columnNameRowNumber}}"{{vars.columnNameRowNumber}}"{{else}}"SqlRowNo"{{/if}} AS "SqlRowNo",
-  {{#if vars.columnNameQueryID}}"{{vars.columnNameQueryID}}"{{else}}"QueryID"{{/if}} AS "QueryID",
-  {{#if vars.columnNameQueryText}}"{{vars.columnNameQueryText}}"{{else}}"SqlTextInfo"{{/if}} AS "QueryText"
+  "{{#if vars.columnNameRowNumber}}{{vars.columnNameRowNumber}}{{else}}SqlRowNo{{/if}}" AS "SqlRowNo",
+  "{{#if vars.columnNameQueryID}}{{vars.columnNameQueryID}}{{else}}QueryID{{/if}}" AS "QueryID",
+  "{{#if vars.columnNameQueryText}}{{vars.columnNameQueryText}}{{else}}SqlTextInfo{{/if}}" AS "QueryText"
 FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogSQLV{{/if}}"
