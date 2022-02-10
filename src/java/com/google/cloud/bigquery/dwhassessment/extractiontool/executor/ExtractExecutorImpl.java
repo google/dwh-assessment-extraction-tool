@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
@@ -71,7 +72,7 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     this.schemaManager = schemaManager;
   }
 
-  private static ImmutableList<String> validateScriptNames(
+  private static void validateScriptNames(
       String scriptListName, ImmutableSet<String> allNames, ImmutableList<String> input) {
     ImmutableList<String> unknownNames =
         input.stream().filter(name -> !allNames.contains(name)).collect(toImmutableList());
@@ -80,7 +81,6 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
         "Got unknown SQL scripts for %s: %s",
         scriptListName,
         Joiner.on(", ").join(unknownNames));
-    return input;
   }
 
   @VisibleForTesting
@@ -188,18 +188,19 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
   private ImmutableCollection<String> getScriptNames(Arguments arguments) {
     ImmutableSet<String> allScriptNames = scriptManager.getAllScriptNames();
+
+    validateScriptNames("skip-sql-scripts", allScriptNames, arguments.skipSqlScripts());
+    validateScriptNames("sql-scripts", allScriptNames, arguments.sqlScripts());
+
     if (arguments.sqlScripts().isEmpty()) {
       if (arguments.skipSqlScripts().isEmpty()) {
         return allScriptNames;
       } else {
-        ImmutableList<String> skip =
-            validateScriptNames("skip-sql-scripts", allScriptNames, arguments.skipSqlScripts());
-        return allScriptNames.stream()
-            .filter(name -> !skip.contains(name))
-            .collect(toImmutableList());
+        return Sets.difference(allScriptNames, ImmutableSet.copyOf(arguments.skipSqlScripts()))
+            .immutableCopy();
       }
     } else {
-      return validateScriptNames("sql-scripts", allScriptNames, arguments.sqlScripts());
+      return arguments.sqlScripts();
     }
   }
 }
