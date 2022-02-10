@@ -1,2 +1,4 @@
 *.sw[a-z]
 bazel-*
+
+.ijwb
