@@ -54,13 +54,13 @@ public abstract class SqlScriptVariables {
 
     @AutoValue
     public abstract static class TimeRange {
-      private static final String min_time = "0001-01-01 00:00:00";
-      private static final String max_time = "9999-12-31 23:59:59.99";
+      private static final String minTime = "0001-01-01 00:00:00";
+      private static final String maxTime = "9999-12-31 23:59:59.99";
 
       public static Builder builder() {
         return new AutoValue_SqlScriptVariables_QueryLogsVariables_TimeRange.Builder()
-            .setStartTimestamp(min_time)
-            .setEndTimestamp(max_time);
+            .setStartTimestamp(minTime)
+            .setEndTimestamp(maxTime);
       }
 
       public abstract String getStartTimestamp();
