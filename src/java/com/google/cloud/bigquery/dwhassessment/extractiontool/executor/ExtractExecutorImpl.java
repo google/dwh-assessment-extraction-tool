@@ -192,15 +192,9 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     validateScriptNames("skip-sql-scripts", allScriptNames, arguments.skipSqlScripts());
     validateScriptNames("sql-scripts", allScriptNames, arguments.sqlScripts());
 
-    if (arguments.sqlScripts().isEmpty()) {
-      if (arguments.skipSqlScripts().isEmpty()) {
-        return allScriptNames;
-      } else {
-        return Sets.difference(allScriptNames, ImmutableSet.copyOf(arguments.skipSqlScripts()))
-            .immutableCopy();
-      }
-    } else {
-      return arguments.sqlScripts();
-    }
+    return arguments.sqlScripts().isEmpty()
+        ? Sets.difference(allScriptNames, ImmutableSet.copyOf(arguments.skipSqlScripts()))
+            .immutableCopy()
+        : arguments.sqlScripts();
   }
 }
