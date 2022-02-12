@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
+load("//dist:version_info.bzl", "IMPLEMENTATION_VERSION")
 
 package(default_visibility = ["//src:internal"])
 
@@ -30,6 +31,9 @@ java_library(
 java_binary(
     name = "ExtractionTool",
     main_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.ExtractionTool",
+    deploy_manifest_lines = [
+        "Implementation-Version: " + IMPLEMENTATION_VERSION,
+    ],
     runtime_deps = [
         ":extraction_tool",
         "@maven//:org_slf4j_slf4j_jdk14",
@@ -39,6 +43,9 @@ java_binary(
 java_binary(
     name = "ExtractionToolHsqldb",
     main_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.ExtractionTool",
+    deploy_manifest_lines = [
+        "Implementation-Version: " + IMPLEMENTATION_VERSION,
+    ],
     runtime_deps = [
         ":extraction_tool",
         "@maven//:org_hsqldb_hsqldb",
