@@ -29,99 +29,97 @@
 # set -x
 # Fail on any error.
 set -e
+# Fail on errors in pipes.
+set -o pipefail
 
 #Variables
 export GIT_PSW="$(<${KOKORO_KEYSTORE_DIR}/76474_bqassessment-github-releases-02032022)"
 export GIT_RELEASES_USERNAME="edw-assessment-integration-testing-bot"
 export KOKORO_BUILD_RELEASE_DIR="${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
 export KOKORO_RELEASE_OUTPUT_FILE="${KOKORO_BUILD_RELEASE_DIR}/bazel-bin/dist/dwh-assessment-extraction-tool.zip"
-export SCRIPT_DIR=$(dirname "$0")
+export SCRIPT_WORKING_DIR="${pwd}"
+export SCRIPT_DIR="$(dirname "$0")"
 export SCRIPT_PARENT_DIR="$(dirname -- "$SCRIPT_DIR")"
-export BUILD_SCRIPT="$SCRIPT_PARENT_DIR/kokoro_build.sh"
-source ${SCRIPT_DIR}/release_utils.sh
+export BUILD_SCRIPT=".$SCRIPT_WORKING_DIR/kokoro/gcp_ubuntu/kokoro_build.sh"
+source "${SCRIPT_DIR}/release_utils.sh"
 
-cd ${KOKORO_BUILD_RELEASE_DIR}
+cd "${KOKORO_BUILD_RELEASE_DIR}"
 
-log "Current dir "$(pwd)
-git checkout main
-
-export LAST_GIT_TAG=$(git tag  \
+export LAST_GIT_TAG="$(git tag  \
     | grep -E '^v[0-9]' \
     | sort -V \
-    | tail -1 )
+    | tail -1 )"
+
+use_existing_tag=false
 
 # Do we already know what version we want to release?
-if [[ -z "${CREATE_TAG}" ]]; then
+if [[ -z "${USE_TAG}" ]]; then
   if [[ -z "${LAST_GIT_TAG}" ]]; then
-    err "No previous git tag found and it was not provided with CREATE_TAG env"
+    err "No previous git tag found and it was not provided with USE_TAG env"
   fi
-  VERSION=$(incrementTagVersion ${LAST_GIT_TAG}) 
+  VERSION="$(increment_tag_version ${LAST_GIT_TAG})"
+  log "Will create new version ${VERSION}"
+
+  if [ "$(git tag -l ${VERSION})" ]; then
+    err "ERROR! Tag for ${VERSION} already exists!"
+  fi
+
+  code=$(http_get_error_code "Accept: application/vnd.github.v3+json" \
+    "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@api.github.com/repos/google/dwh-assessment-extraction-tool/releases/tags/${VERSION}" )
+  if [ "${code}" != "404" ]; then
+      err "ERROR! Release with ${VERSION} tag version name already exists or http failed! Http code is ${code}" 
+  fi
 else
-  VERSION="${CREATE_TAG}"
+  VERSION="${USE_TAG}"
+  use_existing_tag=true
+
+  if [  -z "$(git tag -l ${VERSION})" ]; then
+    err "ERROR! Tag ${VERSION} is expected but does not exists exists!"
+  fi
 fi
 
-log "Will create new version "${VERSION}
+log "Version name ${VERSION} verified"
 
-if [ $(git tag -l "$VERSION") ]; then
-  err "ERROR! Tag for specified version already exists! ${VERSION}"  # write error message to stderr, exits
-fi
-
-code=$(httpGetErrorCode "Accept: application/vnd.github.v3+json" \
-  "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@api.github.com/repos/google/dwh-assessment-extraction-tool/releases/tags/${VERSION}" )
-if [ $code != "404" ]; then
-  err "ERROR! Release with ${VERSION} tag version name already exists or http failed! Http code is ${code}" 
-fi
-
-log "New version name verified"
-
-#Run build and integration tests
-log "Build script is to be invoked here: "$BUILD_SCRIPT
-
-# TODO : would need to be reenabled once in main
-#sh $BUILD_SCRIPT   
-
-# TODO: temp taken from kokoro_build.sh, need to be removed later
-use_bazel.sh 4.1.0
-command -v bazel
-bazel version
-cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
-#Build extraction tool
-bazel build dist:all
-# TODO: temp taken from kokoro_build.sh END
+# Run build and integration tests
+cd "${SCRIPT_WORKING_DIR}"
+log "Build script : ${BUILD_SCRIPT}, currend dir $(pwd)"
+bash "${BUILD_SCRIPT}"  
 
 # revert to initial state after running build script
 cd "${KOKORO_BUILD_RELEASE_DIR}"
-git checkout main
-# create and register tag for this release
-git tag -a ${VERSION} -m ${VERSION}
-log "Create new tag"
-git push https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@github.com/google/dwh-assessment-extraction-tool.git ${VERSION}
+
+# create and register tag for this release if it was not manually provided
+if ! [[ use_existing_tag ]]; then
+  log "Create new tag"
+  git tag -a "${VERSION}" -m "${VERSION}"
+  git push "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@github.com/google/dwh-assessment-extraction-tool.git" "${VERSION}"
+fi
 
 log "Prepare release notes"
 
-output=$(httpPostCheckStatus  "200" "Accept: application/vnd.github.v3+json" \
+output=$(http_post_check_status  "200" "Accept: application/vnd.github.v3+json" \
   "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@api.github.com/repos/google/dwh-assessment-extraction-tool/releases/generate-notes" \
   '{"tag_name":"'${VERSION}'","previous_tag_name":"'${LAST_GIT_TAG}'"}' )
-release_body=$(jq -r '.body'   <<< $output )""
+release_body="$(jq -r '.body'   <<< $output )"
 
 log "Create release"
 
-payload=$(
+payload="$(
   jq --null-input \
-     --arg tag "$VERSION" \
-     --arg name "$VERSION" \
-     --arg body "$release_body" \
-     '{ tag_name: $tag, name: $name, body: $body, draft: true }'
-)
+     --arg tag "${VERSION}" \
+     --arg name "${VERSION}" \
+     --arg body "${release_body}" \
+     '{ tag_name: $tag, name: $name, body: $body, draft: false }'
+  )"
 
 # Create new release as a draft
-response=$(httpPostCheckStatus "201" "Accept: application/vnd.github.v3+json" \
-  "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@api.github.com/repos/google/dwh-assessment-extraction-tool/releases" "$payload" )
+response="$(http_post_check_status "201" "Accept: application/vnd.github.v3+json" \
+  "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@api.github.com/repos/google/dwh-assessment-extraction-tool/releases" "${payload}" )"
 
-log "Append file to release"
+log "Append zip file to the release"
 
 # Attach release binary file to the release
-release_id=$(jq -r '.id' <<< $response )""
+release_id="$(jq -r '.id' <<< ${response} )"
 curl \
    --data-binary @$KOKORO_RELEASE_OUTPUT_FILE \
   -H "Content-Type: application/octet-stream" \
