@@ -36,6 +36,10 @@ err() {
   exit 1
 }
 
+log() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&0
+}
+
 #######################################
 # makes HTTP requests and returns a status code
 # Globals:
