@@ -21,7 +21,11 @@ import static org.mockito.Mockito.verify;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilters;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManagerImpl;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptRunnerImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor;
+import com.google.common.collect.ImmutableMap;
 import com.google.re2j.Pattern;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -43,6 +47,12 @@ public final class ExtractSubcommandTest {
 
   private static Path outputPath;
 
+  private final ScriptManager scriptManager =
+      new ScriptManagerImpl(
+          new ScriptRunnerImpl(),
+          ImmutableMap.of("one", () -> "", "two", () -> "", "querylogs", () -> ""),
+          ImmutableMap.of());
+
   @BeforeClass
   public static void setUpClass() throws IOException {
     outputPath = Files.createTempDirectory("extract-test");
@@ -51,7 +61,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_success() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
 
     assertThat(
             cmd.execute(
@@ -75,7 +85,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_successWithChunkRows() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
 
     assertThat(
             cmd.execute(
@@ -101,7 +111,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_successWithSqlScripts() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
 
     assertThat(
             cmd.execute(
@@ -127,7 +137,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_successWithSkipSqlScripts() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
 
     assertThat(
             cmd.execute(
@@ -154,7 +164,7 @@ public final class ExtractSubcommandTest {
   public void call_successWithSchemaFilters() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd =
-        new CommandLine(new ExtractSubcommand(() -> executor))
+        new CommandLine(new ExtractSubcommand(() -> executor, scriptManager))
             .registerConverter(SchemaFilter.class, SchemaFilters::parse);
 
     assertThat(
@@ -183,7 +193,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_successWithTimeRangeStartDatetime() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
 
     assertThat(
             cmd.execute(
@@ -211,7 +221,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_successWithTimeRangeStartDate() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
 
     assertThat(
             cmd.execute(
@@ -238,7 +248,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_successWithEndTimeRangeCustomTimezone() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
 
     assertThat(
             cmd.execute(
@@ -268,7 +278,7 @@ public final class ExtractSubcommandTest {
   public void call_successWithTimeRangeStartDatetimeEndDateCustomTimezone()
       throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
 
     assertThat(
             cmd.execute(
@@ -301,7 +311,7 @@ public final class ExtractSubcommandTest {
   public void call_successWithTimeRangeDespiteStartIsLaterThenEnd()
       throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
 
     assertThat(
             cmd.execute(
@@ -331,9 +341,32 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
+  public void call_successWithScriptBaseDb() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "--output",
+                outputPath.toString(),
+                "--script-base-db",
+                "querylogs=Foo"))
+        .isEqualTo(0);
+
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+
+    assertThat(arguments.scriptBaseDatabase()).containsExactly("querylogs", "Foo");
+  }
+
+  @Test
   public void call_failOnDefiningSqlScriptsAndSkipSqlScripts() {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
     StringWriter writer = new StringWriter();
     cmd.setErr(new PrintWriter(writer));
 
@@ -355,7 +388,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_failOnDefiningEmptySqlScript() {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
     StringWriter writer = new StringWriter();
     cmd.setErr(new PrintWriter(writer));
 
@@ -374,7 +407,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_failOnDefiningEmptySkipSqlScript() {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
     StringWriter writer = new StringWriter();
     cmd.setErr(new PrintWriter(writer));
 
@@ -393,7 +426,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_failOnMissingDbAddress() {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
     StringWriter writer = new StringWriter();
     cmd.setErr(new PrintWriter(writer));
 
@@ -404,7 +437,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_failOnIncorrectOutputPath() {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
     StringWriter writer = new StringWriter();
     cmd.setErr(new PrintWriter(writer));
 
@@ -422,7 +455,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_failOnIncorrectOutputZipPath() {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
     StringWriter writer = new StringWriter();
     cmd.setErr(new PrintWriter(writer));
 
@@ -440,7 +473,7 @@ public final class ExtractSubcommandTest {
   @Test
   public void call_failOnInvalidJdbcUrl() {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor));
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
     StringWriter writer = new StringWriter();
     cmd.setErr(new PrintWriter(writer));
 
@@ -449,5 +482,21 @@ public final class ExtractSubcommandTest {
                 "--db-address", "jdbc:fake:doesNotExist", "--output", outputPath.toString()))
         .isEqualTo(2);
     assertThat(writer.toString()).contains("Unable to connect to 'jdbc:fake:doesNotExist'");
+  }
+
+  @Test
+  public void call_failOnUnknownScriptForScriptBaseDatabase() {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    StringWriter writer = new StringWriter();
+    cmd.setErr(new PrintWriter(writer));
+
+    assertThat(
+            cmd.execute(
+                "--db-address", "jdbc:hsqldb:mem:my-animalclinic.example",
+                "--output", outputPath.toString(),
+                "--script-base-db", "foo=bar"))
+        .isEqualTo(2);
+    assertThat(writer.toString()).contains("unknown script(s): foo");
   }
 }

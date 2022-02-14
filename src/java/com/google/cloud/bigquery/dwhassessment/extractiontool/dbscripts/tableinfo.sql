@@ -26,7 +26,7 @@ SELECT
   "ChildCount",
   "CommitOpt",
   "CheckOpt"
-FROM "{{baseDatabase}}"."TablesV"
+FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}TablesV{{/if}}"
 WHERE
   "TableKind" IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND
   "DatabaseName" NOT IN (

@@ -35,4 +35,4 @@ SELECT
   "PermSkew",
   "SpoolSkew",
   "TempSkew"
-FROM "{{baseDatabase}}"."DiskSpaceV"
+FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}DiskSpaceV{{/if}}"

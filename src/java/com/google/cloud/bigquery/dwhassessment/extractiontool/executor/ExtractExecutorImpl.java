@@ -24,23 +24,27 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager.SchemaKey;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables.QueryLogsVariables;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRenderer;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRendererImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.text.DecimalFormat;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,6 +53,9 @@ import org.apache.avro.generic.GenericRecord;
 
 /** Default implementation of the extract executor. */
 public final class ExtractExecutorImpl implements ExtractExecutor {
+
+  private static final DateTimeFormatter TERADATA_TIME_FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss[.SSSSSS]").withZone(ZoneOffset.UTC);
 
   private static final Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
 
@@ -65,7 +72,7 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     this.schemaManager = schemaManager;
   }
 
-  private static ImmutableList<String> validateScriptNames(
+  private static void validateScriptNames(
       String scriptListName, ImmutableSet<String> allNames, ImmutableList<String> input) {
     ImmutableList<String> unknownNames =
         input.stream().filter(name -> !allNames.contains(name)).collect(toImmutableList());
@@ -74,18 +81,11 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
         "Got unknown SQL scripts for %s: %s",
         scriptListName,
         Joiner.on(", ").join(unknownNames));
-    return input;
   }
 
-  private static String getTeradataTimestampFromInstant(Instant instant) {
-    String instantWithoutNanoseconds =
-        instant.truncatedTo(ChronoUnit.SECONDS).toString().replaceAll("[TZ]", " ").trim();
-    // Convert nanosecond representation of Instant into fraction-of-second representation with a
-    // 6-digit max precision to conform with Teradata's TIMESTAMP format.
-    DecimalFormat formatter = new DecimalFormat();
-    formatter.setMinimumIntegerDigits(0);
-    formatter.setMaximumFractionDigits(6);
-    return instantWithoutNanoseconds + formatter.format(instant.getNano() / Math.pow(10, 9));
+  @VisibleForTesting
+  static String getTeradataTimestampFromInstant(Instant instant) {
+    return TERADATA_TIME_FORMATTER.format(instant);
   }
 
   private static void maybeAddTimeRange(
@@ -116,18 +116,13 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
         SqlScriptVariables.QueryLogsVariables.builder();
     maybeAddTimeRange(qryLogVarsBuilder, arguments);
 
-    SqlScriptVariables.Builder sqlScriptVariablesBuilder =
-        SqlScriptVariables.builder()
-            .setBaseDatabase(arguments.baseDatabase())
-            .setQueryLogsVariables(qryLogVarsBuilder.build());
-    SqlTemplateRenderer sqlTemplateRenderer =
-        new SqlTemplateRendererImpl(sqlScriptVariablesBuilder);
-
     for (String scriptName : getScriptNames(arguments)) {
       LOGGER.log(Level.INFO, "Start extracting {0}...", scriptName);
       Connection connection =
           DriverManager.getConnection(
               arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
+      SqlTemplateRenderer sqlTemplateRenderer =
+          getSqlTemplateRenderer(scriptName, arguments, qryLogVarsBuilder);
       scriptManager.executeScript(
           connection,
           arguments.dryRun(),
@@ -153,6 +148,17 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
     dataEntityManager.close();
     return 0;
+  }
+
+  private SqlTemplateRenderer getSqlTemplateRenderer(
+      String scriptName, Arguments arguments, QueryLogsVariables.Builder qryLogVarsBuilder) {
+    SqlScriptVariables.Builder sqlScriptVariablesBuilder =
+        SqlScriptVariables.builder()
+            .setBaseDatabase(
+                arguments.scriptBaseDatabase().getOrDefault(scriptName, arguments.baseDatabase()))
+            .setQueryLogsVariables(qryLogVarsBuilder.build())
+            .setVars(arguments.scriptVariables().getOrDefault(scriptName, ImmutableMap.of()));
+    return new SqlTemplateRendererImpl(sqlScriptVariablesBuilder);
   }
 
   private void extractSchema(
@@ -186,18 +192,13 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
   private ImmutableCollection<String> getScriptNames(Arguments arguments) {
     ImmutableSet<String> allScriptNames = scriptManager.getAllScriptNames();
-    if (arguments.sqlScripts().isEmpty()) {
-      if (arguments.skipSqlScripts().isEmpty()) {
-        return allScriptNames;
-      } else {
-        ImmutableList<String> skip =
-            validateScriptNames("skip-sql-scripts", allScriptNames, arguments.skipSqlScripts());
-        return allScriptNames.stream()
-            .filter(name -> !skip.contains(name))
-            .collect(toImmutableList());
-      }
-    } else {
-      return validateScriptNames("sql-scripts", allScriptNames, arguments.sqlScripts());
-    }
+
+    validateScriptNames("skip-sql-scripts", allScriptNames, arguments.skipSqlScripts());
+    validateScriptNames("sql-scripts", allScriptNames, arguments.sqlScripts());
+
+    return arguments.sqlScripts().isEmpty()
+        ? Sets.difference(allScriptNames, ImmutableSet.copyOf(arguments.skipSqlScripts()))
+            .immutableCopy()
+        : arguments.sqlScripts();
   }
 }

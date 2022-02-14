@@ -17,7 +17,7 @@ SELECT
   "TableName",
   "CurrentPerm",
   "PeakPerm"
-FROM "{{baseDatabase}}"."TableSizeV"
+FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}TableSizeV{{/if}}"
 WHERE
   "DatabaseName" NOT IN (
     'dbc', 'SYSJDBC', 'TD_SYSGPL', 'SYSLIB', 'SYSSPATIAL', 'TD_SYSXML',

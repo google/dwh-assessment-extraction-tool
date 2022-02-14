@@ -12,11 +12,9 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- This SQL extracts all non-truncated SQL statements from DBC.QryLogSQLV by default
 SELECT
-  "HostNo",
-  "SessionNo",
-  "UserName",
-  "B_DatabaseName",
-  "B_TableName",
-  "E_TableId"
-FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}AllTempTablesVX{{/if}}"
+  "{{#if vars.columnNameRowNumber}}{{vars.columnNameRowNumber}}{{else}}SqlRowNo{{/if}}" AS "SqlRowNo",
+  "{{#if vars.columnNameQueryID}}{{vars.columnNameQueryID}}{{else}}QueryID{{/if}}" AS "QueryID",
+  "{{#if vars.columnNameQueryText}}{{vars.columnNameQueryText}}{{else}}SqlTextInfo{{/if}}" AS "QueryText"
+FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogSQLV{{/if}}"

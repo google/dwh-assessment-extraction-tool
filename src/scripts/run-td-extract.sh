@@ -71,12 +71,18 @@ echo "TERAJDBC4 JAR = ""$TERAJDBC4_JAR"""
 echo "DB ADDRESS = ""$DB_ADDRESS"""
 echo "OUTPUT PATH = ""$OUTPUT"""
 
-if [[ -z "${TERAJDBC4_JAR}" || -z "${DB_ADDRESS}" || -z "${OUTPUT}" || -z "${DB_USER}" || -z "${DB_PASSWORD}" ]]; then
-    echo "Missing required arguments. Usage: ${0} -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user> --db-password <db password>"
+if [[ -z "${TERAJDBC4_JAR}" || -z "${DB_ADDRESS}" || -z "${OUTPUT}" || -z "${DB_USER}" ]]; then
+    echo "Missing required arguments. Usage: ${0} -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user>"
     exit 1
 fi
 
-args=( --db-address "${DB_ADDRESS}" --output "${OUTPUT}" --db-user "${DB_USER}" --db-password "${DB_PASSWORD}" )
+args=( --db-address "${DB_ADDRESS}" --output "${OUTPUT}" --db-user "${DB_USER}")
+
+if [[ -n "${DB_PASSWORD}" ]]; then
+    args+=( --db-password "${DB_PASSWORD}" )
+else
+  args+=( --db-password )
+fi
 
 if [[ -n "${SCHEMA_FILTER}" ]]; then
     args+=( --schema-filter "${SCHEMA_FILTER}" )
@@ -91,7 +97,6 @@ if [[ -n "${SKIP_SQL_SCRIPTS}" ]]; then
 fi
 
 CLASSPATH="$(dirname "$0")/ExtractionTool_deploy.jar:${TERAJDBC4_JAR}"
-
 java -cp "${CLASSPATH}" \
   com/google/cloud/bigquery/dwhassessment/extractiontool/ExtractionTool \
   td-extract "${args[@]}"

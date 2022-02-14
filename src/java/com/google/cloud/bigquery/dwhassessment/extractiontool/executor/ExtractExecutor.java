@@ -18,11 +18,13 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.executor;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -44,6 +46,9 @@ public interface ExtractExecutor {
     /** SQL scripts to run. */
     public abstract ImmutableList<String> sqlScripts();
 
+    /** Optional variables for the scripts. */
+    public abstract ImmutableMap<String, Map<String, String>> scriptVariables();
+
     /** SQL scripts to exclude (i.e., run the full catalog except for these scripts). */
     public abstract ImmutableList<String> skipSqlScripts();
 
@@ -52,6 +57,9 @@ public interface ExtractExecutor {
 
     /** The base database from which to extract the metadata. */
     public abstract String baseDatabase();
+
+    /** Base DB overwrites per script. */
+    public abstract ImmutableMap<String, String> scriptBaseDatabase();
 
     /** Whether to do a dry run. */
     public abstract boolean dryRun();
@@ -68,6 +76,8 @@ public interface ExtractExecutor {
           .setDryRun(false)
           .setBaseDatabase("DBC")
           .setChunkRows(0)
+          .setScriptVariables(ImmutableMap.of())
+          .setScriptBaseDatabase(ImmutableMap.of())
           .setSchemaFilters(ImmutableList.of())
           .setSqlScripts(ImmutableList.of())
           .setSkipSqlScripts(ImmutableList.of());
@@ -85,9 +95,15 @@ public interface ExtractExecutor {
 
       public abstract Builder setSkipSqlScripts(List<String> scripts);
 
+      public abstract Builder setScriptVariables(
+          ImmutableMap<String, Map<String, String>> variables);
+
       public abstract Builder setSchemaFilters(List<SchemaFilter> schemaFilters);
 
       public abstract Builder setBaseDatabase(String baseDatabase);
+
+      public abstract Builder setScriptBaseDatabase(
+          ImmutableMap<String, String> scriptBaseDatabase);
 
       public abstract Builder setDryRun(boolean dryRun);
 
