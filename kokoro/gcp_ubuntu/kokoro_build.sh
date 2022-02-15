@@ -68,6 +68,9 @@ export GCP_SCOPES="https://www.googleapis.com/auth/devstorage.read_only,https://
 "https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,"\
 "https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append"
 
+export START_DATE=$(TZ=America/Los_Angeles date --date="10 years ago" +"%Y-%m-%dT%H:%M:%S.%6N")
+export END_DATE=$(TZ=America/Los_Angeles date --date="10 minutes ago" +"%Y-%m-%dT%H:%M:%S.%6N")
+
 gcloud components update
 
 #Create Kokoro Teradata instance
@@ -112,7 +115,10 @@ set +x
     --db-address jdbc:teradata://"${TD_HOST}"/DBS_PORT=1025,DATABASE="${TD_DB}" \
     --output "${EXPORT_PATH}" \
     --db-user "${TD_USR}" \
-    --db-password "${TD_PSW}"
+    --db-password "${TD_PSW}" \
+    --qrylog-timerange-start "${START_DATE}" \
+    --qrylog-timerange-end "${END_DATE}"
+
 #How many exported avro files
 exported_avro=$(ls "${EXPORT_PATH}" | wc -l)
 
