@@ -69,6 +69,7 @@ fi
 log "New version name verified"
 
 #Run build and integration tests
+git checkout main
 sh $BUILD_SCRIPT
 
 cd "${KOKORO_BUILD_RELEASE_DIR}"
@@ -77,7 +78,6 @@ log $(pwd)
 log "Create new tag"
 
 # create and register tag for this release
-git checkout main
 git tag -a ${VERSION} -m ${VERSION}
 git push https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@github.com/google/dwh-assessment-extraction-tool.git ${VERSION}
 
