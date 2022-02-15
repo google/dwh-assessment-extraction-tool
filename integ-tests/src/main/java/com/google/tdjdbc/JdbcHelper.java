@@ -17,6 +17,7 @@ package com.google.tdjdbc;
 
 import static com.google.base.TestBase.TRAILING_SPACES_REGEX;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -30,7 +31,6 @@ public final class JdbcHelper {
    * @param rs A row with SELECT results.
    * @param column Database column name.
    * @return String or an empty string if null.
-   * @throws SQLException
    */
   public static String getStringNotNull(ResultSet rs, String column) throws SQLException {
     String string = rs.getString(column);
@@ -45,7 +45,6 @@ public final class JdbcHelper {
    * @param rs A row with SELECT results.
    * @param column Database column name.
    * @return int or 0 if null.
-   * @throws SQLException
    */
   public static int getIntNotNull(ResultSet rs, String column) throws SQLException {
     int integer = rs.getInt(column);
@@ -60,7 +59,6 @@ public final class JdbcHelper {
    * @param rs A row with SELECT results.
    * @param column Database column name.
    * @return long or 0L if null.
-   * @throws SQLException
    */
   public static long getLongNotNull(ResultSet rs, String column) throws SQLException {
     long longValue = rs.getLong(column);
@@ -75,14 +73,16 @@ public final class JdbcHelper {
    * @param rs A row with SELECT results.
    * @param column Database column name.
    * @return byte[] or empty byte[] if null.
-   * @throws SQLException
    */
   public static byte[] getBytesNotNull(ResultSet rs, String column) throws SQLException {
-    byte[] bytesValue = rs.getBytes(column);
-    if (rs.wasNull()) {
-      return new byte[0];
-    } else {
-      return bytesValue;
+    try {
+      byte[] bytesValue = rs.getBytes(column);
+      return rs.wasNull() ? new byte[0] : bytesValue;
+    } catch (SQLException e) {
+      BigDecimal bigDecimal = rs.getBigDecimal(column);
+      return rs.wasNull()
+          ? new byte[0]
+          : bigDecimal.toBigInteger().toByteArray();
     }
   }
 
@@ -90,7 +90,6 @@ public final class JdbcHelper {
    * @param rs A row with SELECT results.
    * @param column Database column name.
    * @return double or 0.0 if null.
-   * @throws SQLException
    */
   public static double getDoubleNotNull(ResultSet rs, String column) throws SQLException {
     double doubleValue = rs.getDouble(column);
@@ -105,7 +104,6 @@ public final class JdbcHelper {
    * @param rs A row with SELECT results.
    * @param column Database column name.
    * @return long or 0L if null.
-   * @throws SQLException
    */
   public static long getTimestampNotNull(ResultSet rs, String column) throws SQLException {
     Timestamp timestamp = rs.getTimestamp(column);
