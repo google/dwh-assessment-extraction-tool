@@ -254,6 +254,14 @@ CREATE TABLE DBC."QryLogV" (
   "WDName" VARCHAR(128)
 );
 
+CREATE TABLE DBC."QryLogSQLV" (
+  "CollectTimeStamp" TIMESTAMP(6) NOT NULL,
+  "ProcID" DECIMAL(5,0) NOT NULL,
+  "QueryID" DECIMAL(18,0) NOT NULL,
+  "SqlRowNo" INTEGER NOT NULL,
+  "SqlTextInfo" VARCHAR(31000)
+);
+
 CREATE TABLE DBC."All_RI_ChildrenV" (
   "IndexId" SMALLINT,
   "IndexName" VARCHAR(128),
