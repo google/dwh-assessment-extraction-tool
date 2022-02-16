@@ -23,7 +23,7 @@ import java.sql.SQLException;
 /** Test data generation class */
 public class TestDataGenerator extends TestBase {
 
-  public static void main(String[] args) throws SQLException {
+  public static void main(String[] args) throws SQLException, InterruptedException {
     Connection connection = DriverManager.getConnection(URL_DB, USERNAME_DB, PASSWORD_DB);
 
     // Generate test data for users.sql
@@ -51,5 +51,8 @@ public class TestDataGenerator extends TestBase {
 
     // Generate test data for roles.sql
     TestDataHelper.generateRoles(connection, 10);
+
+    // Generate test data for query_references.sql
+    TestDataHelper.generateQueryReferences(connection, 10);
   }
 }
