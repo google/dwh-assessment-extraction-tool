@@ -36,11 +36,11 @@ export GIT_RELEASES_USERNAME="edw-assessment-integration-testing-bot"
 export KOKORO_BUILD_RELEASE_DIR="${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
 #export KOKORO_BUILD_RELEASE_DIR="${KOKORO_ARTIFACTS_DIR}"
 export KOKORO_RELEASE_OUTPUT_FILE="${KOKORO_BUILD_RELEASE_DIR}/bazel-bin/dist/dwh-assessment-extraction-tool.zip"
-export SCRIPT_PARENT_DIR="$(pwd "$dir")"
+#export SCRIPT_PARENT_DIR="$(pwd "$dir")"
+export SCRIPT_DIR=$(dirname "$0")
+export SCRIPT_PARENT_DIR="$(dirname -- "$SCRIPT_DIR")"
 export BUILD_SCRIPT="$SCRIPT_PARENT_DIR/kokoro_build.sh"
-export SCRIPT_DIRECTORY=$(dirname "$0")
-
-source ${SCRIPT_DIRECTORY}/release_utils.sh
+source ${SCRIPT_DIR}/release_utils.sh
 
 cd ${KOKORO_BUILD_RELEASE_DIR}
 
@@ -62,8 +62,6 @@ else
   VERSION="${CREATE_TAG}"
 fi
 
-
-
 log "Will create new version "${VERSION}
 
 if [ $(git tag -l "$VERSION") ]; then
@@ -79,7 +77,18 @@ fi
 log "New version name verified"
 
 #Run build and integration tests
-sh $BUILD_SCRIPT
+log "Build script is to be invoked here: "$BUILD_SCRIPT
+#sh $BUILD_SCRIPT
+
+#----- temp taked from kokoro_build.sh
+use_bazel.sh 4.1.0
+command -v bazel
+bazel version
+cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
+#Build extraction tool
+bazel build dist:all
+#----- temp taked from kokoro_build.sh END
+
 
 cd "${KOKORO_BUILD_RELEASE_DIR}"
 
