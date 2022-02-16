@@ -103,7 +103,7 @@ sleep 4m
 
 #Generate Test Data
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests"
-mvn clean compile exec:java -e -B
+mvn clean compile exec:java -e -B -Dtest="${FUNC_TESTS}"
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/bazel-bin/dist/dwh-assessment-extraction-tool"
 
