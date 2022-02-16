@@ -15,7 +15,8 @@
  */
 package com.google.tdjdbc;
 
-import static com.google.base.TestBase.TRAILING_SPACES_REGEX;
+
+import static com.google.base.TestConstants.TRAILING_SPACES_REGEX;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
