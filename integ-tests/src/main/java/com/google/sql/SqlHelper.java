@@ -15,7 +15,7 @@
  */
 package com.google.sql;
 
-import static com.google.base.TestBase.URL_DB;
+import static com.google.base.TestConstants.URL_DB;
 import static com.google.tdjdbc.JdbcHelper.getIntNotNull;
 import static java.lang.String.format;
 import static org.apache.commons.io.FileUtils.readFileToString;

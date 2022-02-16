@@ -16,12 +16,10 @@
 package com.google.base;
 
 import static java.lang.String.format;
-import static java.lang.System.getenv;
 import static java.lang.System.lineSeparator;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.LinkedHashMultiset;
-import java.util.regex.Pattern;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +28,6 @@ import org.slf4j.LoggerFactory;
 public abstract class TestBase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestBase.class);
-
-  public static final String DB_NAME = getenv("TD_DB");
-  public static final String USERNAME_DB = getenv("TD_USR");
-  public static final String PASSWORD_DB = getenv("TD_PSW");
-  public static final String URL_DB = format("jdbc:teradata://%s/DBS_PORT=1025", getenv("TD_HOST"));
-  public static final String ET_OUTPUT_PATH = getenv("EXPORT_PATH");
-
-  public static final String SQL_TESTDATA_BASE_PATH = "src/main/java/com/google/sql/testdata/";
-  public static final String SQL_REQUESTS_BASE_PATH = "src/main/java/com/google/sql/";
-
-  public static final Pattern TRAILING_SPACES_REGEX = Pattern.compile("\\s+$");
 
   /**
    * @param dbList List of extracted from DB items
@@ -64,26 +51,15 @@ public abstract class TestBase {
               "DB view and Avro file have mutually exclusive row(s)%n"
                   + "DB view '%s' has %d different row(s): %s%n"
                   + "Avro file %s has %d different row(s): %s",
-              sqlPath,
-              dbList.size(),
-              dbListOutput,
-              avroFilePath,
-              avroList.size(),
-              avroListOutput));
+              sqlPath, dbList.size(), dbListOutput, avroFilePath, avroList.size(), avroListOutput));
     } else if (!dbList.isEmpty()) {
       Assert.fail(
-          format(
-              "DB view '%s' has %d extra row(s):%n%s",
-              sqlPath,
-              dbList.size(),
-              dbListOutput));
+          format("DB view '%s' has %d extra row(s):%n%s", sqlPath, dbList.size(), dbListOutput));
     } else if (!avroList.isEmpty()) {
       Assert.fail(
           format(
               "Avro file %s has %d extra row(s):%n%s",
-              avroFilePath,
-              avroList.size(),
-              avroListOutput));
+              avroFilePath, avroList.size(), avroListOutput));
     }
   }
 }
