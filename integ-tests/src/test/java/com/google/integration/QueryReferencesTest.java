@@ -20,6 +20,12 @@ import static com.google.avro.AvroUtil.getBytesNotNull;
 import static com.google.avro.AvroUtil.getIntNotNull;
 import static com.google.avro.AvroUtil.getLongNotNull;
 import static com.google.avro.AvroUtil.getStringNotNull;
+import static com.google.base.TestConstants.DB_NAME;
+import static com.google.base.TestConstants.ET_OUTPUT_PATH;
+import static com.google.base.TestConstants.PASSWORD_DB;
+import static com.google.base.TestConstants.SQL_REQUESTS_BASE_PATH;
+import static com.google.base.TestConstants.URL_DB;
+import static com.google.base.TestConstants.USERNAME_DB;
 import static com.google.sql.SqlUtil.getSql;
 import static com.google.tdjdbc.JdbcUtil.getBytesNotNull;
 import static com.google.tdjdbc.JdbcUtil.getIntNotNull;
@@ -45,7 +51,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public final class QueryReferencesTest extends TestBase {
+public class QueryReferencesTest extends TestBase {
 
   private static Connection connection;
   private static final String SQL_PATH = SQL_REQUESTS_BASE_PATH + "query_references.sql";

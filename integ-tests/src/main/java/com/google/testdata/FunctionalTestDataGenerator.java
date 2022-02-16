@@ -15,44 +15,47 @@
  */
 package com.google.testdata;
 
-import com.google.base.TestBase;
+import static com.google.base.TestConstants.PASSWORD_DB;
+import static com.google.base.TestConstants.URL_DB;
+import static com.google.base.TestConstants.USERNAME_DB;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/** Test data generation class */
-public class TestDataGenerator extends TestBase {
+/** Functional test data generation class. */
+public class FunctionalTestDataGenerator {
 
   public static void main(String[] args) throws SQLException, InterruptedException {
     Connection connection = DriverManager.getConnection(URL_DB, USERNAME_DB, PASSWORD_DB);
 
     // Generate test data for users.sql
-    TestDataHelper.generateUsers(connection, 10);
+    FunctionalTestDataHelper.generateUsers(connection, 10);
 
     // Generate test data for columns.sql
     // Generate test data for diskspace.sql
     // Generate test data for indices.sql
     // Generate test data for tableinfo.sql
     // Generate test data for tablesize.sql
-    TestDataHelper.generateDbTablePairs(connection, 10);
+    FunctionalTestDataHelper.generateDbTablePairs(connection, 10);
 
     // Generate test data for functioninfo.sql
-    TestDataHelper.generateFunctions(connection, 10);
+    FunctionalTestDataHelper.generateFunctions(connection, 10);
 
     // Generate test data for all_ri_children.sql
     // Generate test data for all_ri_parents.sql
-    TestDataHelper.generateConstraints(connection, 10);
+    FunctionalTestDataHelper.generateConstraints(connection, 10);
 
     // Generate test data for partitioning_constraints.sql
-    TestDataHelper.generatePartitioningConstraints(connection, 10);
+    FunctionalTestDataHelper.generatePartitioningConstraints(connection, 10);
 
     // Generate test data for stats.sql
-    TestDataHelper.generateStats(connection, 10);
+    FunctionalTestDataHelper.generateStats(connection, 10);
 
     // Generate test data for roles.sql
-    TestDataHelper.generateRoles(connection, 10);
+    FunctionalTestDataHelper.generateRoles(connection, 10);
 
     // Generate test data for query_references.sql
-    TestDataHelper.generateQueryReferences(connection, 10);
+    FunctionalTestDataHelper.generateQueryReferences(connection, 10);
   }
 }

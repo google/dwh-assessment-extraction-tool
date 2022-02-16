@@ -136,7 +136,7 @@ limitations under the License.-->
         </executions>
         <configuration>
           <includePluginDependencies>true</includePluginDependencies>
-          <mainClass>com.google.testdata.TestDataGenerator</mainClass>
+          <mainClass>com.google.testdata.FunctionalTestDataGenerator</mainClass>
         </configuration>
         <dependencies>
           <dependency>
