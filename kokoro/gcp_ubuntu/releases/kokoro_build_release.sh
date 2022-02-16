@@ -39,20 +39,31 @@ export KOKORO_RELEASE_OUTPUT_FILE="${KOKORO_BUILD_RELEASE_DIR}/bazel-bin/dist/dw
 export SCRIPT_PARENT_DIR="$(pwd "$dir")"
 export BUILD_SCRIPT="$SCRIPT_PARENT_DIR/kokoro_build_TMP.sh"
 export SCRIPT_DIRECTORY=$(dirname "$0")
+
+source ${SCRIPT_DIRECTORY}/release_utils.sh
+
+cd ${KOKORO_BUILD_RELEASE_DIR}
+
+log "Current dir "$(pwd)
+git checkout main
+
 export LAST_GIT_TAG=$(git tag  \
     | grep -E '^v[0-9]' \
     | sort -V \
     | tail -1 )
-
-
-source ${SCRIPT_DIRECTORY}/release_utils.sh
+log ${LAST_GIT_TAG}
 
 # Do we already know what version we want to release?
 if [[ -z "${CREATE_TAG}" ]]; then
-  VERSION=$(incrementTagVersion ${LAST_GIT_TAG})
+  if [[ -z "${LAST_GIT_TAG}" ]]; then
+    err "No previous git tag found and it was not provided with CREATE_TAG env"
+  fi
+  VERSION=$(incrementTagVersion ${LAST_GIT_TAG}) 
 else
   VERSION="${CREATE_TAG}"
 fi
+
+
 
 log "Will create new version "${VERSION}
 
@@ -69,7 +80,6 @@ fi
 log "New version name verified"
 
 #Run build and integration tests
-git checkout main
 sh $BUILD_SCRIPT
 
 cd "${KOKORO_BUILD_RELEASE_DIR}"
