@@ -117,7 +117,6 @@ payload=$(
 # Create new release as a draft
 response=$(httpPostCheckStatus "201" "Accept: application/vnd.github.v3+json" \
   "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@api.github.com/repos/google/dwh-assessment-extraction-tool/releases" "$payload" )
-  #'{"tag_name":"'${VERSION}'","name":"'${VERSION}'","draft":true,"generate_release_notes":'${generate_unscoped_logs}',"body":"'${release_body}'" }' )
 
 log "Append file to release"
 
