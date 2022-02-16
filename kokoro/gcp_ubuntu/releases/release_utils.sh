@@ -32,12 +32,12 @@
 set -e
 
 err() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
+  printf '%s\n' "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
   exit 1
 }
 
 log() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&0
+  printf '%s\n' "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*"
 }
 
 #######################################
