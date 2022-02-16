@@ -20,6 +20,12 @@ import static com.google.avro.AvroHelper.getBytesNotNull;
 import static com.google.avro.AvroHelper.getIntNotNull;
 import static com.google.avro.AvroHelper.getLongNotNull;
 import static com.google.avro.AvroHelper.getStringNotNull;
+import static com.google.base.TestConstants.DB_NAME;
+import static com.google.base.TestConstants.ET_OUTPUT_PATH;
+import static com.google.base.TestConstants.PASSWORD_DB;
+import static com.google.base.TestConstants.SQL_REQUESTS_BASE_PATH;
+import static com.google.base.TestConstants.URL_DB;
+import static com.google.base.TestConstants.USERNAME_DB;
 import static com.google.sql.SqlHelper.getSql;
 import static com.google.tdjdbc.JdbcHelper.getBytesNotNull;
 import static com.google.tdjdbc.JdbcHelper.getIntNotNull;
@@ -61,18 +67,19 @@ public final class QueryReferencesTest extends TestBase {
         connection.prepareStatement(format(getSql(SQL_PATH), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
       while (rs.next()) {
-        QueryReferencesRow dbRow = QueryReferencesRow.create(
-            getBytesNotNull(rs, "ProcID"),
-            getTimestampNotNull(rs, "CollectTimeStamp"),
-            getBytesNotNull(rs, "QueryID"),
-            getStringNotNull(rs, "ObjectDatabaseName"),
-            getStringNotNull(rs, "ObjectTableName"),
-            getStringNotNull(rs, "ObjectColumnName"),
-            getBytesNotNull(rs, "ObjectID"),
-            getIntNotNull(rs, "ObjectNum"),
-            getStringNotNull(rs, "ObjectType"),
-            getIntNotNull(rs, "FreqofUse"),
-            getIntNotNull(rs, "TypeofUse"));
+        QueryReferencesRow dbRow =
+            QueryReferencesRow.create(
+                getBytesNotNull(rs, "ProcID"),
+                getTimestampNotNull(rs, "CollectTimeStamp"),
+                getBytesNotNull(rs, "QueryID"),
+                getStringNotNull(rs, "ObjectDatabaseName"),
+                getStringNotNull(rs, "ObjectTableName"),
+                getStringNotNull(rs, "ObjectColumnName"),
+                getBytesNotNull(rs, "ObjectID"),
+                getIntNotNull(rs, "ObjectNum"),
+                getStringNotNull(rs, "ObjectType"),
+                getIntNotNull(rs, "FreqofUse"),
+                getIntNotNull(rs, "TypeofUse"));
         dbList.add(dbRow);
       }
     }
@@ -82,18 +89,19 @@ public final class QueryReferencesTest extends TestBase {
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      QueryReferencesRow avroRow = QueryReferencesRow.create(
-          getBytesNotNull(record, "ProcID"),
-          getLongNotNull(record, "CollectTimeStamp"),
-          getBytesNotNull(record, "QueryID"),
-          getStringNotNull(record, "ObjectDatabaseName"),
-          getStringNotNull(record, "ObjectTableName"),
-          getStringNotNull(record, "ObjectColumnName"),
-          getBytesNotNull(record, "ObjectID"),
-          getIntNotNull(record, "ObjectNum"),
-          getStringNotNull(record, "ObjectType"),
-          getIntNotNull(record, "FreqofUse"),
-          getIntNotNull(record, "TypeofUse"));
+      QueryReferencesRow avroRow =
+          QueryReferencesRow.create(
+              getBytesNotNull(record, "ProcID"),
+              getLongNotNull(record, "CollectTimeStamp"),
+              getBytesNotNull(record, "QueryID"),
+              getStringNotNull(record, "ObjectDatabaseName"),
+              getStringNotNull(record, "ObjectTableName"),
+              getStringNotNull(record, "ObjectColumnName"),
+              getBytesNotNull(record, "ObjectID"),
+              getIntNotNull(record, "ObjectNum"),
+              getStringNotNull(record, "ObjectType"),
+              getIntNotNull(record, "FreqofUse"),
+              getIntNotNull(record, "TypeofUse"));
       avroList.add(avroRow);
     }
 

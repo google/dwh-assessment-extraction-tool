@@ -15,7 +15,7 @@
  */
 package com.google.avro;
 
-import static com.google.base.TestBase.TRAILING_SPACES_REGEX;
+import static com.google.base.TestConstants.TRAILING_SPACES_REGEX;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
