@@ -15,12 +15,15 @@
  */
 package com.google.testdata;
 
+import static com.google.base.TestBase.DB_NAME;
 import static com.google.base.TestBase.SQL_TESTDATA_BASE_PATH;
 import static com.google.common.base.Suppliers.memoize;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.sql.SqlHelper.connectAndExecuteQueryAsUser;
 import static com.google.sql.SqlHelper.executeQueries;
+import static com.google.sql.SqlHelper.getEntriesCountForQuery;
 import static com.google.sql.SqlHelper.getSql;
+import static com.google.sql.SqlHelper.waitForRowsUpdate;
 import static java.lang.String.format;
 import static java.lang.System.lineSeparator;
 import static java.lang.System.nanoTime;
@@ -37,12 +40,15 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Helper class providing test data generation methods */
+/**
+ * Helper class providing test data generation methods
+ */
 public final class TestDataHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestDataHelper.class);
 
-  private TestDataHelper() {}
+  private TestDataHelper() {
+  }
 
   /**
    * @param connection DB connection parameter
@@ -244,6 +250,54 @@ public final class TestDataHelper {
             "Generated %s new role(s):%n%s",
             sqlQueries.size(),
             Joiner.on(lineSeparator()).join(sqlQueries)));
+  }
+
+  /**
+   * @param connection DB connection parameter
+   * @param queryReferences Repetition count
+   */
+  public static void generateQueryReferences(Connection connection, int queryReferences)
+      throws SQLException, InterruptedException {
+    final String queryRef1 = getSql(SQL_TESTDATA_BASE_PATH + "users_data.sql");
+    final String queryRef2 = getSql(SQL_TESTDATA_BASE_PATH + "query_references_data_1.sql");
+    final String queryRef3 = getSql(SQL_TESTDATA_BASE_PATH + "query_references_data_2.sql");
+    final String queryRef4 = getSql(SQL_TESTDATA_BASE_PATH + "query_references_data_3.sql");
+    final String queryRef5 = getSql(SQL_TESTDATA_BASE_PATH + "columns_data_1.sql");
+    final String queryRef6 = getSql(SQL_TESTDATA_BASE_PATH + "columns_data_2.sql");
+    final String queryRef7 = getSql(SQL_TESTDATA_BASE_PATH + "query_references_data_4.sql");
+
+    List<String> sqlQueries = new ArrayList<>();
+
+    String username = getRandomUsername();
+    String password = randomUUID().toString();
+    String dbName = getRandomDbName();
+    String tableName = getRandomTableName();
+    String createUser = format(queryRef1, username, password);
+    String enableQueryLogging = format(queryRef2, username);
+    String createDatabase = format(queryRef5, dbName);
+    String createTable = format(queryRef6, dbName, tableName);
+    String grantSelectToUser = format(queryRef3, dbName, username);
+    String getQueryReferences = format(queryRef7, DB_NAME);
+    String selectQuery = format(queryRef4, dbName, tableName);
+
+    executeQueries(connection,
+        asList(createUser, enableQueryLogging, createDatabase, createTable, grantSelectToUser));
+    int currentQueryReferences = getEntriesCountForQuery(connection, getQueryReferences);
+
+    // select query produces triple entries in query reference table
+    int expectedRows = currentQueryReferences + 3 * queryReferences;
+
+    while (queryReferences > 0) {
+      connectAndExecuteQueryAsUser(username, password, selectQuery);
+      sqlQueries.add(selectQuery);
+      queryReferences--;
+    }
+    waitForRowsUpdate(connection, getQueryReferences, 10, expectedRows);
+
+    LOGGER.info(
+        format(
+            "Generated %s new query references:" + lineSeparator() + "%s",
+            sqlQueries.size() * 3, Joiner.on(lineSeparator()).join(sqlQueries)));
   }
 
   private static String getRandomUsername() {
