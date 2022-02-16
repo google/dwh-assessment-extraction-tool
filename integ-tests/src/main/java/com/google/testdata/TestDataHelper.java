@@ -15,7 +15,7 @@
  */
 package com.google.testdata;
 
-import static com.google.base.TestBase.TESTDATA_SQL_PATH;
+import static com.google.base.TestBase.SQL_TESTDATA_BASE_PATH;
 import static com.google.common.base.Suppliers.memoize;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.sql.SqlHelper.connectAndExecuteQueryAsUser;
@@ -37,22 +37,19 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Helper class providing test data generation methods
- */
+/** Helper class providing test data generation methods */
 public final class TestDataHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestDataHelper.class);
 
-  private TestDataHelper() {
-  }
+  private TestDataHelper() {}
 
   /**
    * @param connection DB connection parameter
    * @param userCount Repetition count
    */
   public static void generateUsers(Connection connection, int userCount) throws SQLException {
-    final String userData = getSql(TESTDATA_SQL_PATH + "users_data.sql");
+    final String userData = getSql(SQL_TESTDATA_BASE_PATH + "users_data.sql");
     final String password = randomUUID().toString();
 
     ImmutableList<String> sqlQueries =
@@ -65,7 +62,7 @@ public final class TestDataHelper {
 
     LOGGER.info(
         format(
-            "Generated %s new User(s):" + lineSeparator() + "%s",
+            "Generated %s new User(s):%n%s",
             sqlQueries.size(),
             Joiner.on(lineSeparator()).join(sqlQueries).replaceAll(password, "####")));
   }
@@ -76,8 +73,8 @@ public final class TestDataHelper {
    */
   public static void generateDbTablePairs(Connection connection, int dbTablePairsCount)
       throws SQLException {
-    final String dbData = getSql(TESTDATA_SQL_PATH + "columns_data_1.sql");
-    final String tableData = getSql(TESTDATA_SQL_PATH + "columns_data_2.sql");
+    final String dbData = getSql(SQL_TESTDATA_BASE_PATH + "columns_data_1.sql");
+    final String tableData = getSql(SQL_TESTDATA_BASE_PATH + "columns_data_2.sql");
 
     List<String> sqlQueries = new ArrayList<>();
     while (dbTablePairsCount > 0) {
@@ -93,8 +90,9 @@ public final class TestDataHelper {
 
     LOGGER.info(
         format(
-            "Generated %s new DB and Table pair(s):" + lineSeparator() + "%s",
-            sqlQueries.size() / 2, Joiner.on(lineSeparator()).join(sqlQueries)));
+            "Generated %s new DB and Table pair(s):%n%s",
+            sqlQueries.size() / 2,
+            Joiner.on(lineSeparator()).join(sqlQueries)));
   }
 
   /**
@@ -103,7 +101,7 @@ public final class TestDataHelper {
    */
   public static void generateFunctions(Connection connection, int functionCount)
       throws SQLException {
-    final String functioninfoData = getSql(TESTDATA_SQL_PATH + "functioninfo_data.sql");
+    final String functioninfoData = getSql(SQL_TESTDATA_BASE_PATH + "functioninfo_data.sql");
 
     ImmutableList<String> sqlQueries =
         Stream.generate(memoize(() -> functioninfoData))
@@ -115,8 +113,9 @@ public final class TestDataHelper {
 
     LOGGER.info(
         format(
-            "Generated %s new function(s):" + lineSeparator() + "%s",
-            sqlQueries.size(), Joiner.on(lineSeparator()).join(sqlQueries)));
+            "Generated %s new function(s):%n%s",
+            sqlQueries.size(),
+            Joiner.on(lineSeparator()).join(sqlQueries)));
   }
 
   /**
@@ -125,10 +124,10 @@ public final class TestDataHelper {
    */
   public static void generateConstraints(Connection connection, int constraintsCount)
       throws SQLException {
-    final String allRiChildrenData1 = getSql(TESTDATA_SQL_PATH + "columns_data_1.sql");
-    final String allRiChildrenData2 = getSql(TESTDATA_SQL_PATH + "all_ri_children_data_1.sql");
-    final String allRiChildrenData3 = getSql(TESTDATA_SQL_PATH + "all_ri_children_data_2.sql");
-    final String allRiChildrenData4 = getSql(TESTDATA_SQL_PATH + "all_ri_children_data_3.sql");
+    final String allRiChildrenData1 = getSql(SQL_TESTDATA_BASE_PATH + "columns_data_1.sql");
+    final String allRiChildrenData2 = getSql(SQL_TESTDATA_BASE_PATH + "all_ri_children_data_1.sql");
+    final String allRiChildrenData3 = getSql(SQL_TESTDATA_BASE_PATH + "all_ri_children_data_2.sql");
+    final String allRiChildrenData4 = getSql(SQL_TESTDATA_BASE_PATH + "all_ri_children_data_3.sql");
 
     List<String> sqlQueries = new ArrayList<>();
     while (constraintsCount > 0) {
@@ -149,8 +148,9 @@ public final class TestDataHelper {
 
     LOGGER.info(
         format(
-            "Generated %s new constraint(s):" + lineSeparator() + "%s",
-            sqlQueries.size(), Joiner.on(lineSeparator()).join(sqlQueries)));
+            "Generated %s new constraint(s):%n%s",
+            sqlQueries.size(),
+            Joiner.on(lineSeparator()).join(sqlQueries)));
   }
 
   /**
@@ -159,9 +159,10 @@ public final class TestDataHelper {
    */
   public static void generatePartitioningConstraints(Connection connection, int constraintsCount)
       throws SQLException {
-    final String partitioningConstraintsData1 = getSql(TESTDATA_SQL_PATH + "columns_data_1.sql");
-    final String partitioningConstraintsData2 = getSql(
-        TESTDATA_SQL_PATH + "partitioning_constraints_data.sql");
+    final String partitioningConstraintsData1 =
+        getSql(SQL_TESTDATA_BASE_PATH + "columns_data_1.sql");
+    final String partitioningConstraintsData2 =
+        getSql(SQL_TESTDATA_BASE_PATH + "partitioning_constraints_data.sql");
 
     List<String> sqlQueries = new ArrayList<>();
     while (constraintsCount > 0) {
@@ -176,19 +177,19 @@ public final class TestDataHelper {
 
     LOGGER.info(
         format(
-            "Generated %s new partitioning constraint(s):" + lineSeparator() + "%s",
-            sqlQueries.size(), Joiner.on(lineSeparator()).join(sqlQueries)));
+            "Generated %s new partitioning constraint(s):%n%s",
+            sqlQueries.size(),
+            Joiner.on(lineSeparator()).join(sqlQueries)));
   }
 
   /**
    * @param connection DB connection parameter
    * @param statsCount Repetition count
    */
-  public static void generateStats(Connection connection, int statsCount)
-      throws SQLException {
-    final String statsData1 = getSql(TESTDATA_SQL_PATH + "columns_data_1.sql");
-    final String statsData2 = getSql(TESTDATA_SQL_PATH + "columns_data_2.sql");
-    final String statsData3 = getSql(TESTDATA_SQL_PATH + "stats_data.sql");
+  public static void generateStats(Connection connection, int statsCount) throws SQLException {
+    final String statsData1 = getSql(SQL_TESTDATA_BASE_PATH + "columns_data_1.sql");
+    final String statsData2 = getSql(SQL_TESTDATA_BASE_PATH + "columns_data_2.sql");
+    final String statsData3 = getSql(SQL_TESTDATA_BASE_PATH + "stats_data.sql");
 
     List<String> sqlQueries = new ArrayList<>();
     while (statsCount > 0) {
@@ -204,19 +205,19 @@ public final class TestDataHelper {
 
     LOGGER.info(
         format(
-            "Generated %s new monitoring rule(s):" + lineSeparator() + "%s",
-            sqlQueries.size() * 2, Joiner.on(lineSeparator()).join(sqlQueries)));
+            "Generated %s new monitoring rule(s):%n%s",
+            sqlQueries.size() * 2,
+            Joiner.on(lineSeparator()).join(sqlQueries)));
   }
 
   /**
    * @param connection DB connection parameter
    * @param rolesCount Repetition count
    */
-  public static void generateRoles(Connection connection, int rolesCount)
-      throws SQLException {
-    final String rolesData1 = getSql(TESTDATA_SQL_PATH + "users_data.sql");
-    final String rolesData2 = getSql(TESTDATA_SQL_PATH + "roles_data_1.sql");
-    final String rolesData3 = getSql(TESTDATA_SQL_PATH + "roles_data_2.sql");
+  public static void generateRoles(Connection connection, int rolesCount) throws SQLException {
+    final String rolesData1 = getSql(SQL_TESTDATA_BASE_PATH + "users_data.sql");
+    final String rolesData2 = getSql(SQL_TESTDATA_BASE_PATH + "roles_data_1.sql");
+    final String rolesData3 = getSql(SQL_TESTDATA_BASE_PATH + "roles_data_2.sql");
 
     List<String> sqlQueries = new ArrayList<>();
 
@@ -240,8 +241,9 @@ public final class TestDataHelper {
 
     LOGGER.info(
         format(
-            "Generated %s new role(s):" + lineSeparator() + "%s",
-            sqlQueries.size(), Joiner.on(lineSeparator()).join(sqlQueries)));
+            "Generated %s new role(s):%n%s",
+            sqlQueries.size(),
+            Joiner.on(lineSeparator()).join(sqlQueries)));
   }
 
   private static String getRandomUsername() {

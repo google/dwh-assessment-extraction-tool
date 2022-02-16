@@ -19,9 +19,7 @@ import static java.lang.System.lineSeparator;
 
 import com.google.auto.value.AutoValue;
 
-/**
- * POJO class for serialization data from DB and Avro files.
- */
+/** POJO class for serialization data from DB and Avro files. */
 @AutoValue
 public abstract class ColumnRow {
 
@@ -50,24 +48,55 @@ public abstract class ColumnRow {
   @Override
   public String toString() {
     return "{"
-        + "dataBaseName=" + dataBaseName()
-        + ", tableName=" + tableName()
-        + ", columnName=" + columnName()
-        + ", columnFormat=" + columnFormat()
-        + ", columnTitle=" + columnTitle()
-        + ", columnLength=" + columnLength()
-        + ", columnType=" + columnType()
-        + ", defaultValue=" + defaultValue()
-        + ", columnConstraint=" + columnConstraint()
-        + ", constraintCount=" + constraintCount()
-        + ", nullable=" + nullable()
-        + "}" + lineSeparator();
+        + "dataBaseName="
+        + dataBaseName()
+        + ", tableName="
+        + tableName()
+        + ", columnName="
+        + columnName()
+        + ", columnFormat="
+        + columnFormat()
+        + ", columnTitle="
+        + columnTitle()
+        + ", columnLength="
+        + columnLength()
+        + ", columnType="
+        + columnType()
+        + ", defaultValue="
+        + defaultValue()
+        + ", columnConstraint="
+        + columnConstraint()
+        + ", constraintCount="
+        + constraintCount()
+        + ", nullable="
+        + nullable()
+        + "}"
+        + lineSeparator();
   }
 
-  public static ColumnRow create(String dataBaseName, String tableName, String columnName,
-      String columnFormat, String columnTitle, int columnLength, String columnType,
-      String defaultValue, String columnConstraint, int constraintCount, String nullable) {
-    return new AutoValue_ColumnRow(dataBaseName, tableName, columnName, columnFormat, columnTitle,
-        columnLength, columnType, defaultValue, columnConstraint, constraintCount, nullable);
+  public static ColumnRow create(
+      String dataBaseName,
+      String tableName,
+      String columnName,
+      String columnFormat,
+      String columnTitle,
+      int columnLength,
+      String columnType,
+      String defaultValue,
+      String columnConstraint,
+      int constraintCount,
+      String nullable) {
+    return new AutoValue_ColumnRow(
+        dataBaseName,
+        tableName,
+        columnName,
+        columnFormat,
+        columnTitle,
+        columnLength,
+        columnType,
+        defaultValue,
+        columnConstraint,
+        constraintCount,
+        nullable);
   }
 }

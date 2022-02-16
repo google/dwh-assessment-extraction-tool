@@ -42,8 +42,8 @@ import org.junit.Test;
 public class FunctioninfoTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "functioninfo.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "functioninfo.avro";
+  private static final String SQL_PATH = SQL_REQUESTS_BASE_PATH + "functioninfo.sql";
+  private static final String AVRO_FILE_PATH = ET_OUTPUT_PATH + "functioninfo.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -56,75 +56,77 @@ public class FunctioninfoTest extends TestBase {
     LinkedHashMultiset<FunctioninfoRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
-        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
+        connection.prepareStatement(format(SqlHelper.getSql(SQL_PATH), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        FunctioninfoRow dbRow = FunctioninfoRow.create(
-            getStringNotNull(rs, "DatabaseName"),
-            getStringNotNull(rs, "FunctionName"),
-            getStringNotNull(rs, "SpecificName"),
-            getBytesNotNull(rs, "FunctionId"),
-            getIntNotNull(rs, "NumParameters"),
-            getStringNotNull(rs, "ParameterDataTypes"),
-            getStringNotNull(rs, "FunctionType"),
-            getStringNotNull(rs, "ExternalName"),
-            getStringNotNull(rs, "SrcFileLanguage"),
-            getStringNotNull(rs, "NoSQLDataAccess"),
-            getStringNotNull(rs, "ParameterStyle"),
-            getStringNotNull(rs, "DeterministicOpt"),
-            getStringNotNull(rs, "NullCall"),
-            getStringNotNull(rs, "PrepareCount"),
-            getStringNotNull(rs, "ExecProtectionMode"),
-            getStringNotNull(rs, "ExtFileReference"),
-            getIntNotNull(rs, "CharacterType"),
-            getStringNotNull(rs, "Platform"),
-            getIntNotNull(rs, "InterimFldSize"),
-            getStringNotNull(rs, "RoutineKind"),
-            getBytesNotNull(rs, "ParameterUDTIds"),
-            getIntNotNull(rs, "MaxOutParameters"),
-            getStringNotNull(rs, "GLOPSetDatabaseName"),
-            getStringNotNull(rs, "GLOPSetMemberName"),
-            getStringNotNull(rs, "RefQueryband"),
-            getStringNotNull(rs, "ExecMapName"),
-            getStringNotNull(rs, "ExecMapColocName"));
+        FunctioninfoRow dbRow =
+            FunctioninfoRow.create(
+                getStringNotNull(rs, "DatabaseName"),
+                getStringNotNull(rs, "FunctionName"),
+                getStringNotNull(rs, "SpecificName"),
+                getBytesNotNull(rs, "FunctionId"),
+                getIntNotNull(rs, "NumParameters"),
+                getStringNotNull(rs, "ParameterDataTypes"),
+                getStringNotNull(rs, "FunctionType"),
+                getStringNotNull(rs, "ExternalName"),
+                getStringNotNull(rs, "SrcFileLanguage"),
+                getStringNotNull(rs, "NoSQLDataAccess"),
+                getStringNotNull(rs, "ParameterStyle"),
+                getStringNotNull(rs, "DeterministicOpt"),
+                getStringNotNull(rs, "NullCall"),
+                getStringNotNull(rs, "PrepareCount"),
+                getStringNotNull(rs, "ExecProtectionMode"),
+                getStringNotNull(rs, "ExtFileReference"),
+                getIntNotNull(rs, "CharacterType"),
+                getStringNotNull(rs, "Platform"),
+                getIntNotNull(rs, "InterimFldSize"),
+                getStringNotNull(rs, "RoutineKind"),
+                getBytesNotNull(rs, "ParameterUDTIds"),
+                getIntNotNull(rs, "MaxOutParameters"),
+                getStringNotNull(rs, "GLOPSetDatabaseName"),
+                getStringNotNull(rs, "GLOPSetMemberName"),
+                getStringNotNull(rs, "RefQueryband"),
+                getStringNotNull(rs, "ExecMapName"),
+                getStringNotNull(rs, "ExecMapColocName"));
         dbList.add(dbRow);
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(AVRO_FILE_PATH);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      FunctioninfoRow avroRow = FunctioninfoRow.create(
-          getStringNotNull(record, "DatabaseName"),
-          getStringNotNull(record, "FunctionName"),
-          getStringNotNull(record, "SpecificName"),
-          getBytesNotNull(record, "FunctionId"),
-          getIntNotNull(record, "NumParameters"),
-          getStringNotNull(record, "ParameterDataTypes"),
-          getStringNotNull(record, "FunctionType"),
-          getStringNotNull(record, "ExternalName"),
-          getStringNotNull(record, "SrcFileLanguage"),
-          getStringNotNull(record, "NoSQLDataAccess"),
-          getStringNotNull(record, "ParameterStyle"),
-          getStringNotNull(record, "DeterministicOpt"),
-          getStringNotNull(record, "NullCall"),
-          getStringNotNull(record, "PrepareCount"),
-          getStringNotNull(record, "ExecProtectionMode"),
-          getStringNotNull(record, "ExtFileReference"),
-          getIntNotNull(record, "CharacterType"),
-          getStringNotNull(record, "Platform"),
-          getIntNotNull(record, "InterimFldSize"),
-          getStringNotNull(record, "RoutineKind"),
-          getBytesNotNull(record, "ParameterUDTIds"),
-          getIntNotNull(record, "MaxOutParameters"),
-          getStringNotNull(record, "GLOPSetDatabaseName"),
-          getStringNotNull(record, "GLOPSetMemberName"),
-          getStringNotNull(record, "RefQueryband"),
-          getStringNotNull(record, "ExecMapName"),
-          getStringNotNull(record, "ExecMapColocName"));
+      FunctioninfoRow avroRow =
+          FunctioninfoRow.create(
+              getStringNotNull(record, "DatabaseName"),
+              getStringNotNull(record, "FunctionName"),
+              getStringNotNull(record, "SpecificName"),
+              getBytesNotNull(record, "FunctionId"),
+              getIntNotNull(record, "NumParameters"),
+              getStringNotNull(record, "ParameterDataTypes"),
+              getStringNotNull(record, "FunctionType"),
+              getStringNotNull(record, "ExternalName"),
+              getStringNotNull(record, "SrcFileLanguage"),
+              getStringNotNull(record, "NoSQLDataAccess"),
+              getStringNotNull(record, "ParameterStyle"),
+              getStringNotNull(record, "DeterministicOpt"),
+              getStringNotNull(record, "NullCall"),
+              getStringNotNull(record, "PrepareCount"),
+              getStringNotNull(record, "ExecProtectionMode"),
+              getStringNotNull(record, "ExtFileReference"),
+              getIntNotNull(record, "CharacterType"),
+              getStringNotNull(record, "Platform"),
+              getIntNotNull(record, "InterimFldSize"),
+              getStringNotNull(record, "RoutineKind"),
+              getBytesNotNull(record, "ParameterUDTIds"),
+              getIntNotNull(record, "MaxOutParameters"),
+              getStringNotNull(record, "GLOPSetDatabaseName"),
+              getStringNotNull(record, "GLOPSetMemberName"),
+              getStringNotNull(record, "RefQueryband"),
+              getStringNotNull(record, "ExecMapName"),
+              getStringNotNull(record, "ExecMapColocName"));
       avroList.add(avroRow);
     }
 
@@ -132,6 +134,6 @@ public class FunctioninfoTest extends TestBase {
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
-    assertListsEqual(dbList, avroList, sqlPath, avroFilePath);
+    assertListsEqual(dbList, avroList, SQL_PATH, AVRO_FILE_PATH);
   }
 }

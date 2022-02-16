@@ -17,7 +17,7 @@ package com.google.sql;
 
 import static com.google.base.TestBase.URL_DB;
 import static java.lang.String.format;
-import static java.lang.System.lineSeparator;
+import static org.apache.commons.io.FileUtils.readFileToString;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,19 +27,15 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * A helper class for reading .sql files.
- */
+/** A helper class for reading .sql files. */
 public final class SqlHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SqlHelper.class);
 
-  private SqlHelper() {
-  }
+  private SqlHelper() {}
 
   /**
    * @param sqlPath Path to an .sql file.
@@ -47,7 +43,7 @@ public final class SqlHelper {
    */
   public static String getSql(String sqlPath) {
     try {
-      return FileUtils.readFileToString(new File(sqlPath), StandardCharsets.UTF_8);
+      return readFileToString(new File(sqlPath), StandardCharsets.UTF_8);
     } catch (IOException exception) {
       throw new IllegalStateException(
           format("Error while reading sql file %s", sqlPath), exception);
@@ -65,7 +61,7 @@ public final class SqlHelper {
         preparedStatement.execute();
       } catch (SQLException e) {
         LOGGER.error(
-            format("Cannot execute query: " + lineSeparator() + "%s" + lineSeparator(), query));
+            format("Cannot execute query: %n%s%n", query));
         throw e;
       }
     }
@@ -83,7 +79,7 @@ public final class SqlHelper {
       preparedStatement.execute();
     } catch (SQLException e) {
       LOGGER.error(
-          format("Cannot execute query: " + lineSeparator() + "%s" + lineSeparator(), query));
+          format("Cannot execute query: %n%s%n", query));
       throw e;
     }
   }

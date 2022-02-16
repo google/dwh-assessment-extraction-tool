@@ -19,9 +19,7 @@ import static java.lang.System.lineSeparator;
 
 import com.google.auto.value.AutoValue;
 
-/**
- * POJO class for serialization data from DB and Avro files.
- */
+/** POJO class for serialization data from DB and Avro files. */
 @AutoValue
 public abstract class UserRow {
 
@@ -36,15 +34,20 @@ public abstract class UserRow {
   @Override
   public String toString() {
     return "{"
-        + "userName=" + userName()
-        + ", creatorName=" + creatorName()
-        + ", createTimeStamp=" + createTimeStamp()
-        + ", lastAccessTimeStamp=" + lastAccessTimeStamp()
-        + "}" + lineSeparator();
+        + "userName="
+        + userName()
+        + ", creatorName="
+        + creatorName()
+        + ", createTimeStamp="
+        + createTimeStamp()
+        + ", lastAccessTimeStamp="
+        + lastAccessTimeStamp()
+        + "}"
+        + lineSeparator();
   }
 
-  public static UserRow create(String userName, String creatorName, long createTimeStamp,
-      long lastAccessTimeStamp) {
+  public static UserRow create(
+      String userName, String creatorName, long createTimeStamp, long lastAccessTimeStamp) {
     return new AutoValue_UserRow(userName, creatorName, createTimeStamp, lastAccessTimeStamp);
   }
 }

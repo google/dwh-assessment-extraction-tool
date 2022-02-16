@@ -19,9 +19,7 @@ import static java.lang.System.lineSeparator;
 
 import com.google.auto.value.AutoValue;
 
-/**
- * POJO class for serialization data from DB and Avro files.
- */
+/** POJO class for serialization data from DB and Avro files. */
 @AutoValue
 public abstract class PartitioningConstraintsRow {
 
@@ -64,38 +62,83 @@ public abstract class PartitioningConstraintsRow {
   @Override
   public String toString() {
     return "{"
-        + "databaseName=" + databaseName()
-        + ", tableName=" + tableName()
-        + ", indexName=" + indexName()
-        + ", indexNumber=" + indexNumber()
-        + ", constraintType=" + constraintType()
-        + ", constraintText=" + constraintText()
-        + ", constraintCollation=" + constraintCollation()
-        + ", collationName=" + collationName()
-        + ", creatorName=" + creatorName()
-        + ", createTimeStamp=" + createTimeStamp()
-        + ", charSetID=" + charSetID()
-        + ", sessionMode=" + sessionMode()
-        + ", resolvedCurrent_Date=" + resolvedCurrentDate()
-        + ", resolvedCurrent_TimeStamp=" + resolvedCurrentTimeStamp()
-        + ", definedCombinedPartitions=" + definedCombinedPartitions()
-        + ", maxCombinedPartitions=" + maxCombinedPartitions()
-        + ", partitioningLevels=" + partitioningLevels()
-        + ", columnPartitioningLevel=" + columnPartitioningLevel()
-        + "}" + lineSeparator();
+        + "databaseName="
+        + databaseName()
+        + ", tableName="
+        + tableName()
+        + ", indexName="
+        + indexName()
+        + ", indexNumber="
+        + indexNumber()
+        + ", constraintType="
+        + constraintType()
+        + ", constraintText="
+        + constraintText()
+        + ", constraintCollation="
+        + constraintCollation()
+        + ", collationName="
+        + collationName()
+        + ", creatorName="
+        + creatorName()
+        + ", createTimeStamp="
+        + createTimeStamp()
+        + ", charSetID="
+        + charSetID()
+        + ", sessionMode="
+        + sessionMode()
+        + ", resolvedCurrent_Date="
+        + resolvedCurrentDate()
+        + ", resolvedCurrent_TimeStamp="
+        + resolvedCurrentTimeStamp()
+        + ", definedCombinedPartitions="
+        + definedCombinedPartitions()
+        + ", maxCombinedPartitions="
+        + maxCombinedPartitions()
+        + ", partitioningLevels="
+        + partitioningLevels()
+        + ", columnPartitioningLevel="
+        + columnPartitioningLevel()
+        + "}"
+        + lineSeparator();
   }
 
-  public static PartitioningConstraintsRow create(String databaseName, String tableName,
-      String indexName, int indexNumber, String constraintType, String constraintText,
-      String constraintCollation, String collationName, String creatorName, long createTimeStamp,
-      String charSetID, String sessionMode, long resolvedCurrentDate,
+  public static PartitioningConstraintsRow create(
+      String databaseName,
+      String tableName,
+      String indexName,
+      int indexNumber,
+      String constraintType,
+      String constraintText,
+      String constraintCollation,
+      String collationName,
+      String creatorName,
+      long createTimeStamp,
+      String charSetID,
+      String sessionMode,
+      long resolvedCurrentDate,
       long resolvedCurrentTimeStamp,
-      long definedCombinedPartitions, long maxCombinedPartitions, int partitioningLevels,
+      long definedCombinedPartitions,
+      long maxCombinedPartitions,
+      int partitioningLevels,
       int columnPartitioningLevel) {
-    return new AutoValue_PartitioningConstraintsRow(databaseName, tableName, indexName, indexNumber,
-        constraintType, constraintText, constraintCollation, collationName, creatorName,
-        createTimeStamp, charSetID, sessionMode, resolvedCurrentDate, resolvedCurrentTimeStamp,
-        definedCombinedPartitions, maxCombinedPartitions, partitioningLevels,
+    return new AutoValue_PartitioningConstraintsRow(
+        databaseName,
+        tableName,
+        indexName,
+        indexNumber,
+        constraintType,
+        constraintText,
+        constraintCollation,
+        collationName,
+        creatorName,
+        createTimeStamp,
+        charSetID,
+        sessionMode,
+        resolvedCurrentDate,
+        resolvedCurrentTimeStamp,
+        definedCombinedPartitions,
+        maxCombinedPartitions,
+        partitioningLevels,
         columnPartitioningLevel);
   }
 }

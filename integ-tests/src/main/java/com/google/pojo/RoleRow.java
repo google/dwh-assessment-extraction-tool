@@ -19,9 +19,7 @@ import static java.lang.System.lineSeparator;
 
 import com.google.auto.value.AutoValue;
 
-/**
- * POJO class for serialization data from DB and Avro files.
- */
+/** POJO class for serialization data from DB and Avro files. */
 @AutoValue
 public abstract class RoleRow {
 
@@ -40,17 +38,29 @@ public abstract class RoleRow {
   @Override
   public String toString() {
     return "{"
-        + "roleName=" + roleName()
-        + ", grantor=" + grantor()
-        + ", grantee=" + grantee()
-        + ", whenGranted=" + whenGranted()
-        + ", defaultRole=" + defaultRole()
-        + ", withAdmin=" + withAdmin()
-        + "}" + lineSeparator();
+        + "roleName="
+        + roleName()
+        + ", grantor="
+        + grantor()
+        + ", grantee="
+        + grantee()
+        + ", whenGranted="
+        + whenGranted()
+        + ", defaultRole="
+        + defaultRole()
+        + ", withAdmin="
+        + withAdmin()
+        + "}"
+        + lineSeparator();
   }
 
-  public static RoleRow create(String roleName, String grantor, String grantee, long whenGranted,
-      String defaultRole, String withAdmin) {
+  public static RoleRow create(
+      String roleName,
+      String grantor,
+      String grantee,
+      long whenGranted,
+      String defaultRole,
+      String withAdmin) {
     return new AutoValue_RoleRow(roleName, grantor, grantee, whenGranted, defaultRole, withAdmin);
   }
 }

@@ -19,9 +19,7 @@ import static java.lang.System.lineSeparator;
 
 import com.google.auto.value.AutoValue;
 
-/**
- * AutoValue abstract POJO class for serialization data from DB and Avro files.
- */
+/** AutoValue abstract POJO class for serialization data from DB and Avro files. */
 @AutoValue
 public abstract class DiskspaceRow {
 
@@ -65,43 +63,94 @@ public abstract class DiskspaceRow {
 
   public abstract int tempSkew();
 
-
   @Override
   public String toString() {
     return "{"
-        + "Vproc=" + vproc()
-        + ", DatabaseName=" + databaseName()
-        + ", AccountName=" + accountName()
-        + ", MaxPerm=" + maxPerm()
-        + ", MaxSpool=" + maxSpool()
-        + ", MaxTemp=" + maxTemp()
-        + ", CurrentSpool=" + currentSpool()
-        + ", CurrentPersistentSpool=" + currentPersistentSpool()
-        + ", CurrentTemp=" + currentTemp()
-        + ", PeakSpool=" + peakSpool()
-        + ", PeakPersistentSpool=" + peakPersistentSpool()
-        + ", PeakTemp=" + peakTemp()
-        + ", MaxProfileSpool=" + maxProfileSpool()
-        + ", MaxProfileTemp=" + maxProfileTemp()
-        + ", AllocatedPerm=" + allocatedPerm()
-        + ", AllocatedSpool=" + allocatedSpool()
-        + ", AllocatedTemp=" + allocatedTemp()
-        + ", PermSkew=" + permSkew()
-        + ", SpoolSkew=" + spoolSkew()
-        + ", TempSkew=" + tempSkew()
-        + "}" + lineSeparator();
+        + "Vproc="
+        + vproc()
+        + ", DatabaseName="
+        + databaseName()
+        + ", AccountName="
+        + accountName()
+        + ", MaxPerm="
+        + maxPerm()
+        + ", MaxSpool="
+        + maxSpool()
+        + ", MaxTemp="
+        + maxTemp()
+        + ", CurrentSpool="
+        + currentSpool()
+        + ", CurrentPersistentSpool="
+        + currentPersistentSpool()
+        + ", CurrentTemp="
+        + currentTemp()
+        + ", PeakSpool="
+        + peakSpool()
+        + ", PeakPersistentSpool="
+        + peakPersistentSpool()
+        + ", PeakTemp="
+        + peakTemp()
+        + ", MaxProfileSpool="
+        + maxProfileSpool()
+        + ", MaxProfileTemp="
+        + maxProfileTemp()
+        + ", AllocatedPerm="
+        + allocatedPerm()
+        + ", AllocatedSpool="
+        + allocatedSpool()
+        + ", AllocatedTemp="
+        + allocatedTemp()
+        + ", PermSkew="
+        + permSkew()
+        + ", SpoolSkew="
+        + spoolSkew()
+        + ", TempSkew="
+        + tempSkew()
+        + "}"
+        + lineSeparator();
   }
 
-  public static DiskspaceRow create(int newVproc, String newDatabaseName, String newAccountName,
-      long newMaxPerm, long newMaxSpool, long newMaxTemp, long newCurrentSpool,
-      long newCurrentPersistentSpool, long newCurrentTemp, long newPeakSpool,
-      long newPeakPersistentSpool, long newPeakTemp, long newMaxProfileSpool,
-      long newMaxProfileTemp, long newAllocatedPerm, long newAllocatedSpool, long newAllocatedTemp,
-      int newPermSkew, int newSpoolSkew, int newTempSkew) {
-    return new AutoValue_DiskspaceRow(newVproc, newDatabaseName, newAccountName, newMaxPerm,
-        newMaxSpool, newMaxTemp, newCurrentSpool, newCurrentPersistentSpool,
-        newCurrentTemp, newPeakSpool, newPeakPersistentSpool, newPeakTemp,
-        newMaxProfileSpool, newMaxProfileTemp, newAllocatedPerm, newAllocatedSpool,
-        newAllocatedTemp, newPermSkew, newSpoolSkew, newTempSkew);
+  public static DiskspaceRow create(
+      int newVproc,
+      String newDatabaseName,
+      String newAccountName,
+      long newMaxPerm,
+      long newMaxSpool,
+      long newMaxTemp,
+      long newCurrentSpool,
+      long newCurrentPersistentSpool,
+      long newCurrentTemp,
+      long newPeakSpool,
+      long newPeakPersistentSpool,
+      long newPeakTemp,
+      long newMaxProfileSpool,
+      long newMaxProfileTemp,
+      long newAllocatedPerm,
+      long newAllocatedSpool,
+      long newAllocatedTemp,
+      int newPermSkew,
+      int newSpoolSkew,
+      int newTempSkew) {
+    return new AutoValue_DiskspaceRow(
+        newVproc,
+        newDatabaseName,
+        newAccountName,
+        newMaxPerm,
+        newMaxSpool,
+        newMaxTemp,
+        newCurrentSpool,
+        newCurrentPersistentSpool,
+        newCurrentTemp,
+        newPeakSpool,
+        newPeakPersistentSpool,
+        newPeakTemp,
+        newMaxProfileSpool,
+        newMaxProfileTemp,
+        newAllocatedPerm,
+        newAllocatedSpool,
+        newAllocatedTemp,
+        newPermSkew,
+        newSpoolSkew,
+        newTempSkew);
   }
 }

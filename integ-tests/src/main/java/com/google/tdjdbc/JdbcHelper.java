@@ -34,11 +34,7 @@ public final class JdbcHelper {
    */
   public static String getStringNotNull(ResultSet rs, String column) throws SQLException {
     String string = rs.getString(column);
-    if (rs.wasNull()) {
-      return "";
-    } else {
-      return TRAILING_SPACES_REGEX.matcher(string).replaceFirst("");
-    }
+    return rs.wasNull() ? "" : TRAILING_SPACES_REGEX.matcher(string).replaceFirst("");
   }
 
   /**
@@ -47,12 +43,8 @@ public final class JdbcHelper {
    * @return int or 0 if null.
    */
   public static int getIntNotNull(ResultSet rs, String column) throws SQLException {
-    int integer = rs.getInt(column);
-    if (rs.wasNull()) {
-      return 0;
-    } else {
-      return integer;
-    }
+    int intValue = rs.getInt(column);
+    return rs.wasNull() ? 0 : intValue;
   }
 
   /**
@@ -62,11 +54,7 @@ public final class JdbcHelper {
    */
   public static long getLongNotNull(ResultSet rs, String column) throws SQLException {
     long longValue = rs.getLong(column);
-    if (rs.wasNull()) {
-      return 0L;
-    } else {
-      return longValue;
-    }
+    return rs.wasNull() ? 0L : longValue;
   }
 
   /**
@@ -80,9 +68,7 @@ public final class JdbcHelper {
       return rs.wasNull() ? new byte[0] : bytesValue;
     } catch (SQLException e) {
       BigDecimal bigDecimal = rs.getBigDecimal(column);
-      return rs.wasNull()
-          ? new byte[0]
-          : bigDecimal.toBigInteger().toByteArray();
+      return rs.wasNull() ? new byte[0] : bigDecimal.toBigInteger().toByteArray();
     }
   }
 
@@ -93,11 +79,7 @@ public final class JdbcHelper {
    */
   public static double getDoubleNotNull(ResultSet rs, String column) throws SQLException {
     double doubleValue = rs.getDouble(column);
-    if (rs.wasNull()) {
-      return 0.0;
-    } else {
-      return doubleValue;
-    }
+    return rs.wasNull() ? 0.0 : doubleValue;
   }
 
   /**
@@ -107,10 +89,6 @@ public final class JdbcHelper {
    */
   public static long getTimestampNotNull(ResultSet rs, String column) throws SQLException {
     Timestamp timestamp = rs.getTimestamp(column);
-    if (rs.wasNull()) {
-      return 0L;
-    } else {
-      return timestamp.getTime();
-    }
+    return rs.wasNull() ? 0L : timestamp.getTime();
   }
 }

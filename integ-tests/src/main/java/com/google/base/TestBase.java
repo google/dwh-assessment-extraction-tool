@@ -26,9 +26,7 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Base class with general values for all Junit test suites
- */
+/** Base class with general values for all Junit test suites */
 public abstract class TestBase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestBase.class);
@@ -39,8 +37,8 @@ public abstract class TestBase {
   public static final String URL_DB = format("jdbc:teradata://%s/DBS_PORT=1025", getenv("TD_HOST"));
   public static final String ET_OUTPUT_PATH = getenv("EXPORT_PATH");
 
-  public static final String TESTDATA_SQL_PATH = "src/main/java/com/google/sql/testdata/";
-  public static final String SQL_PATH = "src/main/java/com/google/sql/";
+  public static final String SQL_TESTDATA_BASE_PATH = "src/main/java/com/google/sql/testdata/";
+  public static final String SQL_REQUESTS_BASE_PATH = "src/main/java/com/google/sql/";
 
   public static final Pattern TRAILING_SPACES_REGEX = Pattern.compile("\\s+$");
 
@@ -51,7 +49,9 @@ public abstract class TestBase {
    * @param avroFilePath Path to exported Avro file
    */
   public static void assertListsEqual(
-      final LinkedHashMultiset dbList, final LinkedHashMultiset avroList, String sqlPath,
+      final LinkedHashMultiset dbList,
+      final LinkedHashMultiset avroList,
+      String sqlPath,
       String avroFilePath) {
     String dbListOutput = lineSeparator() + Joiner.on("").join(dbList);
     String avroListOutput = lineSeparator() + Joiner.on("").join(avroList);
@@ -61,19 +61,29 @@ public abstract class TestBase {
     } else if (!dbList.isEmpty() && !avroList.isEmpty()) {
       Assert.fail(
           format(
-              "DB view and Avro file have mutually exclusive row(s)"
-                  + lineSeparator() + "DB view '%s' has %d different row(s): %s"
-                  + lineSeparator() + "Avro file %s has %d different row(s): %s",
-              sqlPath, dbList.size(), dbListOutput, avroFilePath, avroList.size(), avroListOutput));
+              "DB view and Avro file have mutually exclusive row(s)%n"
+                  + "DB view '%s' has %d different row(s): %s%n"
+                  + "Avro file %s has %d different row(s): %s",
+              sqlPath,
+              dbList.size(),
+              dbListOutput,
+              avroFilePath,
+              avroList.size(),
+              avroListOutput));
     } else if (!dbList.isEmpty()) {
       Assert.fail(
-          format("DB view '%s' has %d extra row(s):" + lineSeparator() + "%s", sqlPath,
-              dbList.size(), dbListOutput));
+          format(
+              "DB view '%s' has %d extra row(s):%n%s",
+              sqlPath,
+              dbList.size(),
+              dbListOutput));
     } else if (!avroList.isEmpty()) {
       Assert.fail(
           format(
-              "Avro file %s has %d extra row(s):" + lineSeparator() + "%s",
-              avroFilePath, avroList.size(), avroListOutput));
+              "Avro file %s has %d extra row(s):%n%s",
+              avroFilePath,
+              avroList.size(),
+              avroListOutput));
     }
   }
 }

@@ -19,45 +19,84 @@ import static java.lang.System.lineSeparator;
 
 import com.google.auto.value.AutoValue;
 
-/**
- * POJO class for serialization data from DB and Avro files.
- */
+/** POJO class for serialization data from DB and Avro files. */
 @AutoValue
 public abstract class AllRiChildrenRow {
 
   public abstract int indexID();
+
   public abstract String indexName();
+
   public abstract String childDB();
+
   public abstract String childTable();
+
   public abstract String childKeyColumn();
+
   public abstract String parentDB();
+
   public abstract String parentTable();
+
   public abstract String parentKeyColumn();
+
   public abstract String inconsistencyFlag();
+
   public abstract String creatorName();
+
   public abstract long createTimeStamp();
 
   @Override
   public String toString() {
     return "{"
-        + "indexID=" + indexID()
-        + ", indexName=" + indexName()
-        + ", childDB=" + childDB()
-        + ", childTable=" + childTable()
-        + ", childKeyColumn=" + childKeyColumn()
-        + ", parentDB=" + parentDB()
-        + ", parentTable=" + parentTable()
-        + ", parentKeyColumn=" + parentKeyColumn()
-        + ", inconsistencyFlag=" + inconsistencyFlag()
-        + ", creatorName=" + creatorName()
-        + ", createTimeStamp=" + createTimeStamp()
-        + "}" + lineSeparator();
+        + "indexID="
+        + indexID()
+        + ", indexName="
+        + indexName()
+        + ", childDB="
+        + childDB()
+        + ", childTable="
+        + childTable()
+        + ", childKeyColumn="
+        + childKeyColumn()
+        + ", parentDB="
+        + parentDB()
+        + ", parentTable="
+        + parentTable()
+        + ", parentKeyColumn="
+        + parentKeyColumn()
+        + ", inconsistencyFlag="
+        + inconsistencyFlag()
+        + ", creatorName="
+        + creatorName()
+        + ", createTimeStamp="
+        + createTimeStamp()
+        + "}"
+        + lineSeparator();
   }
 
-  public static AllRiChildrenRow create(int indexID, String indexName, String childDB,
-      String childTable, String childKeyColumn, String parentDB, String parentTable,
-      String parentKeyColumn, String inconsistencyFlag, String creatorName, long createTimeStamp) {
-    return new AutoValue_AllRiChildrenRow(indexID, indexName, childDB, childTable, childKeyColumn,
-        parentDB, parentTable, parentKeyColumn, inconsistencyFlag, creatorName, createTimeStamp);
+  public static AllRiChildrenRow create(
+      int indexID,
+      String indexName,
+      String childDB,
+      String childTable,
+      String childKeyColumn,
+      String parentDB,
+      String parentTable,
+      String parentKeyColumn,
+      String inconsistencyFlag,
+      String creatorName,
+      long createTimeStamp) {
+    return new AutoValue_AllRiChildrenRow(
+        indexID,
+        indexName,
+        childDB,
+        childTable,
+        childKeyColumn,
+        parentDB,
+        parentTable,
+        parentKeyColumn,
+        inconsistencyFlag,
+        creatorName,
+        createTimeStamp);
   }
 }
