@@ -34,9 +34,7 @@ set -e
 export GIT_PSW="$(<${KOKORO_KEYSTORE_DIR}/76474_bqassessment-github-releases-02032022)"
 export GIT_RELEASES_USERNAME="edw-assessment-integration-testing-bot"
 export KOKORO_BUILD_RELEASE_DIR="${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
-#export KOKORO_BUILD_RELEASE_DIR="${KOKORO_ARTIFACTS_DIR}"
 export KOKORO_RELEASE_OUTPUT_FILE="${KOKORO_BUILD_RELEASE_DIR}/bazel-bin/dist/dwh-assessment-extraction-tool.zip"
-#export SCRIPT_PARENT_DIR="$(pwd "$dir")"
 export SCRIPT_DIR=$(dirname "$0")
 export SCRIPT_PARENT_DIR="$(dirname -- "$SCRIPT_DIR")"
 export BUILD_SCRIPT="$SCRIPT_PARENT_DIR/kokoro_build.sh"
@@ -78,20 +76,22 @@ log "New version name verified"
 
 #Run build and integration tests
 log "Build script is to be invoked here: "$BUILD_SCRIPT
-#sh $BUILD_SCRIPT
 
-#----- temp taked from kokoro_build.sh
+# TODO : would need to be reenabled once in main
+#sh $BUILD_SCRIPT   
+
+# TODO: temp taken from kokoro_build.sh, need to be removed later
 use_bazel.sh 4.1.0
 command -v bazel
 bazel version
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
 #Build extraction tool
 bazel build dist:all
-#----- temp taked from kokoro_build.sh END
+# TODO: temp taken from kokoro_build.sh END
 
-
+# revert to initial state after running build script
 cd "${KOKORO_BUILD_RELEASE_DIR}"
-
+git checkout main
 # create and register tag for this release
 git tag -a ${VERSION} -m ${VERSION}
 log "Create new tag"
@@ -100,8 +100,8 @@ git push https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@github.com/google/dwh-asses
 log "Prepare release notes"
 
 output=$(httpPostCheckStatus  "200" "Accept: application/vnd.github.v3+json" \
-    "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@api.github.com/repos/google/dwh-assessment-extraction-tool/releases/generate-notes" \
-    '{"tag_name":"'${VERSION}'","previous_tag_name":"'${LAST_GIT_TAG}'"}' )
+  "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@api.github.com/repos/google/dwh-assessment-extraction-tool/releases/generate-notes" \
+  '{"tag_name":"'${VERSION}'","previous_tag_name":"'${LAST_GIT_TAG}'"}' )
 release_body=$(jq -r '.body'   <<< $output )""
 
 log "Create release"
