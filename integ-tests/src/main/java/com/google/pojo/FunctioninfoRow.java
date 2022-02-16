@@ -19,9 +19,7 @@ import static java.lang.System.lineSeparator;
 
 import com.google.auto.value.AutoValue;
 
-/**
- * POJO class for serialization data from DB and Avro files.
- */
+/** POJO class for serialization data from DB and Avro files. */
 @AutoValue
 public abstract class FunctioninfoRow {
 
@@ -82,49 +80,119 @@ public abstract class FunctioninfoRow {
   @Override
   public String toString() {
     return "{"
-        + "databaseName=" + databaseName()
-        + ", functionName=" + functionName()
-        + ", specificName=" + specificName()
-        + ", functionId=" + functionId()
-        + ", numParameters=" + numParameters()
-        + ", parameterDataTypes=" + parameterDataTypes()
-        + ", functionType=" + functionType()
-        + ", externalName=" + externalName()
-        + ", srcFileLanguage=" + srcFileLanguage()
-        + ", noSQLDataAccess=" + noSQLDataAccess()
-        + ", parameterStyle=" + parameterStyle()
-        + ", deterministicOpt=" + deterministicOpt()
-        + ", nullCall=" + nullCall()
-        + ", prepareCount=" + prepareCount()
-        + ", execProtectionMode=" + execProtectionMode()
-        + ", extFileReference=" + extFileReference()
-        + ", characterType=" + characterType()
-        + ", platform=" + platform()
-        + ", interimFldSize=" + interimFldSize()
-        + ", routineKind=" + routineKind()
-        + ", parameterUDTIds=" + parameterUDTIds()
-        + ", maxOutParameters=" + maxOutParameters()
-        + ", glopSetDatabaseName=" + glopSetDatabaseName()
-        + ", glopSetMemberName=" + glopSetMemberName()
-        + ", refQueryband=" + refQueryband()
-        + ", execMapName=" + execMapName()
-        + ", execMapColocName=" + execMapColocName()
-        + "}" + lineSeparator();
+        + "databaseName="
+        + databaseName()
+        + ", functionName="
+        + functionName()
+        + ", specificName="
+        + specificName()
+        + ", functionId="
+        + functionId()
+        + ", numParameters="
+        + numParameters()
+        + ", parameterDataTypes="
+        + parameterDataTypes()
+        + ", functionType="
+        + functionType()
+        + ", externalName="
+        + externalName()
+        + ", srcFileLanguage="
+        + srcFileLanguage()
+        + ", noSQLDataAccess="
+        + noSQLDataAccess()
+        + ", parameterStyle="
+        + parameterStyle()
+        + ", deterministicOpt="
+        + deterministicOpt()
+        + ", nullCall="
+        + nullCall()
+        + ", prepareCount="
+        + prepareCount()
+        + ", execProtectionMode="
+        + execProtectionMode()
+        + ", extFileReference="
+        + extFileReference()
+        + ", characterType="
+        + characterType()
+        + ", platform="
+        + platform()
+        + ", interimFldSize="
+        + interimFldSize()
+        + ", routineKind="
+        + routineKind()
+        + ", parameterUDTIds="
+        + parameterUDTIds()
+        + ", maxOutParameters="
+        + maxOutParameters()
+        + ", glopSetDatabaseName="
+        + glopSetDatabaseName()
+        + ", glopSetMemberName="
+        + glopSetMemberName()
+        + ", refQueryband="
+        + refQueryband()
+        + ", execMapName="
+        + execMapName()
+        + ", execMapColocName="
+        + execMapColocName()
+        + "}"
+        + lineSeparator();
   }
 
-  public static FunctioninfoRow create(String databaseName, String functionName,
-      String specificName, byte[] functionId, int numParameters, String parameterDataTypes,
+  public static FunctioninfoRow create(
+      String databaseName,
+      String functionName,
+      String specificName,
+      byte[] functionId,
+      int numParameters,
+      String parameterDataTypes,
       String functionType,
-      String externalName, String srcFileLanguage, String noSQLDataAccess, String parameterStyle,
-      String deterministicOpt, String nullCall, String prepareCount, String execProtectionMode,
-      String extFileReference, int characterType, String platform, int interimFldSize,
-      String routineKind, byte[] parameterUDTIds, int maxOutParameters, String glopSetDatabaseName,
-      String glopSetMemberName, String refQueryband, String execMapName, String execMapColocName) {
-    return new AutoValue_FunctioninfoRow(databaseName, functionName, specificName, functionId,
-        numParameters, parameterDataTypes, functionType, externalName, srcFileLanguage,
-        noSQLDataAccess, parameterStyle, deterministicOpt, nullCall, prepareCount,
-        execProtectionMode, extFileReference, characterType, platform, interimFldSize, routineKind,
-        parameterUDTIds, maxOutParameters, glopSetDatabaseName, glopSetMemberName, refQueryband,
-        execMapName, execMapColocName);
+      String externalName,
+      String srcFileLanguage,
+      String noSQLDataAccess,
+      String parameterStyle,
+      String deterministicOpt,
+      String nullCall,
+      String prepareCount,
+      String execProtectionMode,
+      String extFileReference,
+      int characterType,
+      String platform,
+      int interimFldSize,
+      String routineKind,
+      byte[] parameterUDTIds,
+      int maxOutParameters,
+      String glopSetDatabaseName,
+      String glopSetMemberName,
+      String refQueryband,
+      String execMapName,
+      String execMapColocName) {
+    return new AutoValue_FunctioninfoRow(
+        databaseName,
+        functionName,
+        specificName,
+        functionId,
+        numParameters,
+        parameterDataTypes,
+        functionType,
+        externalName,
+        srcFileLanguage,
+        noSQLDataAccess,
+        parameterStyle,
+        deterministicOpt,
+        nullCall,
+        prepareCount,
+        execProtectionMode,
+        extFileReference,
+        characterType,
+        platform,
+        interimFldSize,
+        routineKind,
+        parameterUDTIds,
+        maxOutParameters,
+        glopSetDatabaseName,
+        glopSetMemberName,
+        refQueryband,
+        execMapName,
+        execMapColocName);
   }
 }

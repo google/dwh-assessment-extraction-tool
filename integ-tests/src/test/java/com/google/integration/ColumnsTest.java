@@ -40,8 +40,8 @@ import org.junit.Test;
 public class ColumnsTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "columns.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "columns.avro";
+  private static final String SQL_PATH = SQL_REQUESTS_BASE_PATH + "columns.sql";
+  private static final String AVRO_FILE_PATH = ET_OUTPUT_PATH + "columns.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -54,43 +54,45 @@ public class ColumnsTest extends TestBase {
     LinkedHashMultiset<ColumnRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
-        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME, DB_NAME))) {
+        connection.prepareStatement(format(SqlHelper.getSql(SQL_PATH), DB_NAME, DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        ColumnRow dbRow = ColumnRow.create(
-            getStringNotNull(rs, "DataBaseName"),
-            getStringNotNull(rs, "TableName"),
-            getStringNotNull(rs, "ColumnName"),
-            getStringNotNull(rs, "ColumnFormat"),
-            getStringNotNull(rs, "ColumnTitle"),
-            getIntNotNull(rs, "ColumnLength"),
-            getStringNotNull(rs, "ColumnType"),
-            getStringNotNull(rs, "DefaultValue"),
-            getStringNotNull(rs, "ColumnConstraint"),
-            getIntNotNull(rs, "ConstraintCount"),
-            getStringNotNull(rs, "Nullable"));
+        ColumnRow dbRow =
+            ColumnRow.create(
+                getStringNotNull(rs, "DataBaseName"),
+                getStringNotNull(rs, "TableName"),
+                getStringNotNull(rs, "ColumnName"),
+                getStringNotNull(rs, "ColumnFormat"),
+                getStringNotNull(rs, "ColumnTitle"),
+                getIntNotNull(rs, "ColumnLength"),
+                getStringNotNull(rs, "ColumnType"),
+                getStringNotNull(rs, "DefaultValue"),
+                getStringNotNull(rs, "ColumnConstraint"),
+                getIntNotNull(rs, "ConstraintCount"),
+                getStringNotNull(rs, "Nullable"));
         dbList.add(dbRow);
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(AVRO_FILE_PATH);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      ColumnRow avroRow = ColumnRow.create(
-          getStringNotNull(record, "DataBaseName"),
-          getStringNotNull(record, "TableName"),
-          getStringNotNull(record, "ColumnName"),
-          getStringNotNull(record, "ColumnFormat"),
-          getStringNotNull(record, "ColumnTitle"),
-          getIntNotNull(record, "ColumnLength"),
-          getStringNotNull(record, "ColumnType"),
-          getStringNotNull(record, "DefaultValue"),
-          getStringNotNull(record, "ColumnConstraint"),
-          getIntNotNull(record, "ConstraintCount"),
-          getStringNotNull(record, "Nullable"));
+      ColumnRow avroRow =
+          ColumnRow.create(
+              getStringNotNull(record, "DataBaseName"),
+              getStringNotNull(record, "TableName"),
+              getStringNotNull(record, "ColumnName"),
+              getStringNotNull(record, "ColumnFormat"),
+              getStringNotNull(record, "ColumnTitle"),
+              getIntNotNull(record, "ColumnLength"),
+              getStringNotNull(record, "ColumnType"),
+              getStringNotNull(record, "DefaultValue"),
+              getStringNotNull(record, "ColumnConstraint"),
+              getIntNotNull(record, "ConstraintCount"),
+              getStringNotNull(record, "Nullable"));
       avroList.add(avroRow);
     }
 
@@ -98,6 +100,6 @@ public class ColumnsTest extends TestBase {
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
-    assertListsEqual(dbList, avroList, sqlPath, avroFilePath);
+    assertListsEqual(dbList, avroList, SQL_PATH, AVRO_FILE_PATH);
   }
 }

@@ -42,8 +42,8 @@ import org.junit.Test;
 public class StatsTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "stats.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "stats.avro";
+  private static final String SQL_PATH = SQL_REQUESTS_BASE_PATH + "stats.sql";
+  private static final String AVRO_FILE_PATH = ET_OUTPUT_PATH + "stats.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -56,33 +56,35 @@ public class StatsTest extends TestBase {
     LinkedHashMultiset<StatsRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
-        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
+        connection.prepareStatement(format(SqlHelper.getSql(SQL_PATH), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        StatsRow dbRow = StatsRow.create(
-            getStringNotNull(rs, "DatabaseName"),
-            getStringNotNull(rs, "TableName"),
-            getStringNotNull(rs, "ColumnName"),
-            getDoubleNotNull(rs, "RowCount"),
-            getDoubleNotNull(rs, "UniqueValueCount"),
-            getTimestampNotNull(rs, "CreateTimeStamp"));
+        StatsRow dbRow =
+            StatsRow.create(
+                getStringNotNull(rs, "DatabaseName"),
+                getStringNotNull(rs, "TableName"),
+                getStringNotNull(rs, "ColumnName"),
+                getDoubleNotNull(rs, "RowCount"),
+                getDoubleNotNull(rs, "UniqueValueCount"),
+                getTimestampNotNull(rs, "CreateTimeStamp"));
         dbList.add(dbRow);
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(AVRO_FILE_PATH);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      StatsRow avroRow = StatsRow.create(
-          getStringNotNull(record, "DatabaseName"),
-          getStringNotNull(record, "TableName"),
-          getStringNotNull(record, "ColumnName"),
-          getDoubleNotNull(record, "RowCount"),
-          getDoubleNotNull(record, "UniqueValueCount"),
-          getLongNotNull(record, "CreateTimeStamp"));
+      StatsRow avroRow =
+          StatsRow.create(
+              getStringNotNull(record, "DatabaseName"),
+              getStringNotNull(record, "TableName"),
+              getStringNotNull(record, "ColumnName"),
+              getDoubleNotNull(record, "RowCount"),
+              getDoubleNotNull(record, "UniqueValueCount"),
+              getLongNotNull(record, "CreateTimeStamp"));
       avroList.add(avroRow);
     }
 
@@ -90,6 +92,6 @@ public class StatsTest extends TestBase {
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
-    assertListsEqual(dbList, avroList, sqlPath, avroFilePath);
+    assertListsEqual(dbList, avroList, SQL_PATH, AVRO_FILE_PATH);
   }
 }

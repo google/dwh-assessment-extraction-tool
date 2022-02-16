@@ -42,8 +42,8 @@ import org.junit.Test;
 public class AllRiParentsTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "all_ri_parents.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "all_ri_parents.avro";
+  private static final String SQL_PATH = SQL_REQUESTS_BASE_PATH + "all_ri_parents.sql";
+  private static final String AVRO_FILE_PATH = ET_OUTPUT_PATH + "all_ri_parents.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -56,43 +56,45 @@ public class AllRiParentsTest extends TestBase {
     LinkedHashMultiset<AllRiChildrenRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
-        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
+        connection.prepareStatement(format(SqlHelper.getSql(SQL_PATH), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        AllRiChildrenRow dbRow = AllRiChildrenRow.create(
-            getIntNotNull(rs, "IndexID"),
-            getStringNotNull(rs, "IndexName"),
-            getStringNotNull(rs, "ChildDB"),
-            getStringNotNull(rs, "ChildTable"),
-            getStringNotNull(rs, "ChildKeyColumn"),
-            getStringNotNull(rs, "ParentDB"),
-            getStringNotNull(rs, "ParentTable"),
-            getStringNotNull(rs, "ParentKeyColumn"),
-            getStringNotNull(rs, "InconsistencyFlag"),
-            getStringNotNull(rs, "CreatorName"),
-            getTimestampNotNull(rs, "CreateTimeStamp"));
+        AllRiChildrenRow dbRow =
+            AllRiChildrenRow.create(
+                getIntNotNull(rs, "IndexID"),
+                getStringNotNull(rs, "IndexName"),
+                getStringNotNull(rs, "ChildDB"),
+                getStringNotNull(rs, "ChildTable"),
+                getStringNotNull(rs, "ChildKeyColumn"),
+                getStringNotNull(rs, "ParentDB"),
+                getStringNotNull(rs, "ParentTable"),
+                getStringNotNull(rs, "ParentKeyColumn"),
+                getStringNotNull(rs, "InconsistencyFlag"),
+                getStringNotNull(rs, "CreatorName"),
+                getTimestampNotNull(rs, "CreateTimeStamp"));
         dbList.add(dbRow);
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(AVRO_FILE_PATH);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      AllRiChildrenRow avroRow = AllRiChildrenRow.create(
-          getIntNotNull(record, "IndexID"),
-          getStringNotNull(record, "IndexName"),
-          getStringNotNull(record, "ChildDB"),
-          getStringNotNull(record, "ChildTable"),
-          getStringNotNull(record, "ChildKeyColumn"),
-          getStringNotNull(record, "ParentDB"),
-          getStringNotNull(record, "ParentTable"),
-          getStringNotNull(record, "ParentKeyColumn"),
-          getStringNotNull(record, "InconsistencyFlag"),
-          getStringNotNull(record, "CreatorName"),
-          getLongNotNull(record, "CreateTimeStamp"));
+      AllRiChildrenRow avroRow =
+          AllRiChildrenRow.create(
+              getIntNotNull(record, "IndexID"),
+              getStringNotNull(record, "IndexName"),
+              getStringNotNull(record, "ChildDB"),
+              getStringNotNull(record, "ChildTable"),
+              getStringNotNull(record, "ChildKeyColumn"),
+              getStringNotNull(record, "ParentDB"),
+              getStringNotNull(record, "ParentTable"),
+              getStringNotNull(record, "ParentKeyColumn"),
+              getStringNotNull(record, "InconsistencyFlag"),
+              getStringNotNull(record, "CreatorName"),
+              getLongNotNull(record, "CreateTimeStamp"));
       avroList.add(avroRow);
     }
 
@@ -100,6 +102,6 @@ public class AllRiParentsTest extends TestBase {
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
-    assertListsEqual(dbList, avroList, sqlPath, avroFilePath);
+    assertListsEqual(dbList, avroList, SQL_PATH, AVRO_FILE_PATH);
   }
 }

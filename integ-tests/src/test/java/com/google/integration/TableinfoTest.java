@@ -42,8 +42,8 @@ import org.junit.Test;
 public class TableinfoTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "tableinfo.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "tableinfo.avro";
+  private static final String SQL_PATH = SQL_REQUESTS_BASE_PATH + "tableinfo.sql";
+  private static final String AVRO_FILE_PATH = ET_OUTPUT_PATH + "tableinfo.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -56,45 +56,47 @@ public class TableinfoTest extends TestBase {
     LinkedHashMultiset<TableinfoRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
-        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
+        connection.prepareStatement(format(SqlHelper.getSql(SQL_PATH), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        TableinfoRow dbRow = TableinfoRow.create(
-            getStringNotNull(rs, "DataBaseName"),
-            getStringNotNull(rs, "TableName"),
-            getIntNotNull(rs, "AccessCount"),
-            getTimestampNotNull(rs, "LastAccessTimeStamp"),
-            getTimestampNotNull(rs, "LastAlterTimeStamp"),
-            getStringNotNull(rs, "TableKind"),
-            getStringNotNull(rs, "CreatorName"),
-            getTimestampNotNull(rs, "CreateTimeStamp"),
-            getIntNotNull(rs, "PrimaryKeyIndexId"),
-            getIntNotNull(rs, "ParentCount"),
-            getStringNotNull(rs, "ChildCount"),
-            getStringNotNull(rs, "CommitOpt"));
+        TableinfoRow dbRow =
+            TableinfoRow.create(
+                getStringNotNull(rs, "DataBaseName"),
+                getStringNotNull(rs, "TableName"),
+                getIntNotNull(rs, "AccessCount"),
+                getTimestampNotNull(rs, "LastAccessTimeStamp"),
+                getTimestampNotNull(rs, "LastAlterTimeStamp"),
+                getStringNotNull(rs, "TableKind"),
+                getStringNotNull(rs, "CreatorName"),
+                getTimestampNotNull(rs, "CreateTimeStamp"),
+                getIntNotNull(rs, "PrimaryKeyIndexId"),
+                getIntNotNull(rs, "ParentCount"),
+                getStringNotNull(rs, "ChildCount"),
+                getStringNotNull(rs, "CommitOpt"));
         dbList.add(dbRow);
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(AVRO_FILE_PATH);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      TableinfoRow avroRow = TableinfoRow.create(
-          getStringNotNull(record, "DataBaseName"),
-          getStringNotNull(record, "TableName"),
-          getIntNotNull(record, "AccessCount"),
-          getLongNotNull(record, "LastAccessTimeStamp"),
-          getLongNotNull(record, "LastAlterTimeStamp"),
-          getStringNotNull(record, "TableKind"),
-          getStringNotNull(record, "CreatorName"),
-          getLongNotNull(record, "CreateTimeStamp"),
-          getIntNotNull(record, "PrimaryKeyIndexId"),
-          getIntNotNull(record, "ParentCount"),
-          getStringNotNull(record, "ChildCount"),
-          getStringNotNull(record, "CommitOpt"));
+      TableinfoRow avroRow =
+          TableinfoRow.create(
+              getStringNotNull(record, "DataBaseName"),
+              getStringNotNull(record, "TableName"),
+              getIntNotNull(record, "AccessCount"),
+              getLongNotNull(record, "LastAccessTimeStamp"),
+              getLongNotNull(record, "LastAlterTimeStamp"),
+              getStringNotNull(record, "TableKind"),
+              getStringNotNull(record, "CreatorName"),
+              getLongNotNull(record, "CreateTimeStamp"),
+              getIntNotNull(record, "PrimaryKeyIndexId"),
+              getIntNotNull(record, "ParentCount"),
+              getStringNotNull(record, "ChildCount"),
+              getStringNotNull(record, "CommitOpt"));
       avroList.add(avroRow);
     }
 
@@ -102,6 +104,6 @@ public class TableinfoTest extends TestBase {
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
-    assertListsEqual(dbList, avroList, sqlPath, avroFilePath);
+    assertListsEqual(dbList, avroList, SQL_PATH, AVRO_FILE_PATH);
   }
 }

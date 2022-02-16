@@ -20,34 +20,49 @@ import static java.lang.System.lineSeparator;
 
 import com.google.auto.value.AutoValue;
 
-/**
- * POJO class for serialization data from DB and Avro files.
- */
+/** POJO class for serialization data from DB and Avro files. */
 @AutoValue
 public abstract class StatsRow {
 
   public abstract String databaseName();
+
   public abstract String tableName();
+
   public abstract String columnName();
+
   public abstract double rowCount();
+
   public abstract double uniqueValueCount();
+
   public abstract long createTimeStamp();
 
   @Override
   public String toString() {
     return "{"
-        + "DatabaseName=" + databaseName()
-        + ", TableName=" + tableName()
-        + ", ColumnName=" + columnName()
-        + ", RowCount=" + rowCount()
-        + ", UniqueValueCount=" + uniqueValueCount()
-        + ", CreateTimeStamp=" + createTimeStamp()
-        + "}" + lineSeparator();
+        + "DatabaseName="
+        + databaseName()
+        + ", TableName="
+        + tableName()
+        + ", ColumnName="
+        + columnName()
+        + ", RowCount="
+        + rowCount()
+        + ", UniqueValueCount="
+        + uniqueValueCount()
+        + ", CreateTimeStamp="
+        + createTimeStamp()
+        + "}"
+        + lineSeparator();
   }
 
-  public static StatsRow create(String databaseName, String tableName, String columnName,
-      double rowCount, double uniqueValueCount, long createTimeStamp) {
-    return new AutoValue_StatsRow(databaseName, tableName, columnName, rowCount, uniqueValueCount,
-        createTimeStamp);
+  public static StatsRow create(
+      String databaseName,
+      String tableName,
+      String columnName,
+      double rowCount,
+      double uniqueValueCount,
+      long createTimeStamp) {
+    return new AutoValue_StatsRow(
+        databaseName, tableName, columnName, rowCount, uniqueValueCount, createTimeStamp);
   }
 }

@@ -19,9 +19,7 @@ import static java.lang.System.lineSeparator;
 
 import com.google.auto.value.AutoValue;
 
-/**
- * POJO class for serialization data from DB and Avro files.
- */
+/** POJO class for serialization data from DB and Avro files. */
 @AutoValue
 public abstract class IndicesRow {
 
@@ -46,22 +44,47 @@ public abstract class IndicesRow {
   @Override
   public String toString() {
     return "{"
-        + "dataBaseName=" + dataBaseName()
-        + ", tableName=" + tableName()
-        + ", indexNumber=" + indexNumber()
-        + ", indexType=" + indexType()
-        + ", indexName=" + indexName()
-        + ", columnName=" + columnName()
-        + ", columnPosition=" + columnPosition()
-        + ", accessCount=" + accessCount()
-        + ", uniqueFlag=" + uniqueFlag()
-        + "}" + lineSeparator();
+        + "dataBaseName="
+        + dataBaseName()
+        + ", tableName="
+        + tableName()
+        + ", indexNumber="
+        + indexNumber()
+        + ", indexType="
+        + indexType()
+        + ", indexName="
+        + indexName()
+        + ", columnName="
+        + columnName()
+        + ", columnPosition="
+        + columnPosition()
+        + ", accessCount="
+        + accessCount()
+        + ", uniqueFlag="
+        + uniqueFlag()
+        + "}"
+        + lineSeparator();
   }
 
-  public static IndicesRow create(String dataBaseName, String tableName, int indexNumber,
-      String indexType, String indexName, String columnName, int columnPosition, int accessCount,
+  public static IndicesRow create(
+      String dataBaseName,
+      String tableName,
+      int indexNumber,
+      String indexType,
+      String indexName,
+      String columnName,
+      int columnPosition,
+      int accessCount,
       String uniqueFlag) {
-    return new AutoValue_IndicesRow(dataBaseName, tableName, indexNumber, indexType, indexName,
-        columnName, columnPosition, accessCount, uniqueFlag);
+    return new AutoValue_IndicesRow(
+        dataBaseName,
+        tableName,
+        indexNumber,
+        indexType,
+        indexName,
+        columnName,
+        columnPosition,
+        accessCount,
+        uniqueFlag);
   }
 }

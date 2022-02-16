@@ -40,8 +40,8 @@ import org.junit.Test;
 public class TablesizeTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "tablesize.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "tablesize.avro";
+  private static final String SQL_PATH = SQL_REQUESTS_BASE_PATH + "tablesize.sql";
+  private static final String AVRO_FILE_PATH = ET_OUTPUT_PATH + "tablesize.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -54,29 +54,31 @@ public class TablesizeTest extends TestBase {
     LinkedHashMultiset<TablesizeRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
-        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
+        connection.prepareStatement(format(SqlHelper.getSql(SQL_PATH), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        TablesizeRow dbRow = TablesizeRow.create(
-            getStringNotNull(rs, "DataBaseName"),
-            getStringNotNull(rs, "TableName"),
-            getLongNotNull(rs, "CurrentPerm"),
-            getLongNotNull(rs, "PeakPerm"));
+        TablesizeRow dbRow =
+            TablesizeRow.create(
+                getStringNotNull(rs, "DataBaseName"),
+                getStringNotNull(rs, "TableName"),
+                getLongNotNull(rs, "CurrentPerm"),
+                getLongNotNull(rs, "PeakPerm"));
         dbList.add(dbRow);
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(AVRO_FILE_PATH);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      TablesizeRow avroRow = TablesizeRow.create(
-          getStringNotNull(record, "DataBaseName"),
-          getStringNotNull(record, "TableName"),
-          getLongNotNull(record, "CurrentPerm"),
-          getLongNotNull(record, "PeakPerm"));
+      TablesizeRow avroRow =
+          TablesizeRow.create(
+              getStringNotNull(record, "DataBaseName"),
+              getStringNotNull(record, "TableName"),
+              getLongNotNull(record, "CurrentPerm"),
+              getLongNotNull(record, "PeakPerm"));
       avroList.add(avroRow);
     }
 
@@ -84,6 +86,6 @@ public class TablesizeTest extends TestBase {
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
-    assertListsEqual(dbList, avroList, sqlPath, avroFilePath);
+    assertListsEqual(dbList, avroList, SQL_PATH, AVRO_FILE_PATH);
   }
 }

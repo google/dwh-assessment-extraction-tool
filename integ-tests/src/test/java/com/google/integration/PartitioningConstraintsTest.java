@@ -43,8 +43,8 @@ import org.junit.Test;
 public class PartitioningConstraintsTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "partitioning_constraints.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "partitioning_constraints.avro";
+  private static final String SQL_PATH = SQL_REQUESTS_BASE_PATH + "partitioning_constraints.sql";
+  private static final String AVRO_FILE_PATH = ET_OUTPUT_PATH + "partitioning_constraints.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -57,57 +57,59 @@ public class PartitioningConstraintsTest extends TestBase {
     LinkedHashMultiset<PartitioningConstraintsRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
-        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
+        connection.prepareStatement(format(SqlHelper.getSql(SQL_PATH), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        PartitioningConstraintsRow dbRow = PartitioningConstraintsRow.create(
-            getStringNotNull(rs, "DatabaseName"),
-            getStringNotNull(rs, "TableName"),
-            getStringNotNull(rs, "IndexName"),
-            getIntNotNull(rs, "IndexNumber"),
-            getStringNotNull(rs, "ConstraintType"),
-            getStringNotNull(rs, "ConstraintText"),
-            getStringNotNull(rs, "ConstraintCollation"),
-            getStringNotNull(rs, "CollationName"),
-            getStringNotNull(rs, "CreatorName"),
-            getTimestampNotNull(rs, "CreateTimeStamp"),
-            getStringNotNull(rs, "CharSetID"),
-            getStringNotNull(rs, "SessionMode"),
-            getTimestampNotNull(rs, "ResolvedCurrent_Date"),
-            getLongNotNull(rs, "ResolvedCurrent_TimeStamp"),
-            getLongNotNull(rs, "DefinedCombinedPartitions"),
-            getLongNotNull(rs, "MaxCombinedPartitions"),
-            getIntNotNull(rs, "PartitioningLevels"),
-            getIntNotNull(rs, "ColumnPartitioningLevel"));
+        PartitioningConstraintsRow dbRow =
+            PartitioningConstraintsRow.create(
+                getStringNotNull(rs, "DatabaseName"),
+                getStringNotNull(rs, "TableName"),
+                getStringNotNull(rs, "IndexName"),
+                getIntNotNull(rs, "IndexNumber"),
+                getStringNotNull(rs, "ConstraintType"),
+                getStringNotNull(rs, "ConstraintText"),
+                getStringNotNull(rs, "ConstraintCollation"),
+                getStringNotNull(rs, "CollationName"),
+                getStringNotNull(rs, "CreatorName"),
+                getTimestampNotNull(rs, "CreateTimeStamp"),
+                getStringNotNull(rs, "CharSetID"),
+                getStringNotNull(rs, "SessionMode"),
+                getTimestampNotNull(rs, "ResolvedCurrent_Date"),
+                getLongNotNull(rs, "ResolvedCurrent_TimeStamp"),
+                getLongNotNull(rs, "DefinedCombinedPartitions"),
+                getLongNotNull(rs, "MaxCombinedPartitions"),
+                getIntNotNull(rs, "PartitioningLevels"),
+                getIntNotNull(rs, "ColumnPartitioningLevel"));
         dbList.add(dbRow);
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(AVRO_FILE_PATH);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      PartitioningConstraintsRow avroRow = PartitioningConstraintsRow.create(
-          getStringNotNull(record, "DatabaseName"),
-          getStringNotNull(record, "TableName"),
-          getStringNotNull(record, "IndexName"),
-          getIntNotNull(record, "IndexNumber"),
-          getStringNotNull(record, "ConstraintType"),
-          getStringNotNull(record, "ConstraintText"),
-          getStringNotNull(record, "ConstraintCollation"),
-          getStringNotNull(record, "CollationName"),
-          getStringNotNull(record, "CreatorName"),
-          getLongNotNull(record, "CreateTimeStamp"),
-          getStringNotNull(record, "CharSetID"),
-          getStringNotNull(record, "SessionMode"),
-          getLongNotNull(record, "ResolvedCurrent_Date"),
-          getLongNotNull(record, "ResolvedCurrent_TimeStamp"),
-          getLongNotNull(record, "DefinedCombinedPartitions"),
-          getLongNotNull(record, "MaxCombinedPartitions"),
-          getIntNotNull(record, "PartitioningLevels"),
-          getIntNotNull(record, "ColumnPartitioningLevel"));
+      PartitioningConstraintsRow avroRow =
+          PartitioningConstraintsRow.create(
+              getStringNotNull(record, "DatabaseName"),
+              getStringNotNull(record, "TableName"),
+              getStringNotNull(record, "IndexName"),
+              getIntNotNull(record, "IndexNumber"),
+              getStringNotNull(record, "ConstraintType"),
+              getStringNotNull(record, "ConstraintText"),
+              getStringNotNull(record, "ConstraintCollation"),
+              getStringNotNull(record, "CollationName"),
+              getStringNotNull(record, "CreatorName"),
+              getLongNotNull(record, "CreateTimeStamp"),
+              getStringNotNull(record, "CharSetID"),
+              getStringNotNull(record, "SessionMode"),
+              getLongNotNull(record, "ResolvedCurrent_Date"),
+              getLongNotNull(record, "ResolvedCurrent_TimeStamp"),
+              getLongNotNull(record, "DefinedCombinedPartitions"),
+              getLongNotNull(record, "MaxCombinedPartitions"),
+              getIntNotNull(record, "PartitioningLevels"),
+              getIntNotNull(record, "ColumnPartitioningLevel"));
       avroList.add(avroRow);
     }
 
@@ -115,6 +117,6 @@ public class PartitioningConstraintsTest extends TestBase {
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
-    assertListsEqual(dbList, avroList, sqlPath, avroFilePath);
+    assertListsEqual(dbList, avroList, SQL_PATH, AVRO_FILE_PATH);
   }
 }

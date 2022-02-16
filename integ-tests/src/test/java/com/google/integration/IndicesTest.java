@@ -40,8 +40,9 @@ import org.junit.Test;
 public class IndicesTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "indices.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "indices.avro";
+  private static final String SQL_PATH = SQL_REQUESTS_BASE_PATH + "indices.sql";
+  private static final String AVRO_FILE_PATH = ET_OUTPUT_PATH + "indices.avro";
+
   @BeforeClass
   public static void beforeClass() throws SQLException {
     connection = DriverManager.getConnection(URL_DB, USERNAME_DB, PASSWORD_DB);
@@ -53,39 +54,41 @@ public class IndicesTest extends TestBase {
     LinkedHashMultiset<IndicesRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
-        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME, DB_NAME))) {
+        connection.prepareStatement(format(SqlHelper.getSql(SQL_PATH), DB_NAME, DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        IndicesRow dbRow = IndicesRow.create(
-            getStringNotNull(rs, "DataBaseName"),
-            getStringNotNull(rs, "TableName"),
-            getIntNotNull(rs, "IndexNumber"),
-            getStringNotNull(rs, "IndexType"),
-            getStringNotNull(rs, "IndexName"),
-            getStringNotNull(rs, "ColumnName"),
-            getIntNotNull(rs, "ColumnPosition"),
-            getIntNotNull(rs, "AccessCount"),
-            getStringNotNull(rs, "UniqueFlag"));
+        IndicesRow dbRow =
+            IndicesRow.create(
+                getStringNotNull(rs, "DataBaseName"),
+                getStringNotNull(rs, "TableName"),
+                getIntNotNull(rs, "IndexNumber"),
+                getStringNotNull(rs, "IndexType"),
+                getStringNotNull(rs, "IndexName"),
+                getStringNotNull(rs, "ColumnName"),
+                getIntNotNull(rs, "ColumnPosition"),
+                getIntNotNull(rs, "AccessCount"),
+                getStringNotNull(rs, "UniqueFlag"));
         dbList.add(dbRow);
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(AVRO_FILE_PATH);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      IndicesRow avroRow = IndicesRow.create(
-          getStringNotNull(record, "DataBaseName"),
-          getStringNotNull(record, "TableName"),
-          getIntNotNull(record, "IndexNumber"),
-          getStringNotNull(record, "IndexType"),
-          getStringNotNull(record, "IndexName"),
-          getStringNotNull(record, "ColumnName"),
-          getIntNotNull(record, "ColumnPosition"),
-          getIntNotNull(record, "AccessCount"),
-          getStringNotNull(record, "UniqueFlag"));
+      IndicesRow avroRow =
+          IndicesRow.create(
+              getStringNotNull(record, "DataBaseName"),
+              getStringNotNull(record, "TableName"),
+              getIntNotNull(record, "IndexNumber"),
+              getStringNotNull(record, "IndexType"),
+              getStringNotNull(record, "IndexName"),
+              getStringNotNull(record, "ColumnName"),
+              getIntNotNull(record, "ColumnPosition"),
+              getIntNotNull(record, "AccessCount"),
+              getStringNotNull(record, "UniqueFlag"));
       avroList.add(avroRow);
     }
 
@@ -93,6 +96,6 @@ public class IndicesTest extends TestBase {
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
-    assertListsEqual(dbList, avroList, sqlPath, avroFilePath);
+    assertListsEqual(dbList, avroList, SQL_PATH, AVRO_FILE_PATH);
   }
 }

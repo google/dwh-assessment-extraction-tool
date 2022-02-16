@@ -19,9 +19,7 @@ import static java.lang.System.lineSeparator;
 
 import com.google.auto.value.AutoValue;
 
-/**
- * POJO class for serialization data from DB and Avro files.
- */
+/** POJO class for serialization data from DB and Avro files. */
 @AutoValue
 public abstract class TablesizeRow {
 
@@ -36,15 +34,20 @@ public abstract class TablesizeRow {
   @Override
   public String toString() {
     return "{"
-        + "DataBaseName=" + dataBaseName()
-        + ", TableName=" + tableName()
-        + ", CurrentPerm=" + currentPerm()
-        + ", PeakPerm=" + peakPerm()
-        + "}" + lineSeparator();
+        + "DataBaseName="
+        + dataBaseName()
+        + ", TableName="
+        + tableName()
+        + ", CurrentPerm="
+        + currentPerm()
+        + ", PeakPerm="
+        + peakPerm()
+        + "}"
+        + lineSeparator();
   }
 
-  public static TablesizeRow create(String dataBaseName, String tableName, long currentPerm,
-      long peakPerm) {
+  public static TablesizeRow create(
+      String dataBaseName, String tableName, long currentPerm, long peakPerm) {
     return new AutoValue_TablesizeRow(dataBaseName, tableName, currentPerm, peakPerm);
   }
 }

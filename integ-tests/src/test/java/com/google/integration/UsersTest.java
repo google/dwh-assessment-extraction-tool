@@ -40,8 +40,8 @@ import org.junit.Test;
 public class UsersTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "users.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "users.avro";
+  private static final String SQL_PATH = SQL_REQUESTS_BASE_PATH + "users.sql";
+  private static final String AVRO_FILE_PATH = ET_OUTPUT_PATH + "users.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -54,29 +54,31 @@ public class UsersTest extends TestBase {
     LinkedHashMultiset<UserRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
-        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
+        connection.prepareStatement(format(SqlHelper.getSql(SQL_PATH), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        UserRow dbRow = UserRow.create(
-            getStringNotNull(rs, "UserName"),
-            getStringNotNull(rs, "CreatorName"),
-            getTimestampNotNull(rs, "CreateTimeStamp"),
-            getTimestampNotNull(rs, "LastAccessTimeStamp"));
+        UserRow dbRow =
+            UserRow.create(
+                getStringNotNull(rs, "UserName"),
+                getStringNotNull(rs, "CreatorName"),
+                getTimestampNotNull(rs, "CreateTimeStamp"),
+                getTimestampNotNull(rs, "LastAccessTimeStamp"));
         dbList.add(dbRow);
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(AVRO_FILE_PATH);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      UserRow avroRow = UserRow.create(
-          getStringNotNull(record, "UserName"),
-          getStringNotNull(record, "CreatorName"),
-          getLongNotNull(record, "CreateTimeStamp"),
-          getLongNotNull(record, "LastAccessTimeStamp"));
+      UserRow avroRow =
+          UserRow.create(
+              getStringNotNull(record, "UserName"),
+              getStringNotNull(record, "CreatorName"),
+              getLongNotNull(record, "CreateTimeStamp"),
+              getLongNotNull(record, "LastAccessTimeStamp"));
       avroList.add(avroRow);
     }
 
@@ -84,6 +86,6 @@ public class UsersTest extends TestBase {
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
-    assertListsEqual(dbList, avroList, sqlPath, avroFilePath);
+    assertListsEqual(dbList, avroList, SQL_PATH, AVRO_FILE_PATH);
   }
 }

@@ -40,8 +40,8 @@ import org.junit.Test;
 public class RolesTest extends TestBase {
 
   private static Connection connection;
-  private static final String sqlPath = SQL_PATH + "roles.sql";
-  private static final String avroFilePath = ET_OUTPUT_PATH + "roles.avro";
+  private static final String SQL_PATH = SQL_REQUESTS_BASE_PATH + "roles.sql";
+  private static final String AVRO_FILE_PATH = ET_OUTPUT_PATH + "roles.avro";
 
   @BeforeClass
   public static void beforeClass() throws SQLException {
@@ -54,33 +54,35 @@ public class RolesTest extends TestBase {
     LinkedHashMultiset<RoleRow> avroList = LinkedHashMultiset.create();
 
     try (PreparedStatement preparedStatement =
-        connection.prepareStatement(format(SqlHelper.getSql(sqlPath), DB_NAME))) {
+        connection.prepareStatement(format(SqlHelper.getSql(SQL_PATH), DB_NAME))) {
       ResultSet rs = preparedStatement.executeQuery();
 
       while (rs.next()) {
-        RoleRow dbRow = RoleRow.create(
-            getStringNotNull(rs, "RoleName"),
-            getStringNotNull(rs, "Grantor"),
-            getStringNotNull(rs, "Grantee"),
-            getTimestampNotNull(rs, "WhenGranted"),
-            getStringNotNull(rs, "DefaultRole"),
-            getStringNotNull(rs, "WithAdmin"));
+        RoleRow dbRow =
+            RoleRow.create(
+                getStringNotNull(rs, "RoleName"),
+                getStringNotNull(rs, "Grantor"),
+                getStringNotNull(rs, "Grantee"),
+                getTimestampNotNull(rs, "WhenGranted"),
+                getStringNotNull(rs, "DefaultRole"),
+                getStringNotNull(rs, "WithAdmin"));
         dbList.add(dbRow);
       }
     }
 
-    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(avroFilePath);
+    DataFileReader<GenericRecord> dataFileReader = extractAvroDataFromFile(AVRO_FILE_PATH);
 
     while (dataFileReader.hasNext()) {
       GenericRecord record = dataFileReader.next();
 
-      RoleRow avroRow = RoleRow.create(
-          getStringNotNull(record, "RoleName"),
-          getStringNotNull(record, "Grantor"),
-          getStringNotNull(record, "Grantee"),
-          getLongNotNull(record, "WhenGranted"),
-          getStringNotNull(record, "DefaultRole"),
-          getStringNotNull(record, "WithAdmin"));
+      RoleRow avroRow =
+          RoleRow.create(
+              getStringNotNull(record, "RoleName"),
+              getStringNotNull(record, "Grantor"),
+              getStringNotNull(record, "Grantee"),
+              getLongNotNull(record, "WhenGranted"),
+              getStringNotNull(record, "DefaultRole"),
+              getStringNotNull(record, "WithAdmin"));
       avroList.add(avroRow);
     }
 
@@ -88,6 +90,6 @@ public class RolesTest extends TestBase {
     avroList.forEach(dbList::remove);
     dbListCopy.forEach(avroList::remove);
 
-    assertListsEqual(dbList, avroList, sqlPath, avroFilePath);
+    assertListsEqual(dbList, avroList, SQL_PATH, AVRO_FILE_PATH);
   }
 }
