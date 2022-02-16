@@ -35,15 +35,17 @@ export GIT_PSW="$(<${KOKORO_KEYSTORE_DIR}/76474_bqassessment-github-releases-020
 export GIT_RELEASES_USERNAME="edw-assessment-integration-testing-bot"
 export KOKORO_BUILD_RELEASE_DIR="${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool"
 export KOKORO_RELEASE_OUTPUT_FILE="${KOKORO_BUILD_RELEASE_DIR}/bazel-bin/dist/dwh-assessment-extraction-tool.zip"
-export SCRIPT_PARENT_DIR="$(dirname "$dir")"
-export SCRIPT_DIRECTORY=$(dirname "$0")
+export SCRIPT_DIR=$(dirname "$0")
+export SCRIPT_PARENT_DIR="$(dirname -- "$SCRIPT_DIR")"
+
 export BUILD_SCRIPT="$SCRIPT_PARENT_DIR/kokoro_build.sh"
 
-source ${SCRIPT_DIRECTORY}/release_utils.sh
+source ${SCRIPT_DIR}/release_utils.sh
 log "Current dir "$(pwd)
-log "SCRIPT_DIRECTORY "${SCRIPT_DIRECTORY}
+log "SCRIPT_DIR "${SCRIPT_DIR}
 log "BUILD_SCRIPT "${BUILD_SCRIPT}
 log "SCRIPT_PARENT_DIR "${SCRIPT_PARENT_DIR}
+
 cd ${KOKORO_BUILD_RELEASE_DIR}
 
 
