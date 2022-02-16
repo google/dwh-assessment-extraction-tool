@@ -37,7 +37,7 @@ export KOKORO_BUILD_RELEASE_DIR="${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-e
 #export KOKORO_BUILD_RELEASE_DIR="${KOKORO_ARTIFACTS_DIR}"
 export KOKORO_RELEASE_OUTPUT_FILE="${KOKORO_BUILD_RELEASE_DIR}/bazel-bin/dist/dwh-assessment-extraction-tool.zip"
 export SCRIPT_PARENT_DIR="$(pwd "$dir")"
-export BUILD_SCRIPT="$SCRIPT_PARENT_DIR/kokoro_build_TMP.sh"
+export BUILD_SCRIPT="$SCRIPT_PARENT_DIR/kokoro_build.sh"
 export SCRIPT_DIRECTORY=$(dirname "$0")
 
 source ${SCRIPT_DIRECTORY}/release_utils.sh
@@ -51,7 +51,6 @@ export LAST_GIT_TAG=$(git tag  \
     | grep -E '^v[0-9]' \
     | sort -V \
     | tail -1 )
-log ${LAST_GIT_TAG}
 
 # Do we already know what version we want to release?
 if [[ -z "${CREATE_TAG}" ]]; then
@@ -83,12 +82,10 @@ log "New version name verified"
 sh $BUILD_SCRIPT
 
 cd "${KOKORO_BUILD_RELEASE_DIR}"
-log "${KOKORO_BUILD_RELEASE_DIR}"
-log $(pwd)
-log "Create new tag"
 
 # create and register tag for this release
 git tag -a ${VERSION} -m ${VERSION}
+log "Create new tag"
 git push https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@github.com/google/dwh-assessment-extraction-tool.git ${VERSION}
 
 log "Prepare release notes"
