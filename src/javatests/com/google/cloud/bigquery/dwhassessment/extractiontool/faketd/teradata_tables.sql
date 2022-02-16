@@ -342,7 +342,7 @@ CREATE TABLE DBC."PartitioningConstraintsV" (
   "ColumnPartitioningLevel" SMALLINT NOT NULL,
 );
 
-CREATE TABLE DBC."DBQLObjTbl" (
+CREATE TABLE DBC."QryLogObjectsV" (
   "ProcID" DECIMAL(5,0) NOT NULL,
   "CollectTimeStamp" TIMESTAMP(6) NOT NULL,
   "QueryID" DECIMAL(18,0) NOT NULL,
