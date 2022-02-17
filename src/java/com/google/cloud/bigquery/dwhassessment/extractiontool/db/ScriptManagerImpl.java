@@ -183,10 +183,7 @@ public class ScriptManagerImpl implements ScriptManager {
     if (!sortingColumns.isEmpty()) {
       sqlTemplateRenderer.getSqlScriptVariablesBuilder().setSortingColumns(sortingColumns);
     }
-    String rendered =
-        sqlTemplateRenderer.renderTemplate(scriptName, scriptsMap.get(scriptName).get());
-    sqlTemplateRenderer.getSqlScriptVariablesBuilder().setSortingColumns(ImmutableList.of());
-    return rendered;
+    return sqlTemplateRenderer.renderTemplate(scriptName, scriptsMap.get(scriptName).get());
   }
 
   @Override

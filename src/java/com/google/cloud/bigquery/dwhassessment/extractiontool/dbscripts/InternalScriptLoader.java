@@ -43,8 +43,8 @@ public class InternalScriptLoader implements ScriptLoader {
           "partitioning_constraints",
           "query_references",
           "querylogs",
-          "querylogs_full",
-            "roles",
+          "roles",
+          "sql_logs",
           "stats",
           "tableinfo",
           "tablesize",
@@ -61,7 +61,7 @@ public class InternalScriptLoader implements ScriptLoader {
   @Override
   public ImmutableMap<String, ImmutableList<String>> getSortingColumnsMap() {
     return new ImmutableMap.Builder<String, ImmutableList<String>>()
-        .put("querylogs.sql", ImmutableList.of("\"{{baseDatabase}}\".\"QryLogV\".\"StartTime\""))
+        .put("querylogs.sql", ImmutableList.of("\"StartTime\""))
         .build();
   }
 

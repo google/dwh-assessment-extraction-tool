@@ -21,30 +21,48 @@ import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 /** Implementation of a DataEntityManger for unit test purposes. */
-public class DataEntityManagerTempTestImpl implements DataEntityManager {
+public class FakeDataEntityManagerImpl implements DataEntityManager {
 
   private final Path tmpDir;
+  private final ByteArrayOutputStream outputStream;
+  private final boolean bareStreamMode;
 
-  /** Constructs a new DataEntityManagerTempTestImpl. */
-  public DataEntityManagerTempTestImpl(String testDirName) throws IOException {
+  /**
+   * Constructs a fake DataEntityManager for testing; it supports chunked writing; the output files
+   * are saved in a temporary directory.
+   */
+  public FakeDataEntityManagerImpl(String testDirName) throws IOException {
     this.tmpDir = Files.createTempDirectory(testDirName);
+    this.outputStream = null;
+    bareStreamMode = false;
+  }
+
+  /**
+   * Construct a fake DataEntityManager with a fixed reference of ByteArrayOutputStream; it does not
+   * support any file operations.
+   */
+  public FakeDataEntityManagerImpl(ByteArrayOutputStream outputStream) {
+    this.outputStream = outputStream;
+    this.tmpDir = null;
+    bareStreamMode = true;
   }
 
   @Override
   public OutputStream getEntityOutputStream(String name) throws IOException {
-    return Files.newOutputStream(tmpDir.resolve(name));
+    return bareStreamMode ? outputStream : Files.newOutputStream(tmpDir.resolve(name));
   }
 
   @Override
   public boolean isResumable() {
-    return true;
+    return !bareStreamMode;
   }
 
   @Override
   public Path getAbsolutePath(String name) {
-    return tmpDir.resolve(name);
+    return bareStreamMode ? null : tmpDir.resolve(name);
   }
 
   @Override

@@ -19,10 +19,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.*;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables.QueryLogsVariables;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerTesting;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.FakeDataEntityManagerImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.faketd.TeradataSimulator;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -258,6 +257,18 @@ public class InternalScriptLoaderTest {
   }
 
   @Test
+  public void loadScripts_queryReferences_with_timeRange() throws SQLException {
+    String scriptName = "query_references";
+    String sqlScript =
+        getScript(scriptName, getSqlTemplateRendererWithEndTime("2021-07-01 15:00:00.00"));
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+
+    ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
+
+    assertThat(records).isEmpty();
+  }
+
+  @Test
   public void loadScripts_stats() throws SQLException, IOException {
     String scriptName = "stats";
     String sqlScript = getScript(scriptName);
@@ -285,7 +296,7 @@ public class InternalScriptLoaderTest {
             SqlScriptVariables.builder()
                 .setQueryLogsVariables(QueryLogsVariables.builder().build())),
         scriptName,
-        new DataEntityManagerTesting(outputStream));
+        new FakeDataEntityManagerImpl(outputStream));
     assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
@@ -441,6 +452,67 @@ public class InternalScriptLoaderTest {
     executeScript(scriptName, outputStream);
     DataFileReader<Record> reader = getAvroDataOutputReader(outputStream);
     assertThat(reader.next()).isEqualTo(expectedQueryLogsRecord1);
+  }
+
+  @Test
+  public void loadScripts_sqlLogs() throws IOException, SQLException {
+    String scriptName = "sql_logs";
+    String sqlScript = getScript(scriptName);
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+
+    ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
+
+    GenericRecord expectedRecord1 =
+        new GenericRecordBuilder(schema)
+            .set("ProcID", ByteBuffer.wrap(BigInteger.ONE.toByteArray()))
+            .set("QueryID", ByteBuffer.wrap(BigInteger.valueOf(123).toByteArray()))
+            .set("CollectTimeStamp", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
+            .set("SqlRowNo", 1)
+            .set("SqlText", "SELECT * FROM MyTable;")
+            .build();
+    GenericRecord expectedRecord2 =
+        new GenericRecordBuilder(schema)
+            .set("ProcID", ByteBuffer.wrap(BigInteger.ONE.toByteArray()))
+            .set("QueryID", ByteBuffer.wrap(BigInteger.valueOf(456).toByteArray()))
+            .set("CollectTimeStamp", Instant.parse("2021-07-05T18:23:42Z").toEpochMilli())
+            .set("SqlRowNo", 1)
+            .set("SqlText", "SELECT * FROM YourTable;")
+            .build();
+
+    assertThat(records).containsExactly(expectedRecord1, expectedRecord2);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    executeScript(scriptName, outputStream);
+    DataFileReader<Record> reader = getAvroDataOutputReader(outputStream);
+    assertThat(reader.next()).isEqualTo(expectedRecord1);
+    assertThat(reader.next()).isEqualTo(expectedRecord2);
+  }
+
+  @Test
+  public void loadScripts_sqlLogs_with_timeRange() throws IOException, SQLException {
+    String scriptName = "sql_logs";
+    String sqlScript =
+        getScript(scriptName, getSqlTemplateRendererWithEndTime("2021-07-01 23:23:23.23"));
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+
+    ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
+
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(schema)
+            .set("ProcID", ByteBuffer.wrap(BigInteger.ONE.toByteArray()))
+            .set("QueryID", ByteBuffer.wrap(BigInteger.valueOf(123).toByteArray()))
+            .set("CollectTimeStamp", Instant.parse("2021-07-01T18:23:42Z").toEpochMilli())
+            .set("SqlRowNo", 1)
+            .set("SqlText", "SELECT * FROM MyTable;")
+            .build();
+
+    assertThat(records).containsExactly(expectedRecord);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    executeScript(scriptName, outputStream);
+    assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
   }
 
   @Test
@@ -772,6 +844,19 @@ public class InternalScriptLoaderTest {
     return scriptManager.getScript(renderer, scriptName, ImmutableList.of());
   }
 
+  private SqlTemplateRenderer getSqlTemplateRendererWithEndTime(String endTimestamp) {
+    return new SqlTemplateRendererImpl(
+        SqlScriptVariables.builder()
+            .setBaseDatabase("DBC")
+            .setQueryLogsVariables(
+                SqlScriptVariables.QueryLogsVariables.builder()
+                    .setTimeRange(
+                        SqlScriptVariables.QueryLogsVariables.TimeRange.builder()
+                            .setEndTimestamp(endTimestamp)
+                            .build())
+                    .build()));
+  }
+
   private void executeScript(String scriptName, ByteArrayOutputStream outputStream)
       throws SQLException, IOException {
     scriptManager.executeScript(
@@ -779,7 +864,7 @@ public class InternalScriptLoaderTest {
         /*dryRun=*/ false,
         sqlTemplateRenderer,
         scriptName,
-        new DataEntityManagerTesting(outputStream),
+        new FakeDataEntityManagerImpl(outputStream),
         5000);
   }
 

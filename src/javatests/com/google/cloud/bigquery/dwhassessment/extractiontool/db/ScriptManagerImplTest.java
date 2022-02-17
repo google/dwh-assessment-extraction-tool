@@ -21,8 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerTempTestImpl;
-import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerTesting;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.FakeDataEntityManagerImpl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -32,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -82,7 +82,7 @@ public final class ScriptManagerImplTest {
   public void setUp() {
     scriptRunner = new ScriptRunnerImpl();
     outputStream = new ByteArrayOutputStream();
-    dataEntityManager = new DataEntityManagerTesting(outputStream);
+    dataEntityManager = new FakeDataEntityManagerImpl(outputStream);
   }
 
   @Test
@@ -96,10 +96,7 @@ public final class ScriptManagerImplTest {
     connection.commit();
     scriptManager.executeScript(
         connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager, 5000);
-
-    String sqlScript = "SELECT * FROM TestTable";
-    Schema testSchema = scriptRunner.extractSchema(connection, sqlScript, "default", "namespace");
-
+    Schema testSchema = scriptRunner.extractSchema(connection, baseScript, "default", "namespace");
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     DataFileReader<Record> reader =
         new DataFileReader<>(new SeekableByteArrayInput(outputStream.toByteArray()), datumReader);
@@ -117,9 +114,6 @@ public final class ScriptManagerImplTest {
     connection.commit();
     scriptManager.executeScript(
         connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager, 5000);
-
-    String sqlScript = "SELECT * FROM TestTable";
-    Schema testSchema = scriptRunner.extractSchema(connection, sqlScript, "default", "namespace");
 
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     DataFileReader<Record> reader =
@@ -163,16 +157,13 @@ public final class ScriptManagerImplTest {
   }
 
   @Test
-  public void getScript_sortingRenderedOnlyWithSortingColumns_success() {
+  public void getScript_successWithSortingColumns_success() {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap, sortingColumnsMap);
     String renderedWithSortingColumns =
         scriptManager.getScript(
             sqlTemplateRenderer, "default_chunked", ImmutableList.of("SORTING_COLUMN"));
     assertThat(renderedWithSortingColumns)
         .isEqualTo(baseScript + "\nORDER BY SORTING_COLUMN ASC NULLS FIRST\n");
-    String renderedWithOutSortingColumns =
-        scriptManager.getScript(sqlTemplateRenderer, "default_chunked", ImmutableList.of());
-    assertThat(renderedWithOutSortingColumns).isEqualTo(baseScript);
   }
 
   @Test
@@ -184,20 +175,8 @@ public final class ScriptManagerImplTest {
             scriptManager.getScript(sqlTemplateRenderer, "not_available_name", ImmutableList.of()));
   }
 
-  private DataFileReader<Record> getReaderFromAvroFile(Path filePath) throws IOException {
-    DatumReader<Record> datumReader = new GenericDatumReader<>();
-    return new DataFileReader<>(filePath.toFile(), datumReader);
-  }
-
-  private void assertRecordEqualsExpected(Record record, Integer id, String timestampUtc) {
-    assertThat(record.get(0)).isEqualTo(id);
-    assertThat(record.get(1)).isEqualTo(Instant.parse(timestampUtc).toEpochMilli());
-  }
-
-  @Test
-  public void executeScript_writeChunked_success() throws Exception {
+  private void prepareDataWithSortingTimestamps(Connection connection) throws SQLException {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap, sortingColumnsMap);
-    Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_3");
     Statement baseStmt = connection.createStatement();
     baseStmt.execute(
         "CREATE Table TestTable ("
@@ -221,6 +200,13 @@ public final class ScriptManagerImplTest {
     }
     baseStmt.close();
     connection.commit();
+  }
+
+  @Test
+  public void executeScript_writeChunked_chunksAreLabeledCorrectly() throws Exception {
+    scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap, sortingColumnsMap);
+    Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_3");
+    prepareDataWithSortingTimestamps(connection);
     ImmutableList<String> expectedFiles =
         ImmutableList.<String>builder()
             .add("default_chunked-20080808T200808S007000-20080808T200810S007000_0.avro")
@@ -230,7 +216,7 @@ public final class ScriptManagerImplTest {
             .add("default_chunked-20080808T200820S007000-20080808T200822S007000_4.avro")
             .add("default_chunked-20080808T200823S007000-20080808T200824S007000_5.avro")
             .build();
-    DataEntityManager dataEntityManagerTmp = new DataEntityManagerTempTestImpl("tmpTest");
+    DataEntityManager dataEntityManagerTmp = new FakeDataEntityManagerImpl("tmpTest");
 
     scriptManager.executeScript(
         connection,
@@ -247,23 +233,51 @@ public final class ScriptManagerImplTest {
                 .map(path -> path.getFileName().toString())
                 .collect(Collectors.toList()))
         .isEqualTo(expectedFiles);
+  }
+
+  private DataFileReader<Record> getAssertingReaderForAvroResults(Path filePath)
+      throws IOException {
+    DatumReader<Record> datumReader = new GenericDatumReader<>();
+    return new DataFileReader<>(filePath.toFile(), datumReader);
+  }
+
+  private void assertRecordEqualsExpected(Record record, Integer id, String timestampUtc) {
+    assertThat(record.get(0)).isEqualTo(id);
+    assertThat(record.get(1)).isEqualTo(Instant.parse(timestampUtc).toEpochMilli());
+  }
+
+  @Test
+  public void executeScript_writeChunked_chunkContentsAreCorrect() throws Exception {
+    scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap, sortingColumnsMap);
+    Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_4");
+    prepareDataWithSortingTimestamps(connection);
+    DataEntityManager dataEntityManagerTmp = new FakeDataEntityManagerImpl("tmpTest");
+
+    scriptManager.executeScript(
+        connection,
+        /*dryRun=*/ false,
+        sqlTemplateRenderer,
+        "default_chunked",
+        dataEntityManagerTmp,
+        3);
+
     // Validate result details for the first and the last chunks.
-    DataFileReader<Record> reader;
-    reader =
-        getReaderFromAvroFile(
+    DataFileReader<Record> readerForFirstChunk =
+        getAssertingReaderForAvroResults(
             dataEntityManagerTmp.getAbsolutePath(
                 "default_chunked-20080808T200808S007000-20080808T200810S007000_0.avro"));
-    assertRecordEqualsExpected(reader.next(), 0, "2008-08-08T20:08:08.007000000Z");
-    assertRecordEqualsExpected(reader.next(), 1, "2008-08-08T20:08:09.007000000Z");
-    assertRecordEqualsExpected(reader.next(), 2, "2008-08-08T20:08:10.007000000Z");
-    assertFalse(reader.hasNext());
-    reader =
-        getReaderFromAvroFile(
+    assertRecordEqualsExpected(readerForFirstChunk.next(), 0, "2008-08-08T20:08:08.007000000Z");
+    assertRecordEqualsExpected(readerForFirstChunk.next(), 1, "2008-08-08T20:08:09.007000000Z");
+    assertRecordEqualsExpected(readerForFirstChunk.next(), 2, "2008-08-08T20:08:10.007000000Z");
+    assertFalse(readerForFirstChunk.hasNext());
+
+    DataFileReader<Record> readerForLastChunk =
+        getAssertingReaderForAvroResults(
             dataEntityManagerTmp.getAbsolutePath(
                 "default_chunked-20080808T200823S007000-20080808T200824S007000_5.avro"));
-    assertRecordEqualsExpected(reader.next(), 15, "2008-08-08T20:08:23.007000000Z");
-    assertRecordEqualsExpected(reader.next(), 16, "2008-08-08T20:08:24.007000000Z");
-    assertFalse(reader.hasNext());
+    assertRecordEqualsExpected(readerForLastChunk.next(), 15, "2008-08-08T20:08:23.007000000Z");
+    assertRecordEqualsExpected(readerForLastChunk.next(), 16, "2008-08-08T20:08:24.007000000Z");
+    assertFalse(readerForLastChunk.hasNext());
   }
 
   @Test

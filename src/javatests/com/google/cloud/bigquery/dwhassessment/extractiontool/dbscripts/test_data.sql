@@ -289,6 +289,36 @@ VALUES (
   1234.56
 );
 
+INSERT INTO DBC."QryLogSQLV" (
+  "ProcID",
+  "CollectTimeStamp",
+  "QueryID",
+  "SqlRowNo",
+  "SqlTextInfo"
+)
+VALUES (
+  1,
+  TIMESTAMP '2021-07-01 18:23:42',
+  123,
+  1,
+  'SELECT * FROM MyTable;'
+);
+
+INSERT INTO DBC."QryLogSQLV" (
+  "ProcID",
+  "CollectTimeStamp",
+  "QueryID",
+  "SqlRowNo",
+  "SqlTextInfo"
+)
+VALUES (
+  1,
+  TIMESTAMP '2021-07-05 18:23:42',
+  456,
+  1,
+  'SELECT * FROM YourTable;'
+);
+
 INSERT INTO DBC."TablesV" (
   "DatabaseName",
   "TableName",
@@ -611,7 +641,7 @@ VALUES (
   0
 );
 
-INSERT INTO DBC."DBQLObjTbl" (
+INSERT INTO DBC."QryLogObjectsV" (
   "ProcID",
   "CollectTimeStamp",
   "QueryID",
