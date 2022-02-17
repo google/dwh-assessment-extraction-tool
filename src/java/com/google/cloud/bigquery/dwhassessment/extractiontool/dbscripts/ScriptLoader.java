@@ -15,10 +15,13 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.dbscripts;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.function.Supplier;
 
 public interface ScriptLoader {
 
   ImmutableMap<String, Supplier<String>> loadScripts();
+
+  ImmutableMap<String, ImmutableList<String>> getSortingColumnsMap();
 }

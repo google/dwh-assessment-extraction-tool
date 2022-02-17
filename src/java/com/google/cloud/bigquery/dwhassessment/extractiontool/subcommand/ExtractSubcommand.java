@@ -100,14 +100,14 @@ public final class ExtractSubcommand implements Callable<Integer> {
   private String dbAddress;
 
   @Option(names = "--db-user", description = "The user name for the database.")
-  private String dbUserName = "";
+  private final String dbUserName = "";
 
   @Option(
       names = "--db-password",
       description = "The password for the database.",
       arity = "0..1",
       interactive = true)
-  private String dbPassword = "";
+  private final String dbPassword = "";
 
   @Option(
       names = "--base-db",
@@ -197,6 +197,19 @@ public final class ExtractSubcommand implements Callable<Integer> {
       })
   private void setDryRun(boolean dryRun) {
     argumentsBuilder.setDryRun(dryRun);
+  }
+
+  @Option(
+      names = "--rows-per-chunk",
+      defaultValue = "0",
+      description = {
+        "If larger than 0, the tool will attempt to use a chunked processing mode for scripts that"
+            + " support this, where the results for a supporting script are saved in chunks; this"
+            + " number defines the maximum rows per chunk holds. Chunk mode is not available if the"
+            + " target output is a zip file."
+      })
+  private void setChunkRows(Integer chunkRows) {
+    argumentsBuilder.setChunkRows(chunkRows);
   }
 
   @Option(

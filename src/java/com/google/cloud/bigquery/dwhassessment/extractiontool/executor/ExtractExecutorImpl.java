@@ -124,7 +124,12 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
       SqlTemplateRenderer sqlTemplateRenderer =
           getSqlTemplateRenderer(scriptName, arguments, qryLogVarsBuilder);
       scriptManager.executeScript(
-          connection, arguments.dryRun(), sqlTemplateRenderer, scriptName, dataEntityManager);
+          connection,
+          arguments.dryRun(),
+          sqlTemplateRenderer,
+          scriptName,
+          dataEntityManager,
+          arguments.chunkRows());
       connection.close();
       LOGGER.log(Level.INFO, "Finished extracting {0}.", scriptName);
     }
@@ -147,14 +152,13 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
   private SqlTemplateRenderer getSqlTemplateRenderer(
       String scriptName, Arguments arguments, QueryLogsVariables.Builder qryLogVarsBuilder) {
-    SqlScriptVariables sqlScriptVariables =
+    SqlScriptVariables.Builder sqlScriptVariablesBuilder =
         SqlScriptVariables.builder()
             .setBaseDatabase(
                 arguments.scriptBaseDatabase().getOrDefault(scriptName, arguments.baseDatabase()))
             .setQueryLogsVariables(qryLogVarsBuilder.build())
-            .setVars(arguments.scriptVariables().getOrDefault(scriptName, ImmutableMap.of()))
-            .build();
-    return new SqlTemplateRendererImpl(sqlScriptVariables);
+            .setVars(arguments.scriptVariables().getOrDefault(scriptName, ImmutableMap.of()));
+    return new SqlTemplateRendererImpl(sqlScriptVariablesBuilder);
   }
 
   private void extractSchema(

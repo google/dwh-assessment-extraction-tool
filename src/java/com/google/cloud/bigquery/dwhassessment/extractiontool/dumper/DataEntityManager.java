@@ -19,6 +19,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.dumper;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 /** Interface to manage data entity, e.g. AVRO files. */
 public interface DataEntityManager extends Closeable {
@@ -29,4 +30,18 @@ public interface DataEntityManager extends Closeable {
    * @param name The name of the output entity.
    */
   OutputStream getEntityOutputStream(String name) throws IOException;
+
+  /**
+   * Indicate whether the data entity allows resumable processing.
+   *
+   * @return true if some progress can be retained after the writing is interrupted.
+   */
+  boolean isResumable();
+
+  /**
+   * Get the absolute path of a file given its name.
+   *
+   * @param name The name of the file.
+   */
+  Path getAbsolutePath(String name);
 }

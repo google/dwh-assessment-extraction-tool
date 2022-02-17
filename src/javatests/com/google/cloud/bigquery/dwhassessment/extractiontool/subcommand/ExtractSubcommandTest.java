@@ -50,7 +50,8 @@ public final class ExtractSubcommandTest {
   private final ScriptManager scriptManager =
       new ScriptManagerImpl(
           new ScriptRunnerImpl(),
-          ImmutableMap.of("one", () -> "", "two", () -> "", "querylogs", () -> ""));
+          ImmutableMap.of("one", () -> "", "two", () -> "", "querylogs", () -> ""),
+          ImmutableMap.of());
 
   @BeforeClass
   public static void setUpClass() throws IOException {
@@ -78,6 +79,33 @@ public final class ExtractSubcommandTest {
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.sqlScripts()).isEmpty();
     assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.chunkRows()).isEqualTo(0);
+  }
+
+  @Test
+  public void call_successWithChunkRows() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "--output",
+                outputPath.toString(),
+                "--rows-per-chunk",
+                "5000"))
+        .isEqualTo(0);
+
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+
+    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
+    assertThat(arguments.sqlScripts()).isEmpty();
+    assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.chunkRows()).isEqualTo(5000);
   }
 
   @Test
@@ -336,7 +364,7 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
-  public void call_failOnDefiningSqlScriptsAndSkipSqlScripts() throws IOException, SQLException {
+  public void call_failOnDefiningSqlScriptsAndSkipSqlScripts() {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
     StringWriter writer = new StringWriter();

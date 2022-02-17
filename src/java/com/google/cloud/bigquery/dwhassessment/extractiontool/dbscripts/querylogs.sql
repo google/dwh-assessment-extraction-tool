@@ -146,3 +146,6 @@ FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV
 WHERE "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}"."StartTime"
   BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
 {{/if}}
+{{#if sortingColumns}}
+ORDER BY {{#each sortingColumns}}{{this}}{{#unless @last}},{{/unless}}{{/each}} ASC NULLS FIRST
+{{/if}}

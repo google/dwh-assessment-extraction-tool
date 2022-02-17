@@ -18,13 +18,12 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.dumper;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-/**
- * Implementation of DataEntityManager that stores data entity files in a zip archive.
- */
+/** Implementation of DataEntityManager that stores data entity files in a zip archive. */
 public class DataEntityManagerZipImpl implements DataEntityManager {
 
   private final ZipOutputStream zipOutputStream;
@@ -34,7 +33,7 @@ public class DataEntityManagerZipImpl implements DataEntityManager {
    * Constructs a new DataEntityManagerArchiveImpl.
    *
    * @param outputStream outputStream where the zip archive will be written. This will not be
-   * closed.
+   *     closed.
    */
   public DataEntityManagerZipImpl(OutputStream outputStream) {
     this(new ZipOutputStream(outputStream));
@@ -48,8 +47,9 @@ public class DataEntityManagerZipImpl implements DataEntityManager {
   @Override
   public OutputStream getEntityOutputStream(String name) {
     if (!isEntityOutputStreamOpen.compareAndSet(false, true)) {
-      throw new IllegalStateException("Previous EntityOutputStream is not closed. "
-          + "Only one opened EntityOutputStream can exist concurrently.");
+      throw new IllegalStateException(
+          "Previous EntityOutputStream is not closed. "
+              + "Only one opened EntityOutputStream can exist concurrently.");
     }
     try {
       return new ZipEntryOutputStream(name);
@@ -59,13 +59,21 @@ public class DataEntityManagerZipImpl implements DataEntityManager {
   }
 
   @Override
+  public boolean isResumable() {
+    return false;
+  }
+
+  @Override
+  public Path getAbsolutePath(String name) {
+    return null;
+  }
+
+  @Override
   public void close() throws IOException {
     zipOutputStream.close();
   }
 
-  /**
-   * OutputStream that writes a single file to the parent ZipOutputStream.
-   */
+  /** OutputStream that writes a single file to the parent ZipOutputStream. */
   private class ZipEntryOutputStream extends OutputStream {
 
     public ZipEntryOutputStream(String name) throws IOException {
