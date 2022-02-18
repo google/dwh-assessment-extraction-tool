@@ -147,5 +147,5 @@ WHERE "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLog
   BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
 {{/if}}
 {{#if sortingColumns}}
-ORDER BY {{#each sortingColumns}}{{this}}{{#unless @last}},{{/unless}}{{/each}} ASC NULLS FIRST
+ORDER BY {{#each sortingColumns}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}} ASC NULLS FIRST
 {{/if}}

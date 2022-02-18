@@ -61,7 +61,7 @@ public class InternalScriptLoader implements ScriptLoader {
   @Override
   public ImmutableMap<String, ImmutableList<String>> getSortingColumnsMap() {
     return new ImmutableMap.Builder<String, ImmutableList<String>>()
-        .put("querylogs.sql", ImmutableList.of("\"StartTime\""))
+        .put("querylogs", ImmutableList.of("StartTime"))
         .build();
   }
 
