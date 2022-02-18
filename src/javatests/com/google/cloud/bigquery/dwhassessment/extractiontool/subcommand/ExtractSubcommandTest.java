@@ -83,6 +83,34 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
+  public void call_db_user_and_db_password_success() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+
+    assertThat(
+        cmd.execute(
+            "--db-address",
+            "jdbc:hsqldb:mem:my-animalclinic.example",
+            "--db-user",
+            "dbc",
+            "--db-password",
+            "dbc",
+            "--output",
+            outputPath.toString()))
+        .isEqualTo(0);
+
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+
+    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
+    assertThat(arguments.sqlScripts()).isEmpty();
+    assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.chunkRows()).isEqualTo(0);
+  }
+
+  @Test
   public void call_successWithChunkRows() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
