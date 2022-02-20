@@ -55,7 +55,7 @@ import org.apache.avro.generic.GenericRecord;
 public final class ExtractExecutorImpl implements ExtractExecutor {
 
   private static final DateTimeFormatter TERADATA_TIME_FORMATTER =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss[.SSSSSS]").withZone(ZoneOffset.UTC);
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]").withZone(ZoneOffset.UTC);
 
   private static final Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
 
