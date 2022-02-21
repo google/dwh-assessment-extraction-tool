@@ -90,7 +90,7 @@ public final class ExtractSubcommandTest {
     assertThat(
         cmd.execute(
             "--db-address",
-            "jdbc:hsqldb:mem:my-animalclinic.example",
+            "jdbc:hsqldb:mem:shiny-brand-new-db",
             "--db-user",
             "dbc",
             "--db-password",
