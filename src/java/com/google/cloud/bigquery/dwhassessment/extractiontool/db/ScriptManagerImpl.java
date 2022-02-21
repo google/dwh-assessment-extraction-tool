@@ -85,6 +85,7 @@ public class ScriptManagerImpl implements ScriptManager {
         scriptRunner.extractSchema(connection, script, scriptName, /* namespace= */ "namespace");
     if (chunkMode) {
       ResultSet resultSet = connection.createStatement().executeQuery(script);
+      // Move to the first row.
       if (!resultSet.next()) {
         return;
       }
@@ -109,20 +110,24 @@ public class ScriptManagerImpl implements ScriptManager {
       String scriptName,
       Integer chunkNumber)
       throws SQLException, IOException {
-    String firstRowStamp = getUtcTimeStringFromTimestamp(resultSet.getTimestamp(labelColumn));
+    Timestamp previousTimestamp = new Timestamp(0);
+    Timestamp currentTimestamp = resultSet.getTimestamp(labelColumn);
+    String firstRowStamp = getUtcTimeStringFromTimestamp(currentTimestamp);
     String tempFileName =
         String.format("%s-%s_%d_temp.avro", scriptName, firstRowStamp, chunkNumber);
-    Timestamp latestTimestamp = resultSet.getTimestamp(labelColumn);
     try (ResultSetRecorder<GenericRecord> dumper =
         AvroResultSetRecorder.create(
             schema, dataEntityManager.getEntityOutputStream(tempFileName))) {
-      for (int i = 0; i < chunkRows; i++) {
+      int rowCount = 0;
+      while (rowCount < chunkRows || currentTimestamp.equals(previousTimestamp)) {
         // Process first, then advance the row.
-        latestTimestamp = resultSet.getTimestamp(labelColumn);
         dumper.add(parseRowToAvro(resultSet, schema));
+        rowCount++;
+        previousTimestamp = currentTimestamp;
         if (!resultSet.next()) {
           break;
         }
+        currentTimestamp = resultSet.getTimestamp(labelColumn);
       }
     } catch (IOException | SQLException e) {
       throw e;
@@ -130,7 +135,7 @@ public class ScriptManagerImpl implements ScriptManager {
       // Cannot happen.
       throw new IllegalStateException("Got unexpected exception.", e);
     }
-    String lastRowStamp = getUtcTimeStringFromTimestamp(latestTimestamp);
+    String lastRowStamp = getUtcTimeStringFromTimestamp(previousTimestamp);
     Files.move(
         dataEntityManager.getAbsolutePath(tempFileName),
         dataEntityManager.getAbsolutePath(

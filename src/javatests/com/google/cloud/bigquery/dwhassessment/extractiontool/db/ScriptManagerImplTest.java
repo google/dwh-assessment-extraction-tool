@@ -176,7 +176,6 @@ public final class ScriptManagerImplTest {
   }
 
   private void prepareDataWithSortingTimestamps(Connection connection) throws SQLException {
-    scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap, sortingColumnsMap);
     Statement baseStmt = connection.createStatement();
     baseStmt.execute(
         "CREATE Table TestTable ("
@@ -278,6 +277,60 @@ public final class ScriptManagerImplTest {
     assertRecordEqualsExpected(readerForLastChunk.next(), 15, "2008-08-08T20:08:23.007000000Z");
     assertRecordEqualsExpected(readerForLastChunk.next(), 16, "2008-08-08T20:08:24.007000000Z");
     assertFalse(readerForLastChunk.hasNext());
+  }
+
+  @Test
+  public void executeScript_writeChunked_sameTimestampsSameChunk() throws Exception {
+    scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap, sortingColumnsMap);
+    Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_5");
+    DataEntityManager dataEntityManagerTmp = new FakeDataEntityManagerImpl("tmpTest");
+    Statement baseStmt = connection.createStatement();
+    baseStmt.execute(
+        "CREATE Table TestTable ("
+            + "ID INTEGER,"
+            + "TIMESTAMPS TIMESTAMP(6) WITH TIME ZONE"
+            + ")");
+    baseStmt.execute(
+        "INSERT INTO TestTable VALUES (4, TIMESTAMP '2007-07-07 20:07:07.007002' AT TIME ZONE"
+            + " INTERVAL '0:00' HOUR TO MINUTE)");
+    baseStmt.execute(
+        "INSERT INTO TestTable VALUES (3, TIMESTAMP '2007-07-07 20:07:07.007001' AT TIME ZONE"
+            + " INTERVAL '0:00' HOUR TO MINUTE)");
+    baseStmt.execute(
+        "INSERT INTO TestTable VALUES (2, TIMESTAMP '2007-07-07 20:07:07.007001' AT TIME ZONE"
+            + " INTERVAL '0:00' HOUR TO MINUTE)");
+    baseStmt.execute(
+        "INSERT INTO TestTable VALUES (1, TIMESTAMP '2007-07-07 20:07:07.007000' AT TIME ZONE"
+            + " INTERVAL '0:00' HOUR TO MINUTE)");
+    baseStmt.close();
+    connection.commit();
+
+    scriptManager.executeScript(
+        connection,
+        /*dryRun=*/ false,
+        sqlTemplateRenderer,
+        "default_chunked",
+        dataEntityManagerTmp,
+        2);
+
+    DataFileReader<Record> readerForFirstChunk =
+        getAssertingReaderForAvroResults(
+            dataEntityManagerTmp.getAbsolutePath(
+                "default_chunked-20070707T200707S007000-20070707T200707S007001_0.avro"));
+    DataFileReader<Record> readerForSecondChunk =
+        getAssertingReaderForAvroResults(
+            dataEntityManagerTmp.getAbsolutePath(
+                "default_chunked-20070707T200707S007002-20070707T200707S007002_1.avro"));
+    assertThat(readerForFirstChunk.next().get(1))
+        .isEqualTo(Instant.parse("2007-07-07T20:07:07.007000000Z").toEpochMilli());
+    assertThat(readerForFirstChunk.next().get(1))
+        .isEqualTo(Instant.parse("2007-07-07T20:07:07.007001000Z").toEpochMilli());
+    assertThat(readerForFirstChunk.next().get(1))
+        .isEqualTo(Instant.parse("2007-07-07T20:07:07.007001000Z").toEpochMilli());
+    assertFalse(readerForFirstChunk.hasNext());
+    assertThat(readerForSecondChunk.next().get(1))
+        .isEqualTo(Instant.parse("2007-07-07T20:07:07.007002000Z").toEpochMilli());
+    assertFalse(readerForSecondChunk.hasNext());
   }
 
   @Test
