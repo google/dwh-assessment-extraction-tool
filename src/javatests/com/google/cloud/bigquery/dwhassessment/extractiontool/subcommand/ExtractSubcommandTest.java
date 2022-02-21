@@ -66,7 +66,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db1.example",
                 "--output",
                 outputPath.toString()))
         .isEqualTo(0);
@@ -90,7 +90,7 @@ public final class ExtractSubcommandTest {
     assertThat(
         cmd.execute(
             "--db-address",
-            "jdbc:hsqldb:mem:my-animalclinic.example",
+            "jdbc:hsqldb:mem:shiny-brand-new-db",
             "--db-user",
             "dbc",
             "--db-password",
@@ -118,7 +118,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db2.example",
                 "--output",
                 outputPath.toString(),
                 "--rows-per-chunk",
@@ -144,7 +144,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db3.example",
                 "--output",
                 outputPath.toString(),
                 "--sql-scripts",
@@ -170,7 +170,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db4.example",
                 "--output",
                 outputPath.toString(),
                 "--skip-sql-scripts",
@@ -198,7 +198,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db5.example",
                 "--output",
                 outputPath.toString(),
                 "--schema-filter",
@@ -226,7 +226,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db6.example",
                 "--output",
                 outputPath.toString(),
                 "--qrylog-timerange-start",
@@ -254,7 +254,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db7.example",
                 "--output",
                 outputPath.toString(),
                 "--qrylog-timerange-start",
@@ -281,7 +281,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db8.example",
                 "--output",
                 outputPath.toString(),
                 "--qrylog-timerange-end",
@@ -311,7 +311,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db9.example",
                 "--output",
                 outputPath.toString(),
                 "--qrylog-timerange-start",
@@ -344,7 +344,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db10.example",
                 "--output",
                 outputPath.toString(),
                 "--qrylog-timerange-start",
@@ -376,7 +376,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db11.example",
                 "--output",
                 outputPath.toString(),
                 "--script-base-db",
@@ -401,7 +401,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db12.example",
                 "--output",
                 outputPath.toString(),
                 "--sql-scripts",
@@ -423,7 +423,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db13.example",
                 "--output",
                 outputPath.toString(),
                 "--sql-scripts",
@@ -442,7 +442,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db14.example",
                 "--output",
                 outputPath.toString(),
                 "--skip-sql-scripts",
@@ -472,7 +472,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db15.example",
                 "--output",
                 "/does/not/exist"))
         .isEqualTo(2);
@@ -490,7 +490,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-animalclinic.example",
+                "jdbc:hsqldb:mem:my-db16.example",
                 "--output",
                 "/does/not/exist/out.zip"))
         .isEqualTo(2);
@@ -521,7 +521,7 @@ public final class ExtractSubcommandTest {
 
     assertThat(
             cmd.execute(
-                "--db-address", "jdbc:hsqldb:mem:my-animalclinic.example",
+                "--db-address", "jdbc:hsqldb:mem:my-db17.example",
                 "--output", outputPath.toString(),
                 "--script-base-db", "foo=bar"))
         .isEqualTo(2);
