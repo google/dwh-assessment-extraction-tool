@@ -310,4 +310,12 @@ public final class ExtractExecutorImplTest {
     assertThat(getTeradataTimestampFromInstant(Instant.parse("2022-01-24T14:52:00.123456Z")))
         .isEqualTo("2022-01-24 14:52:00.123456");
   }
+
+  @Test
+  public void getTeradataTimestampFromInstant_timeBoundaries() {
+    assertThat(getTeradataTimestampFromInstant(Instant.parse("2022-10-01T00:00:00Z")))
+        .isEqualTo("2022-10-01 00:00:00.000000");
+    assertThat(getTeradataTimestampFromInstant(Instant.parse("2022-10-01T24:00:00Z")))
+        .isEqualTo("2022-10-02 00:00:00.000000");
+  }
 }
