@@ -105,10 +105,9 @@ public final class ExtractSubcommand implements Callable<Integer> {
   @Option(
       names = "--db-password",
       description = "The password for the database.",
-      required = true,
       arity = "0..1",
       interactive = true)
-  private String dbPassword;
+  private String dbPassword = "";
 
   @Option(
       names = "--base-db",

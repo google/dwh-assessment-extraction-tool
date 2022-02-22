@@ -67,36 +67,12 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db1.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString()))
-        .isEqualTo(0);
-
-    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
-        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
-    verify(executor).run(argumentsCaptor.capture());
-    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
-
-    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
-    assertThat(arguments.sqlScripts()).isEmpty();
-    assertThat(arguments.skipSqlScripts()).isEmpty();
-    assertThat(arguments.chunkRows()).isEqualTo(0);
-  }
-
-  @Test
-  public void call_db_user_and_db_password_success() throws IOException, SQLException {
-    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
-    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
-
-    assertThat(
-        cmd.execute(
-            "--db-address",
-            "jdbc:hsqldb:mem:shiny-brand-new-db",
-            "--db-user",
-            "dbc",
-            "--db-password",
-            "dbc",
-            "--output",
-            outputPath.toString()))
         .isEqualTo(0);
 
     ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
@@ -119,6 +95,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db2.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--rows-per-chunk",
@@ -145,6 +125,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db3.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--sql-scripts",
@@ -171,6 +155,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db4.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--skip-sql-scripts",
@@ -199,6 +187,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db5.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--schema-filter",
@@ -227,6 +219,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db6.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--qrylog-timerange-start",
@@ -255,6 +251,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db7.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--qrylog-timerange-start",
@@ -282,6 +282,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db8.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--qrylog-timerange-end",
@@ -312,6 +316,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db9.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--qrylog-timerange-start",
@@ -345,6 +353,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db10.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--qrylog-timerange-start",
@@ -377,6 +389,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db11.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--script-base-db",
@@ -402,6 +418,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db12.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--sql-scripts",
@@ -424,6 +444,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db13.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--sql-scripts",
@@ -443,6 +467,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db14.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString(),
                 "--skip-sql-scripts",
@@ -458,7 +486,15 @@ public final class ExtractSubcommandTest {
     StringWriter writer = new StringWriter();
     cmd.setErr(new PrintWriter(writer));
 
-    assertThat(cmd.execute("--output", outputPath.toString())).isEqualTo(2);
+    assertThat(
+            cmd.execute(
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString()))
+        .isEqualTo(2);
     assertThat(writer.toString()).contains("Missing required option: '--db-address=<dbAddress>'");
   }
 
@@ -473,6 +509,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db15.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 "/does/not/exist"))
         .isEqualTo(2);
@@ -491,6 +531,10 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db16.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
                 "--output",
                 "/does/not/exist/out.zip"))
         .isEqualTo(2);
@@ -507,7 +551,14 @@ public final class ExtractSubcommandTest {
 
     assertThat(
             cmd.execute(
-                "--db-address", "jdbc:fake:doesNotExist", "--output", outputPath.toString()))
+                "--db-address",
+                "jdbc:fake:doesNotExist",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString()))
         .isEqualTo(2);
     assertThat(writer.toString()).contains("Unable to connect to 'jdbc:fake:doesNotExist'");
   }
@@ -521,10 +572,34 @@ public final class ExtractSubcommandTest {
 
     assertThat(
             cmd.execute(
-                "--db-address", "jdbc:hsqldb:mem:my-db17.example",
-                "--output", outputPath.toString(),
-                "--script-base-db", "foo=bar"))
+                "--db-address",
+                "jdbc:hsqldb:mem:my-db17.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--script-base-db",
+                "foo=bar"))
         .isEqualTo(2);
     assertThat(writer.toString()).contains("unknown script(s): foo");
+  }
+
+  @Test
+  public void call_failOnUsernameNotProvided() {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    StringWriter writer = new StringWriter();
+    cmd.setErr(new PrintWriter(writer));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:my-db18.example",
+                "--output",
+                outputPath.toString()))
+        .isEqualTo(2);
+    assertThat(writer.toString()).contains("Missing required option: '--db-user=<dbUserName>'");
   }
 }
