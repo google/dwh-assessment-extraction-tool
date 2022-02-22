@@ -99,8 +99,8 @@ public final class ExtractSubcommand implements Callable<Integer> {
       })
   private String dbAddress;
 
-  @Option(names = "--db-user", description = "The user name for the database.")
-  private String dbUserName = "";
+  @Option(names = "--db-user", required = true, description = "The user name for the database.")
+  private String dbUserName;
 
   @Option(
       names = "--db-password",
