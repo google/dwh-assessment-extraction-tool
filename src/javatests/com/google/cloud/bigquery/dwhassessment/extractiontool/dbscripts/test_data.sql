@@ -641,7 +641,7 @@ VALUES (
   0
 );
 
-INSERT INTO DBC."QryLogObjectsV" (
+INSERT INTO DBC."DBQLObjTbl" (
   "ProcID",
   "CollectTimeStamp",
   "QueryID",

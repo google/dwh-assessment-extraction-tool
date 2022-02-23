@@ -24,8 +24,8 @@ SELECT
   "ObjectType",
   "FreqofUse",
   "TypeofUse"
-FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogObjectsV{{/if}}"
+FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}DBQLObjTbl{{/if}}"
 {{#if queryLogsVariables.timeRange}}
-WHERE "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogObjectsV{{/if}}"."CollectTimeStamp"
+WHERE "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}DBQLObjTbl{{/if}}"."CollectTimeStamp"
   BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
 {{/if}}

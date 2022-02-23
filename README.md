@@ -51,7 +51,7 @@ the Extraction tool binary (i.e., ExtractionTool_deploy.jar) and its run script.
   - [FunctionsV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/hx9hvPb9EvS6TP9Ta2PUzQ)
   - [IndicesV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/qkWdqMUH7HZaIkY_pSQUng)
   - [PartitioningConstraintsV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/G5eOtdk_Z5xjAgAderQlQg)
-  - [QryLogObjectsV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/FvQHxfqfQIWCkPhL9vlYvw)
+  - [DBQLObjTbl](https://docs.teradata.com/r/B7Lgdw6r3719WUyiCSJcgw/eOMXq~u5PwRV5GrooD6_9A)
   - [QryLogV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/sT8ifzajeQ9jMx7ciiu1dA)
   - [QryLogSQLV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/SQqDiRkDlOLYNSZ4dBRIGQ)
   - [RoleMembersV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/y5EHNeWIu1uFk5714KHTaw)
