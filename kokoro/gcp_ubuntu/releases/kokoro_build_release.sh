@@ -64,18 +64,18 @@ if [[ -z "${USE_TAG}" ]]; then
     err "ERROR! Tag for ${VERSION} already exists!"
   fi
 
-  code=$(http_get_error_code "Accept: application/vnd.github.v3+json" \
-    "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@api.github.com/repos/google/dwh-assessment-extraction-tool/releases/tags/${VERSION}" )
+  code="$(http_get_error_code "Accept: application/vnd.github.v3+json" \
+    "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@api.github.com/repos/google/dwh-assessment-extraction-tool/releases/tags/${VERSION}" )"
   if [ "${code}" != "404" ]; then
       err "ERROR! Release with ${VERSION} tag version name already exists or http failed! Http code is ${code}" 
   fi
 else
   VERSION="${USE_TAG}"
-  use_existing_tag=true
-
-  if [  -z "$(git tag -l ${VERSION})" ]; then
-    err "ERROR! Tag ${VERSION} is expected but does not exists exists!"
+  if [[ "${LAST_RELEASE_TAG}" ]]; then
+    LAST_GIT_TAG=${LAST_RELEASE_TAG}
   fi
+  use_existing_tag=true
+  git checkout tags/"${VERSION}" -b "${VERSION}-release"
 fi
 
 log "Version name ${VERSION} verified"
@@ -97,9 +97,9 @@ fi
 
 log "Prepare release notes"
 
-output=$(http_post_check_status  "200" "Accept: application/vnd.github.v3+json" \
+output="$(http_post_check_status  "200" "Accept: application/vnd.github.v3+json" \
   "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@api.github.com/repos/google/dwh-assessment-extraction-tool/releases/generate-notes" \
-  '{"tag_name":"'${VERSION}'","previous_tag_name":"'${LAST_GIT_TAG}'"}' )
+  '{"tag_name":"'${VERSION}'","previous_tag_name":"'${LAST_GIT_TAG}'"}' )"
 release_body="$(jq -r '.body'   <<< $output )"
 
 log "Create release"
@@ -121,7 +121,7 @@ log "Append zip file to the release"
 # Attach release binary file to the release
 release_id="$(jq -r '.id' <<< ${response} )"
 curl \
-   --data-binary @$KOKORO_RELEASE_OUTPUT_FILE \
+  --data-binary @${KOKORO_RELEASE_OUTPUT_FILE} \
   -H "Content-Type: application/octet-stream" \
   "https://${GIT_RELEASES_USERNAME}:${GIT_PSW}@uploads.github.com/repos/google/dwh-assessment-extraction-tool/releases/${release_id}/assets?name=dwh-assessment-extraction-tool-${VERSION}.zip"
 
