@@ -597,9 +597,30 @@ public final class ExtractSubcommandTest {
             cmd.execute(
                 "--db-address",
                 "jdbc:hsqldb:mem:my-db18.example",
+                "--db-password",
+                "my0password",
                 "--output",
                 outputPath.toString()))
         .isEqualTo(2);
     assertThat(writer.toString()).contains("Missing required option: '--db-user=<dbUserName>'");
+  }
+
+  @Test
+  public void call_failOnPasswordNotProvided() {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    StringWriter writer = new StringWriter();
+    cmd.setErr(new PrintWriter(writer));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:my-db19.example",
+                "--db-user",
+                "my-username",
+                "--output",
+                outputPath.toString()))
+        .isEqualTo(2);
+    assertThat(writer.toString()).contains("Missing required option: '--db-password'");
   }
 }
