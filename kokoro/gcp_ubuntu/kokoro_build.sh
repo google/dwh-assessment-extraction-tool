@@ -31,7 +31,12 @@
 # Fail on any error.
 set -e
 
+#delete instance after error
+trap 'termInstance' ERR
+
 termInstance() {
+  echo "Error trapped, line $(caller)" >&2
+  trap - ERR
   gcloud compute instances delete "${TD_HOST}" --zone us-central1-a --project="${GCP_PROJECT}" --quiet
 
   #Generate test report
@@ -47,9 +52,6 @@ termInstance() {
   done
 
 }
-
-#delete instance after error
-trap 'termInstance' ERR
 
 #Variables
 export KOKORO_PROJECT_NAME="${KOKORO_JOB_NAME##*/}"
