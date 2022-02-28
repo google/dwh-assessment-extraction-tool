@@ -16,17 +16,11 @@ load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
 package(default_visibility = ["//src:internal"])
 
 java_library(
-    name = "executor",
+    name = "common",
     srcs = glob(["*.java"]),
     deps = [
         "//src:auto_value_plugin",
-        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/common",
-        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
-        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
         "@maven//:com_google_auto_value_auto_value",
         "@maven//:com_google_auto_value_auto_value_annotations",
-        "@maven//:com_google_guava_guava_30_1_1_jre",
-        "@maven//:com_google_re2j_re2j",
-        "@maven//:org_apache_avro_avro",
     ],
 )

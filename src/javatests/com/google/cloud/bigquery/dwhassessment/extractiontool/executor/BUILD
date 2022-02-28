@@ -17,6 +17,7 @@ java_library(
     name = "tests",
     srcs = glob(["*.java"]),
     deps = [
+        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/common",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
@@ -34,6 +35,15 @@ java_test(
     name = "ExtractExecutorImplTest",
     size = "small",
     test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutorImplTest",
+    runtime_deps = [
+        ":tests",
+    ],
+)
+
+java_test(
+    name = "SaveCheckerImplTest",
+    size = "small",
+    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.executor.SaveCheckerImplTest",
     runtime_deps = [
         ":tests",
     ],
