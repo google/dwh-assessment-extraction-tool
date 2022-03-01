@@ -144,7 +144,7 @@ SELECT
 FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}"
 {{#if queryLogsVariables.timeRange}}
 WHERE "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}"."StartTime"
-  BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
+  BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}+00:00' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}+00:00'
 {{/if}}
 {{#if sortingColumns}}
 ORDER BY {{#each sortingColumns}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}} ASC NULLS FIRST

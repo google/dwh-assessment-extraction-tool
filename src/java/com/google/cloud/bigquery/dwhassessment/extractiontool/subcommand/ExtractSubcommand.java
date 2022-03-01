@@ -18,6 +18,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor.RunMode;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -188,12 +189,6 @@ public final class ExtractSubcommand implements Callable<Integer> {
       })
   private String endTimeString;
 
-  public ExtractSubcommand(
-      Supplier<ExtractExecutor> executorSupplier, ScriptManager scriptManager) {
-    this.executorSupplier = executorSupplier;
-    this.scriptManager = scriptManager;
-  }
-
   @Option(
       names = "--dry-run",
       description = {
@@ -212,9 +207,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
             + " number defines the maximum rows per chunk holds. Chunk mode is not available if the"
             + " target output is a zip file."
       })
-  private void setChunkRows(Integer chunkRows) {
-    argumentsBuilder.setChunkRows(chunkRows);
-  }
+  private Integer chunkRows;
 
   @Option(
       names = {"--output", "-o"},
@@ -241,6 +234,27 @@ public final class ExtractSubcommand implements Callable<Integer> {
     }
     argumentsBuilder.setOutputPath(path);
   }
+
+  @Option(
+      names = "--run-mode",
+      description = {
+        "Available modes: ${COMPLETION-CANDIDATES}",
+        "INCREMENTAL:",
+        "  Continue from a previous successful run for script supporting chunked mode.",
+        "  Scripts not supporting chunked mode will be run as normal.",
+        "  It is the user's duty to ensure that user-specified time range remains the same as the"
+            + " previous run(s)."
+      },
+      defaultValue = "NORMAL")
+  private RunMode mode;
+
+  @Option(
+      names = {"--prev-run-path"},
+      description = {
+        "Path containing records of previous run(s).",
+        "Can only be a directory. Needs to be specified for incremental / recovery runs."
+      })
+  private String prevRunPathString;
 
   @Option(
       names = "--sql-scripts",
@@ -299,7 +313,39 @@ public final class ExtractSubcommand implements Callable<Integer> {
     argumentsBuilder.setSchemaFilters(schemaFilters);
   }
 
+  public ExtractSubcommand(
+      Supplier<ExtractExecutor> executorSupplier, ScriptManager scriptManager) {
+    this.executorSupplier = executorSupplier;
+    this.scriptManager = scriptManager;
+  }
+
   private ExtractExecutor.Arguments getValidatedArguments() {
+    // prevRunPath is set only when the specified mode is not NORMAL.
+    if (!mode.equals(RunMode.NORMAL)) {
+      if (chunkRows < 1) {
+        throw new ParameterException(
+            spec.commandLine(), "Non-normal run modes require chunked processing.");
+      }
+      if (prevRunPathString == null) {
+        throw new ParameterException(
+            spec.commandLine(), "--run-mode is not NORMAL but --prev-run-path is unspecified.");
+      }
+      Path path = Paths.get(prevRunPathString);
+      if (path.toString().endsWith(".zip")) {
+        throw new ParameterException(
+            spec.commandLine(),
+            "Incremental and recovery run modes are not supported for zipped records, yet.");
+      }
+      if (!Files.isDirectory(path)) {
+        throw new ParameterException(
+            spec.commandLine(),
+            String.format(
+                "--prev-run-path must specify a directory, but '%s' is not a directory.", path));
+      }
+      argumentsBuilder.setPrevRunPath(path);
+    }
+    argumentsBuilder.setMode(mode).setChunkRows(chunkRows);
+
     try {
       DriverManager.getConnection(dbAddress, dbUserName, dbPassword);
     } catch (SQLException e) {
@@ -308,6 +354,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
           String.format("Unable to connect to '%s': %s", dbAddress, e.getMessage()),
           e);
     }
+
     Properties connectionProperties = new Properties();
     connectionProperties.put("user", dbUserName);
     connectionProperties.put("password", dbPassword);

@@ -20,25 +20,29 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import com.google.cloud.bigquery.dwhassessment.extractiontool.common.ChunkCheckpoint;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager.SchemaKey;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlTemplateRenderer;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor.Arguments;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor.RunMode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.re2j.Pattern;
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Properties;
 import org.apache.avro.Schema;
@@ -56,13 +60,17 @@ public final class ExtractExecutorImplTest {
   private DataEntityManager dataEntityManager;
   private ExtractExecutorImpl executor;
   private Properties properties;
+  private SaveChecker saveChecker;
 
   @Before
   public void setUp() {
     schemaManager = mock(SchemaManager.class);
     scriptManager = mock(ScriptManager.class);
     dataEntityManager = mock(DataEntityManager.class);
-    executor = new ExtractExecutorImpl(schemaManager, scriptManager, path -> dataEntityManager);
+    saveChecker = mock(SaveChecker.class);
+    executor =
+        new ExtractExecutorImpl(
+            schemaManager, scriptManager, saveChecker, path -> dataEntityManager);
     properties = new Properties();
     properties.put("user", "");
     properties.put("password", "");
@@ -91,6 +99,7 @@ public final class ExtractExecutorImplTest {
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("one"),
             eq(dataEntityManager),
+            eq(0),
             eq(0));
     verify(scriptManager)
         .executeScript(
@@ -99,6 +108,7 @@ public final class ExtractExecutorImplTest {
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("two"),
             eq(dataEntityManager),
+            eq(0),
             eq(0));
     verify(scriptManager)
         .executeScript(
@@ -107,8 +117,148 @@ public final class ExtractExecutorImplTest {
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("three"),
             eq(dataEntityManager),
+            eq(0),
             eq(0));
     verifyNoMoreInteractions(scriptManager);
+  }
+
+  @Test
+  public void run_incrementalMode_success() throws Exception {
+    when(scriptManager.getAllScriptNames())
+        .thenReturn(ImmutableSet.of("test_script_0", "test_script_1"));
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
+    Instant testInstant0 = Instant.parse("2007-07-07T20:07:07.007000000Z");
+    Instant testInstant1 = Instant.parse("2017-07-07T20:07:07.007000000Z");
+    when(saveChecker.getScriptCheckPoints(Paths.get("test_path")))
+        .thenReturn(
+            ImmutableMap.of(
+                "test_script_0",
+                ChunkCheckpoint.builder()
+                    .setLastSavedChunkNumber(1)
+                    .setLastSavedInstant(testInstant0)
+                    .build(),
+                "test_script_1",
+                ChunkCheckpoint.builder()
+                    .setLastSavedChunkNumber(5)
+                    .setLastSavedInstant(testInstant1)
+                    .build()));
+    Arguments arguments =
+        Arguments.builder()
+            .setDbConnectionProperties(properties)
+            .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
+            .setOutputPath(Paths.get("/tmp"))
+            .setMode(RunMode.INCREMENTAL)
+            .setChunkRows(5000)
+            .setPrevRunPath(Paths.get("test_path"))
+            .build();
+
+    assertThat(executor.run(arguments)).isEqualTo(0);
+
+    verify(scriptManager).getAllScriptNames();
+    verify(scriptManager)
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            argThat(
+                (SqlTemplateRenderer renderer) ->
+                    renderer
+                        .getSqlScriptVariablesBuilder()
+                        .build()
+                        .getQueryLogsVariables()
+                        .getTimeRange()
+                        .getStartTimestamp()
+                        .contentEquals(
+                            getTeradataTimestampFromInstant(testInstant0.plusNanos(1000)))),
+            /*scriptName=*/ eq("test_script_0"),
+            eq(dataEntityManager),
+            eq(5000),
+            eq(1 + 1));
+    verify(scriptManager)
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            argThat(
+                (SqlTemplateRenderer renderer) ->
+                    renderer
+                        .getSqlScriptVariablesBuilder()
+                        .build()
+                        .getQueryLogsVariables()
+                        .getTimeRange()
+                        .getStartTimestamp()
+                        .contentEquals(
+                            getTeradataTimestampFromInstant(testInstant1.plusNanos(1000)))),
+            /*scriptName=*/ eq("test_script_1"),
+            eq(dataEntityManager),
+            eq(5000),
+            eq(5 + 1));
+    verifyNoMoreInteractions(scriptManager);
+  }
+
+  @Test
+  public void run_saveCheckerNotInvokedIfRunChunked() throws Exception {
+    when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("test_script"));
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
+    // saveChecker should not be invoked with chunk number < 1 regardless of mode.
+    when(saveChecker.getScriptCheckPoints(Paths.get("test_path"))).thenReturn(ImmutableMap.of());
+    Arguments arguments =
+        Arguments.builder()
+            .setDbConnectionProperties(properties)
+            .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
+            .setOutputPath(Paths.get("/tmp"))
+            .setMode(RunMode.INCREMENTAL)
+            .setChunkRows(0)
+            .setPrevRunPath(Paths.get("test_path"))
+            .build();
+
+    assertThat(executor.run(arguments)).isEqualTo(0);
+
+    verify(scriptManager).getAllScriptNames();
+    verify(scriptManager)
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            any(SqlTemplateRenderer.class),
+            /*scriptName=*/ eq("test_script"),
+            eq(dataEntityManager),
+            eq(0),
+            eq(0));
+    verifyNoMoreInteractions(scriptManager);
+    verifyNoMoreInteractions(saveChecker);
+  }
+
+  @Test
+  public void run_normalModeChunked_success() throws Exception {
+    when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("test_script"));
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
+    // saveChecker should not be invoked in normal mode regardless of chunk number.
+    when(saveChecker.getScriptCheckPoints(Paths.get("test_path"))).thenReturn(ImmutableMap.of());
+    Arguments arguments =
+        Arguments.builder()
+            .setDbConnectionProperties(properties)
+            .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
+            .setOutputPath(Paths.get("/tmp"))
+            .setMode(RunMode.NORMAL)
+            .setChunkRows(5)
+            .setPrevRunPath(Paths.get("test_path"))
+            .build();
+
+    assertThat(executor.run(arguments)).isEqualTo(0);
+
+    verify(scriptManager).getAllScriptNames();
+    verify(scriptManager)
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            any(SqlTemplateRenderer.class),
+            /*scriptName=*/ eq("test_script"),
+            eq(dataEntityManager),
+            eq(5),
+            eq(0));
+    verifyNoMoreInteractions(scriptManager);
+    verifyNoMoreInteractions(saveChecker);
   }
 
   @Test
@@ -138,7 +288,9 @@ public final class ExtractExecutorImplTest {
             any(Connection.class),
             /*dryRun=*/ eq(false),
             sqlTemplateRendererArgumentCaptorOne.capture(),
-            /*scriptName=*/ eq("one"),eq(dataEntityManager),
+            /*scriptName=*/ eq("one"),
+            eq(dataEntityManager),
+            eq(0),
             eq(0));
     assertThat(
             sqlTemplateRendererArgumentCaptorOne
@@ -153,7 +305,9 @@ public final class ExtractExecutorImplTest {
             any(Connection.class),
             /*dryRun=*/ eq(false),
             sqlTemplateRendererArgumentCaptorTwo.capture(),
-            /*scriptName=*/ eq("two"),eq(dataEntityManager),
+            /*scriptName=*/ eq("two"),
+            eq(dataEntityManager),
+            eq(0),
             eq(0));
     assertThat(
             sqlTemplateRendererArgumentCaptorTwo
@@ -188,6 +342,7 @@ public final class ExtractExecutorImplTest {
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("one"),
             eq(dataEntityManager),
+            eq(0),
             eq(0));
     verify(scriptManager)
         .executeScript(
@@ -196,6 +351,7 @@ public final class ExtractExecutorImplTest {
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("three"),
             eq(dataEntityManager),
+            eq(0),
             eq(0));
     verifyNoMoreInteractions(scriptManager);
   }
@@ -224,6 +380,7 @@ public final class ExtractExecutorImplTest {
             any(SqlTemplateRenderer.class),
             /*scriptName=*/ eq("two"),
             eq(dataEntityManager),
+            eq(0),
             eq(0));
     verifyNoMoreInteractions(scriptManager);
   }

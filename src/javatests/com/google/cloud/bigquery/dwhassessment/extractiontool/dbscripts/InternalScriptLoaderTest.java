@@ -865,7 +865,8 @@ public class InternalScriptLoaderTest {
         sqlTemplateRenderer,
         scriptName,
         new FakeDataEntityManagerImpl(outputStream),
-        5000);
+        5000,
+        0);
   }
 
   private ImmutableList<GenericRecord> executeScriptToAvro(String scriptName, Schema schema)

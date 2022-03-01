@@ -25,6 +25,7 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManagerImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptRunnerImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor.RunMode;
 import com.google.common.collect.ImmutableMap;
 import com.google.re2j.Pattern;
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.Instant;
 import org.junit.BeforeClass;
@@ -46,6 +48,7 @@ import picocli.CommandLine;
 public final class ExtractSubcommandTest {
 
   private static Path outputPath;
+  private static Path prevRunPath;
 
   private final ScriptManager scriptManager =
       new ScriptManagerImpl(
@@ -56,6 +59,7 @@ public final class ExtractSubcommandTest {
   @BeforeClass
   public static void setUpClass() throws IOException {
     outputPath = Files.createTempDirectory("extract-test");
+    prevRunPath = Files.createTempDirectory("prev-extract-test");
   }
 
   @Test
@@ -408,6 +412,42 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
+  public void call_successWithIncrementalMode() throws SQLException, IOException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-inc-success.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--run-mode",
+                "INCREMENTAL",
+                "--rows-per-chunk",
+                "5000",
+                "--prev-run-path",
+                prevRunPath.toString()))
+        .isEqualTo(0);
+
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
+    assertThat(arguments.mode()).isEqualTo(RunMode.INCREMENTAL);
+    assertThat(arguments.prevRunPath().orElse(Paths.get("")).toString())
+        .isEqualTo(prevRunPath.toString());
+    assertThat(arguments.sqlScripts()).isEmpty();
+    assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.chunkRows()).isEqualTo(5000);
+  }
+
+  @Test
   public void call_failOnDefiningSqlScriptsAndSkipSqlScripts() {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
@@ -540,6 +580,116 @@ public final class ExtractSubcommandTest {
         .isEqualTo(2);
     assertThat(writer.toString())
         .contains("Parent path of --output '/does/not/exist' is not a directory.");
+  }
+
+  @Test
+  public void call_failOnIncrementalModeWithoutPrevRunPath() {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    StringWriter writer = new StringWriter();
+    cmd.setErr(new PrintWriter(writer));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-inc-fail-no-path.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--run-mode",
+                "INCREMENTAL",
+                "--rows-per-chunk",
+                "5000"))
+        .isEqualTo(2);
+    assertThat(writer.toString())
+        .contains("--run-mode is not NORMAL but --prev-run-path is unspecified.");
+  }
+
+  @Test
+  public void call_failOnIncrementalModeWithoutChunking() {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    StringWriter writer = new StringWriter();
+    cmd.setErr(new PrintWriter(writer));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-inc-fail-no-chunking.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--run-mode",
+                "INCREMENTAL",
+                "--prev-run-path",
+                prevRunPath.toString()))
+        .isEqualTo(2);
+    assertThat(writer.toString()).contains("Non-normal run modes require chunked processing.");
+  }
+
+  @Test
+  public void call_failOnIncrementalModeWithZip() {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    StringWriter writer = new StringWriter();
+    cmd.setErr(new PrintWriter(writer));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-inc-fail-zip.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--run-mode",
+                "INCREMENTAL",
+                "--rows-per-chunk",
+                "5000",
+                "--prev-run-path",
+                "/path/ending/with.zip"))
+        .isEqualTo(2);
+    assertThat(writer.toString())
+        .contains("Incremental and recovery run modes are not supported for zipped records, yet.");
+  }
+
+  @Test
+  public void call_failOnIncorrectPrevRunPath() {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    StringWriter writer = new StringWriter();
+    cmd.setErr(new PrintWriter(writer));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-inc-fail-wrong-path.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--run-mode",
+                "INCREMENTAL",
+                "--rows-per-chunk",
+                "5000",
+                "--prev-run-path",
+                "/does/not/exist"))
+        .isEqualTo(2);
+    assertThat(writer.toString())
+        .contains(
+            String.format(
+                "--prev-run-path must specify a directory, but '%s' is not a directory.",
+                "/does/not/exist"));
   }
 
   @Test
