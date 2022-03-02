@@ -56,10 +56,7 @@ public class SaveCheckerImplTest {
     Files.createFile(
         tmpDir.resolve(
             SCRIPT_NAME + "-20140707T170707S000027-20140707T170707S000028_2" + AVRO_SUFFIX));
-    Files.createFile(
-        tmpDir.resolve(SCRIPT_NAME + "-20140707T170707S000037-20140707T170707S000038_0" + ".txt"));
-    Files.createDirectory(
-        tmpDir.resolve(SCRIPT_NAME + "-20140707T170707S000047-20140707T170707S000048_0"));
+    Files.createFile(tmpDir.resolve("file_to_be_ignored"));
 
     ImmutableMap<String, ChunkCheckpoint> checkpoints = saveChecker.getScriptCheckPoints(tmpDir);
 
@@ -71,6 +68,27 @@ public class SaveCheckerImplTest {
                     .setLastSavedChunkNumber(2)
                     .setLastSavedInstant(Instant.parse("2014-07-07T17:07:07.000028Z"))
                     .build()));
+  }
+
+  @Test
+  public void getScriptCheckpoints_unmatchingFilenamesAreIgnored() throws IOException {
+    // Lower cased timestamp separators.
+    Files.createFile(
+        tmpDir.resolve(
+            SCRIPT_NAME + "-20140707t170707s000007-20140707t170707s000008_0" + AVRO_SUFFIX));
+    // Non-avro suffix.
+    Files.createFile(
+        tmpDir.resolve(SCRIPT_NAME + "-20140707T170707S000027-20140707T170707S000028_0" + ".txt"));
+    // Directory.
+    Files.createDirectory(
+        tmpDir.resolve(
+            SCRIPT_NAME + "-20140707T170707S000047-20140707T170707S000048_0" + AVRO_SUFFIX));
+    // Non-chunked file.
+    Files.createDirectory(tmpDir.resolve(SCRIPT_NAME + AVRO_SUFFIX));
+
+    ImmutableMap<String, ChunkCheckpoint> checkpoints = saveChecker.getScriptCheckPoints(tmpDir);
+
+    assertThat(checkpoints).isEqualTo(ImmutableMap.of());
   }
 
   @Test

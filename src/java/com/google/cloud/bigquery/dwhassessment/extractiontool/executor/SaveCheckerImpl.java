@@ -15,7 +15,10 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.executor;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.collectingAndThen;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.common.ChunkCheckpoint;
 import com.google.common.collect.ImmutableList;
@@ -49,7 +52,8 @@ public class SaveCheckerImpl implements SaveChecker {
   // last timestamps, and “n” is the index of the chunk,
   // respectively. See go/chunked-dwh-assessment-extraction-dd for further details.
   private static final Pattern INPUT_CHUNK_PATTERN =
-      Pattern.compile("([\\w_]+)-(\\d{8}T\\d{6}S\\d{6})-(\\d{8}T\\d{6}S\\d{6})_(\\d+)\\.avro");
+      Pattern.compile(
+          "(?P<scriptName>[\\w_]+)-(\\d{8}T\\d{6}S\\d{6})-(\\d{8}T\\d{6}S\\d{6})_(?P<chunkNumber>\\d+)\\.avro");
 
   // TODO(cyulysses-corp): collect different date-time parser/formatters into the same place for
   // reliable references.
@@ -67,32 +71,41 @@ public class SaveCheckerImpl implements SaveChecker {
     this.sortingColumnsMap = sortingColumnsMap;
   }
 
-  @Override
-  public ImmutableMap<String, ChunkCheckpoint> getScriptCheckPoints(Path path) {
-    Map<String, List<Matcher>> fileMap;
+  private static Map<String, List<Matcher>> getFileMapSortingEachGroupByChunkNumber(Path path) {
     try {
-      fileMap =
-          Files.walk(path)
-              .filter(Files::isRegularFile)
-              .map(oneFile -> INPUT_CHUNK_PATTERN.matcher(oneFile.getFileName().toString()))
-              .filter(Matcher::matches)
-              .collect(
-                  groupingBy(
-                      (Matcher matcher) -> matcher.group(1),
-                      mapping(
-                          Function.identity(),
-                          collectingAndThen(
-                              toList(),
-                              list ->
-                                  list.stream()
-                                      .sorted(
-                                          Comparator.comparingInt(
-                                              matcher -> Integer.parseInt(matcher.group(4))))
-                                      .collect(toList())))));
+      return Files.walk(path)
+          .filter(Files::isRegularFile)
+          .map(oneFile -> INPUT_CHUNK_PATTERN.matcher(oneFile.getFileName().toString()))
+          .filter(Matcher::matches)
+          .collect(
+              groupingBy(
+                  (Matcher matcher) -> matcher.group("scriptName"),
+                  mapping(
+                      Function.identity(),
+                      collectingAndThen(
+                          toList(),
+                          list ->
+                              list.stream()
+                                  .sorted(
+                                      Comparator.comparingInt(
+                                          matcher ->
+                                              Integer.parseInt(matcher.group("chunkNumber"))))
+                                  .collect(toList())))));
     } catch (IOException e) {
       throw new IllegalStateException(
           String.format("Error reading path '%s'.", path.toString()), e);
     }
+  }
+
+  private static Instant getInstantFromFilenameTimestamp(String timestamp) {
+    return ZonedDateTime.of(
+            chunkTimestampFormatter.parse(timestamp, LocalDateTime::from), ZoneOffset.UTC)
+        .toInstant();
+  }
+
+  @Override
+  public ImmutableMap<String, ChunkCheckpoint> getScriptCheckPoints(Path path) {
+    Map<String, List<Matcher>> fileMap = getFileMapSortingEachGroupByChunkNumber(path);
     ImmutableMap.Builder<String, ChunkCheckpoint> checkPointsMapBuilder = ImmutableMap.builder();
     for (String scriptName : sortingColumnsMap.keySet()) {
       if (fileMap.containsKey(scriptName) && !fileMap.get(scriptName).isEmpty()) {
@@ -104,12 +117,9 @@ public class SaveCheckerImpl implements SaveChecker {
         validateSortedChunkSequence(matchers);
         Matcher lastMatcher = Iterables.getLast(matchers);
         Instant lastInstant;
+        String lastTimestamp = lastMatcher.group(3);
         try {
-          lastInstant =
-              ZonedDateTime.of(
-                      chunkTimestampFormatter.parse(lastMatcher.group(3), LocalDateTime::from),
-                      ZoneOffset.UTC)
-                  .toInstant();
+          lastInstant = getInstantFromFilenameTimestamp(lastTimestamp);
         } catch (DateTimeParseException e) {
           throw new IllegalStateException(
               String.format(
@@ -121,7 +131,7 @@ public class SaveCheckerImpl implements SaveChecker {
             scriptName,
             ChunkCheckpoint.builder()
                 .setLastSavedInstant(lastInstant)
-                .setLastSavedChunkNumber(Integer.parseInt(lastMatcher.group(4)))
+                .setLastSavedChunkNumber(Integer.parseInt(lastMatcher.group("chunkNumber")))
                 .build());
       }
     }
@@ -132,10 +142,15 @@ public class SaveCheckerImpl implements SaveChecker {
     String prevEnding = "-10000000T000000S000000";
     int prevChunkIndex = -1;
     String prevFileName = "(beginning)";
-    String fileName;
+    String fileName, firstTimestamp, lastTimestamp, chunkIndex;
     for (Matcher matcher : matchers) {
       fileName = matcher.group();
-      if (Integer.parseInt(matcher.group(4)) - prevChunkIndex != 1) {
+      firstTimestamp = matcher.group(2);
+      lastTimestamp = matcher.group(3);
+      chunkIndex = matcher.group(4);
+
+      // Check that the chunk numbers of two consecutive chunk are also consecutive.
+      if (Integer.parseInt(chunkIndex) - prevChunkIndex != 1) {
         throw new IllegalStateException(
             String.format(
                 "The chunk index of file %s breaks the consecutiveness with other files (the"
@@ -143,14 +158,16 @@ public class SaveCheckerImpl implements SaveChecker {
                     + " Aborting.",
                 fileName, prevChunkIndex));
       }
-      if (matcher.group(2).compareTo(prevEnding) <= 0) {
+      // Check that there is no overlap between the timeranges of two consecutive chunks.
+      if (firstTimestamp.compareTo(prevEnding) <= 0) {
         throw new IllegalStateException(
             String.format(
                 "The first time stamp of file %s is no later than the last time stamp of the"
                     + " previous file %s, possibly indicating mixed runs. Aborting. ",
                 fileName, prevFileName));
       }
-      if (matcher.group(3).compareTo(matcher.group(2)) < 0) {
+      // Check that the timestamps in the same filename are not in reversed order.
+      if (lastTimestamp.compareTo(firstTimestamp) < 0) {
         throw new IllegalStateException(
             String.format(
                 "The last timestamp in file %s is earlier than the first one, which should not"
@@ -159,7 +176,7 @@ public class SaveCheckerImpl implements SaveChecker {
       }
       prevChunkIndex++;
       prevFileName = fileName;
-      prevEnding = matcher.group(3);
+      prevEnding = lastTimestamp;
     }
   }
 }
