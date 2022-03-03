@@ -37,6 +37,7 @@ CREATE TABLE DBC."TablesV" (
   "ChildCount" SMALLINT,
   "CommitOpt" CHAR(1),
   "CheckOpt" CHAR(1),
+  "RequestText" VARCHAR(12500),
   PRIMARY KEY ("DatabaseName", "TableName")
 );
 
@@ -61,6 +62,9 @@ CREATE TABLE DBC."ColumnsV" (
   "ConstraintCount" SMALLINT,
   "Nullable" CHAR(1),
   "UpperCaseFlag" CHAR(1),
+  "DecimalTotalDigits" SMALLINT,
+  "DecimalFractionalDigits" SMALLINT,
+  "ColumnId" SMALLINT NOT NULL,
   PRIMARY KEY ("DatabaseName", "TableName", "ColumnName")
 );
 
@@ -363,4 +367,12 @@ CREATE TABLE DBC."StatsV" (
   "RowCount" INTEGER,
   "UniqueValueCount" INTEGER,
   "CreateTimeStamp" TIMESTAMP(6) NOT NULL
+);
+
+CREATE TABLE DBC."TableTextV" (
+  "DatabaseName" VARCHAR(128) NOT NULL,
+  "TableName" VARCHAR(128) NOT NULL,
+  "TableKind" CHAR(1) NOT NULL,
+  "RequestText" VARCHAR(32000),
+  "LineNo" SMALLINT NOT NULL
 );

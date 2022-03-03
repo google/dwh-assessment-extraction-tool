@@ -537,6 +537,7 @@ public class InternalScriptLoaderTest {
             .set("ChildCount", 10)
             .set("CommitOpt", "C")
             .set("CheckOpt", "Y")
+            .set("RequestText", "test_request_text")
             .build();
     assertThat(records).containsExactly(expectedRecord);
 
@@ -589,6 +590,9 @@ public class InternalScriptLoaderTest {
             .set("ConstraintCount", 1)
             .set("Nullable", "Y")
             .set("UpperCaseFlag", "U")
+            .set("DecimalTotalDigits", 10)
+            .set("DecimalFractionalDigits", 5)
+            .set("ColumnId", 123)
             .build();
     assertThat(records).containsExactly(expectedRecord);
 
