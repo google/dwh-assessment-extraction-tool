@@ -332,7 +332,8 @@ INSERT INTO DBC."TablesV" (
   "ParentCount",
   "ChildCount",
   "CommitOpt",
-  "CheckOpt"
+  "CheckOpt",
+  "RequestText"
 )
 VALUES (
   'test_database',
@@ -347,7 +348,8 @@ VALUES (
   2,
   10,
   'C',
-  'Y'
+  'Y',
+  'test_request_text'
 ), (
   'dbc',
   'test_table',
@@ -361,7 +363,8 @@ VALUES (
   2,
   10,
   'C',
-  'Y'
+  'Y',
+  'test_request_text'
 );
 
 INSERT INTO DBC."TableSizeV" (
@@ -394,7 +397,10 @@ INSERT INTO DBC."ColumnsV" (
   "ColumnConstraint",
   "ConstraintCount",
   "Nullable",
-  "UpperCaseFlag"
+  "UpperCaseFlag",
+  "DecimalTotalDigits",
+  "DecimalFractionalDigits",
+  "ColumnId"
 )
 VALUES (
   'test_database',
@@ -408,7 +414,10 @@ VALUES (
   'test constraint',
   1,
   'Y',
-  'U'
+  'U',
+  10,
+  5,
+  123
 ), (
    'test_database',
    'not_existing_table',
@@ -421,7 +430,10 @@ VALUES (
    'test constraint',
    1,
    'N',
-   'C'
+   'C',
+   10,
+   5,
+   123
 );
 
 INSERT INTO DBC."DatabasesV" (
@@ -683,4 +695,19 @@ VALUES (
   20,
   3,
   TIMESTAMP '2021-07-01 18:23:42'
+);
+
+INSERT INTO DBC."TableTextV" (
+  "DatabaseName",
+  "TableName",
+  "TableKind",
+  "RequestText",
+  "LineNo"
+)
+VALUES (
+  'test_database',
+  'test_table',
+  'V',
+  'test_request_text',
+  1
 );

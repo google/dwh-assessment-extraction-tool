@@ -25,7 +25,8 @@ SELECT
   "ParentCount",
   "ChildCount",
   "CommitOpt",
-  "CheckOpt"
+  "CheckOpt",
+  "RequestText"
 FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}TablesV{{/if}}"
 WHERE
   "TableKind" IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND
