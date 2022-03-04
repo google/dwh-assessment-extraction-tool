@@ -174,6 +174,7 @@ public class SaveCheckerImpl implements SaveChecker {
                     + " happen. Aborting.",
                 fileName));
       }
+
       prevChunkIndex++;
       prevFileName = fileName;
       prevEnding = lastTimestamp;
