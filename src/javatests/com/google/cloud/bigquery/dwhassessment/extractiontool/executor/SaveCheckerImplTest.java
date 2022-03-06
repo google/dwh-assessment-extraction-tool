@@ -151,7 +151,13 @@ public class SaveCheckerImplTest {
 
     IllegalStateException e =
         assertThrows(IllegalStateException.class, () -> saveChecker.getScriptCheckPoints(tmpDir));
-    assertThat(e).hasMessageThat().contains("consecutiveness");
+    assertThat(e)
+        .hasMessageThat()
+        .contains(
+            String.format(
+                "The chunk index of file %s breaks the consecutiveness with other files (the"
+                    + " previous chunk number is %d)",
+                SCRIPT_NAME + "-20140707T170707S000027-20140707T170707S000028_2" + AVRO_SUFFIX, 0));
   }
 
   @Test
@@ -163,7 +169,14 @@ public class SaveCheckerImplTest {
 
     IllegalStateException e =
         assertThrows(IllegalStateException.class, () -> saveChecker.getScriptCheckPoints(tmpDir));
-    assertThat(e).hasMessageThat().contains("consecutiveness");
+    assertThat(e)
+        .hasMessageThat()
+        .contains(
+            String.format(
+                "The chunk index of file %s breaks the consecutiveness with other files (the"
+                    + " previous chunk number is %d)",
+                SCRIPT_NAME + "-20140707T170707S000007-20140707T170707S000017_1" + AVRO_SUFFIX,
+                -1));
   }
 
   @Test
