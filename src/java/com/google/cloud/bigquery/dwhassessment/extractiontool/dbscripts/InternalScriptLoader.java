@@ -48,6 +48,7 @@ public class InternalScriptLoader implements ScriptLoader {
           "stats",
           "tableinfo",
           "tablesize",
+          "tabletext",
           "temp_tables",
           "users");
 

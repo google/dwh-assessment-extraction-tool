@@ -58,6 +58,7 @@ the Extraction tool binary (i.e., ExtractionTool_deploy.jar) and its run script.
   - [StatsV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/nLsDT6mdwnn1QrOG35ttMw)
   - [TablesV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/JKGDTOsfv6_gr8wswcE9eA)
   - [TableSizeV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/qQd_5O6fT0QrDcSfDEZj~Q)
+  - [TableTextV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/h0HJktc4jYAtjKjVExdjUw)
   - [UsersV](https://docs.teradata.com/r/oiS9ixs2ypIQvjTUOJfgoA/rES2eYXMN2IBoFBIPIWz0Q)
 - [Click to view the scripts.](src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dbscripts)
 

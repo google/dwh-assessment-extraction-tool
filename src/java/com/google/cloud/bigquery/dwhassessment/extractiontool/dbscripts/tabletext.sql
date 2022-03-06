@@ -13,27 +13,15 @@
 -- limitations under the License.
 
 SELECT
-  "TablesV"."DatabaseName",
-  "TablesV"."TableName",
-  "ColumnsV"."ColumnName",
-  "ColumnsV"."ColumnFormat",
-  "ColumnsV"."ColumnTitle",
-  "ColumnsV"."ColumnLength",
-  "ColumnsV"."ColumnType",
-  "ColumnsV"."DefaultValue",
-  "ColumnsV"."ColumnConstraint",
-  "ColumnsV"."ConstraintCount",
-  "ColumnsV"."Nullable",
-  "ColumnsV"."UpperCaseFlag",
-  "ColumnsV"."DecimalTotalDigits",
-  "ColumnsV"."DecimalFractionalDigits",
-  "ColumnsV"."ColumnId"
-FROM "{{baseDatabase}}"."TablesV"
-INNER JOIN "{{baseDatabase}}"."ColumnsV" ON "TablesV"."DatabaseName" = "ColumnsV"."DatabaseName"
-        AND "TablesV"."TableName" = "ColumnsV"."TableName"
+  "DatabaseName",
+  "TableName",
+  "TableKind",
+  "RequestText",
+  "LineNo"
+FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}TableTextV{{/if}}"
 WHERE
-  "TablesV"."TableKind" IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND
-  "TablesV"."DatabaseName" NOT IN (
+  "TableKind" IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND
+  "DatabaseName" NOT IN (
     'dbc', 'SYSJDBC', 'TD_SYSGPL', 'SYSLIB', 'SYSSPATIAL', 'TD_SYSXML',
     'Crashdumps', 'viewpoint', 'Sys_Calendar', 'EXTUSER', 'SYSUIF', 'TDStats',
     'LockLogShredder', 'External_AP', 'SysAdmin', 'dbcmngr', 'console',

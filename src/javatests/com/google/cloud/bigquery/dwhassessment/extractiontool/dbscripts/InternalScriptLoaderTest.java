@@ -537,6 +537,7 @@ public class InternalScriptLoaderTest {
             .set("ChildCount", 10)
             .set("CommitOpt", "C")
             .set("CheckOpt", "Y")
+            .set("RequestText", "test_request_text")
             .build();
     assertThat(records).containsExactly(expectedRecord);
 
@@ -569,6 +570,29 @@ public class InternalScriptLoaderTest {
   }
 
   @Test
+  public void loadScripts_tableText() throws IOException, SQLException {
+    String scriptName = "tabletext";
+    String sqlScript = getScript(scriptName);
+    // Get schema and verify records.
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+    ImmutableList<GenericRecord> records = executeScriptToAvro(/*sqlScript=*/ sqlScript, schema);
+    GenericRecord expectedRecord =
+        new GenericRecordBuilder(schema)
+            .set("DatabaseName", "test_database")
+            .set("TableName", "test_table")
+            .set("TableKind", "V")
+            .set("RequestText", "test_request_text")
+            .set("LineNo", 1)
+            .build();
+    assertThat(records).containsExactly(expectedRecord);
+
+    // Verify records serialization.
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    executeScript(scriptName, outputStream);
+    assertThat(getAvroDataOutputReader(outputStream).next()).isEqualTo(expectedRecord);
+  }
+
+  @Test
   public void loadScripts_columns() throws IOException, SQLException {
     String scriptName = "columns";
     String sqlScript = getScript(scriptName);
@@ -589,6 +613,9 @@ public class InternalScriptLoaderTest {
             .set("ConstraintCount", 1)
             .set("Nullable", "Y")
             .set("UpperCaseFlag", "U")
+            .set("DecimalTotalDigits", 10)
+            .set("DecimalFractionalDigits", 5)
+            .set("ColumnId", 123)
             .build();
     assertThat(records).containsExactly(expectedRecord);
 
