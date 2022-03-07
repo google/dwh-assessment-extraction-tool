@@ -658,7 +658,7 @@ public final class ExtractSubcommandTest {
                 "/path/ending/with.zip"))
         .isEqualTo(2);
     assertThat(writer.toString())
-        .contains("Incremental and recovery run modes are not supported for zipped records, yet.");
+        .contains("Incremental mode is not supported for zipped records, yet.");
   }
 
   @Test

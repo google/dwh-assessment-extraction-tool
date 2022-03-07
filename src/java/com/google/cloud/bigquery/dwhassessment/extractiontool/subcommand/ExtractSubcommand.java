@@ -176,7 +176,9 @@ public final class ExtractSubcommand implements Callable<Integer> {
       description = {
         "The local start of the time range for the query logs to retrieve.",
         "The format is 'yyyy-mm-dd[Thh:mm:ss[.n...]]'. Example: '2007-12-03T10:15:30.233333'.",
-        "If only the date part is specified, then time defaults to 00:00:00.00 of the given date."
+        "If only the date part is specified, then time defaults to 00:00:00.00 of the given date.",
+        "If --run-mode is INCREMENTAL, this will be overwritten by the timestamp of the latest"
+            + " record."
       })
   private String startTimeString;
 
@@ -321,10 +323,12 @@ public final class ExtractSubcommand implements Callable<Integer> {
 
   private ExtractExecutor.Arguments getValidatedArguments() {
     // prevRunPath is set only when the specified mode is not NORMAL.
-    if (!mode.equals(RunMode.NORMAL)) {
+    if (mode.equals(RunMode.INCREMENTAL)) {
       if (chunkRows < 1) {
         throw new ParameterException(
-            spec.commandLine(), "Non-normal run modes require chunked processing.");
+            spec.commandLine(),
+            "Non-normal run modes require chunked processing. Set --rows-per-chunk to a positive"
+                + " integer to enable chunked processing.");
       }
       if (prevRunPathString == null) {
         throw new ParameterException(
@@ -334,7 +338,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
       if (path.toString().endsWith(".zip")) {
         throw new ParameterException(
             spec.commandLine(),
-            "Incremental and recovery run modes are not supported for zipped records, yet.");
+            "Incremental mode is not supported for zipped records, yet.");
       }
       if (!Files.isDirectory(path)) {
         throw new ParameterException(

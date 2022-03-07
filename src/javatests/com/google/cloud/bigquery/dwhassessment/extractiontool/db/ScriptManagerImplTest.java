@@ -139,8 +139,8 @@ public final class ScriptManagerImplTest {
                 sqlTemplateRenderer,
                 "not_existing_script_name",
                 dataEntityManager,
-                5000,
-                0));
+                /*chunkRows=*/ 5000,
+                /*startingChunkNumber=*/ 0));
   }
 
   @Test
@@ -224,8 +224,8 @@ public final class ScriptManagerImplTest {
         sqlTemplateRenderer,
         "default_chunked",
         dataEntityManagerTmp,
-        3,
-        0);
+        /*chunkRows=*/ 3,
+        /*startingChunkNumber=*/ 0);
 
     assertThat(
             Files.walk(dataEntityManagerTmp.getAbsolutePath(""))
@@ -260,8 +260,8 @@ public final class ScriptManagerImplTest {
         sqlTemplateRenderer,
         "default_chunked",
         dataEntityManagerTmp,
-        3,
-        0);
+        /*chunkRows=*/ 3,
+        /*startingChunkNumber=*/ 0);
 
     // Validate result details for the first and the last chunks.
     DataFileReader<Record> readerForFirstChunk =
@@ -314,8 +314,8 @@ public final class ScriptManagerImplTest {
         sqlTemplateRenderer,
         "default_chunked",
         dataEntityManagerTmp,
-        2,
-        0);
+        /*chunkRows=*/ 2,
+        /*startingChunkNumber=*/ 0);
 
     DataFileReader<Record> readerForFirstChunk =
         getAssertingReaderForAvroResults(
@@ -360,8 +360,8 @@ public final class ScriptManagerImplTest {
         sqlTemplateRenderer,
         "default_chunked",
         dataEntityManagerTmp,
-        2,
-        7);
+        /*chunkRows=*/ 2,
+        /*startingChunkNumber=*/ 7);
 
     DataFileReader<Record> readerForFirstChunk =
         getAssertingReaderForAvroResults(

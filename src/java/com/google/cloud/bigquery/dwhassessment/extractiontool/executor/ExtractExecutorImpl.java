@@ -56,7 +56,7 @@ import org.apache.avro.generic.GenericRecord;
 public final class ExtractExecutorImpl implements ExtractExecutor {
 
   private static final DateTimeFormatter TERADATA_TIME_FORMATTER =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]").withZone(ZoneOffset.UTC);
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]xxx").withZone(ZoneOffset.UTC);
 
   private static final Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
 
@@ -105,8 +105,8 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     SqlScriptVariables.QueryLogsVariables.TimeRange.Builder timeRangeBuilder =
         SqlScriptVariables.QueryLogsVariables.TimeRange.builder();
     // Because both incremental and recovery runs assume that the user-specified timeranges do not
-    // change between runs, the checkpoint time overwrites, if present, overwrites the
-    // user-specified start time.
+    // change between runs, the checkpoint time, if present, overwrites the user-specified start
+    // time.
     if (checkpoint != null) {
       timeRangeBuilder.setStartTimestamp(
           getTeradataTimestampFromInstant(checkpoint.lastSavedInstant().plusNanos(1000)));

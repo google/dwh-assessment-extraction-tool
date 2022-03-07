@@ -27,5 +27,5 @@ SELECT
 FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}DBQLObjTbl{{/if}}"
 {{#if queryLogsVariables.timeRange}}
 WHERE "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}DBQLObjTbl{{/if}}"."CollectTimeStamp"
-  BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}+00:00' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}+00:00'
+  BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
 {{/if}}

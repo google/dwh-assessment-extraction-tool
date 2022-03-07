@@ -31,7 +31,10 @@ import java.util.Properties;
 /** Executor for the extract action. */
 public interface ExtractExecutor {
 
-  enum RunMode {NORMAL, INCREMENTAL}
+  enum RunMode {
+    NORMAL,
+    INCREMENTAL
+  }
 
   /** Arguments for the extract action. */
   @AutoValue

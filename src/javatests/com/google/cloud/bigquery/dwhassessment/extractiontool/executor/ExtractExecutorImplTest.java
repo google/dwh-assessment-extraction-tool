@@ -463,16 +463,16 @@ public final class ExtractExecutorImplTest {
   @Test
   public void getTeradataTimestampFromInstant_outputShouldBeCorrect() {
     assertThat(getTeradataTimestampFromInstant(Instant.parse("2022-01-24T14:52:00Z")))
-        .isEqualTo("2022-01-24 14:52:00.000000");
+        .isEqualTo("2022-01-24 14:52:00.000000+00:00");
     assertThat(getTeradataTimestampFromInstant(Instant.parse("2022-01-24T14:52:00.123456Z")))
-        .isEqualTo("2022-01-24 14:52:00.123456");
+        .isEqualTo("2022-01-24 14:52:00.123456+00:00");
   }
 
   @Test
   public void getTeradataTimestampFromInstant_timeBoundaries() {
     assertThat(getTeradataTimestampFromInstant(Instant.parse("2022-10-01T00:00:00Z")))
-        .isEqualTo("2022-10-01 00:00:00.000000");
+        .isEqualTo("2022-10-01 00:00:00.000000+00:00");
     assertThat(getTeradataTimestampFromInstant(Instant.parse("2022-10-01T24:00:00Z")))
-        .isEqualTo("2022-10-02 00:00:00.000000");
+        .isEqualTo("2022-10-02 00:00:00.000000+00:00");
   }
 }
