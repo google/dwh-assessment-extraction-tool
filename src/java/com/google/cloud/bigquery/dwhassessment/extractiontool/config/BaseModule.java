@@ -27,6 +27,8 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityM
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManagerFactory;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutor;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.ExtractExecutorImpl;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.SaveChecker;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.executor.SaveCheckerImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand.AboutSubcommand;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand.ExtractSubcommand;
 import com.google.common.collect.ImmutableList;
@@ -51,8 +53,16 @@ public final class BaseModule extends AbstractModule {
   ExtractExecutor extractExecutor(
       SchemaManager schemaManager,
       ScriptManager scriptManager,
+      SaveChecker saveChecker,
       Function<Path, DataEntityManager> dataEntityManagerFactory) {
-    return new ExtractExecutorImpl(schemaManager, scriptManager, dataEntityManagerFactory);
+    return new ExtractExecutorImpl(
+        schemaManager, scriptManager, saveChecker, dataEntityManagerFactory);
+  }
+
+  @Provides
+  @Singleton
+  SaveChecker saveChecker(ImmutableMap<String, ImmutableList<String>> sortingColumnsMap) {
+    return new SaveCheckerImpl(sortingColumnsMap);
   }
 
   @Provides

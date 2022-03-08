@@ -36,6 +36,8 @@ public interface ScriptManager {
    *     a schema definition file).
    * @param dataEntityManager The data entity manager to use to write the output.
    * @param chunkRows The maximum number of rows (records) in one output file.
+   * @param startingChunkNumber The starting chunk number for this run (as continued from previous
+   *     run, if specified).
    */
   void executeScript(
       Connection connection,
@@ -43,7 +45,8 @@ public interface ScriptManager {
       SqlTemplateRenderer sqlTemplateRenderer,
       String scriptName,
       DataEntityManager dataEntityManager,
-      Integer chunkRows)
+      Integer chunkRows,
+      Integer startingChunkNumber)
       throws SQLException, IOException;
 
   default void executeScript(
@@ -58,6 +61,7 @@ public interface ScriptManager {
         /* sqlTemplateRenderer= */ sqlTemplateRenderer,
         scriptName,
         dataEntityManager,
+        0,
         0);
   }
 

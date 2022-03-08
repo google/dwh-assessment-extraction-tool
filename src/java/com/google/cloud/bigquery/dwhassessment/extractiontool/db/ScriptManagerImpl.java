@@ -35,7 +35,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
@@ -67,7 +66,8 @@ public class ScriptManagerImpl implements ScriptManager {
       SqlTemplateRenderer sqlTemplateRenderer,
       String scriptName,
       DataEntityManager dataEntityManager,
-      Integer chunkRows)
+      Integer chunkRows,
+      Integer startingChunkNumber)
       throws SQLException, IOException {
     boolean chunkMode =
         chunkRows > 0
@@ -89,7 +89,7 @@ public class ScriptManagerImpl implements ScriptManager {
       if (!resultSet.next()) {
         return;
       }
-      Integer chunkNumber = 0;
+      Integer chunkNumber = startingChunkNumber;
       String labelColumn = sortingColumns.get(0);
       while (!resultSet.isAfterLast()) {
         executeScriptChunk(

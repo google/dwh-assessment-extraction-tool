@@ -19,6 +19,7 @@ import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelp
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.getAvroSchema;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 
+import com.google.cloud.bigquery.dwhassessment.extractiontool.common.ChunkCheckpoint;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaManager.SchemaKey;
@@ -55,21 +56,24 @@ import org.apache.avro.generic.GenericRecord;
 public final class ExtractExecutorImpl implements ExtractExecutor {
 
   private static final DateTimeFormatter TERADATA_TIME_FORMATTER =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]").withZone(ZoneOffset.UTC);
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]xxx").withZone(ZoneOffset.UTC);
 
   private static final Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
 
   private final SchemaManager schemaManager;
   private final ScriptManager scriptManager;
+  private final SaveChecker saveChecker;
   private final Function<Path, DataEntityManager> dataEntityManagerFactory;
 
   public ExtractExecutorImpl(
       SchemaManager schemaManager,
       ScriptManager scriptManager,
+      SaveChecker saveChecker,
       Function<Path, DataEntityManager> dataEntityManagerFactory) {
     this.scriptManager = scriptManager;
     this.dataEntityManagerFactory = dataEntityManagerFactory;
     this.schemaManager = schemaManager;
+    this.saveChecker = saveChecker;
   }
 
   private static void validateScriptNames(
@@ -89,35 +93,53 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
   }
 
   private static void maybeAddTimeRange(
-      SqlScriptVariables.QueryLogsVariables.Builder builder, Arguments arguments) {
-    boolean willAddTimeRange = false;
+      SqlScriptVariables.QueryLogsVariables.Builder builder,
+      Arguments arguments,
+      ChunkCheckpoint checkpoint) {
+    // Do not set timeRange on queryLogsVariables if no time specification is required.
+    if (!arguments.qryLogStartTime().isPresent()
+        && !arguments.qryLogEndTime().isPresent()
+        && checkpoint == null) {
+      return;
+    }
     SqlScriptVariables.QueryLogsVariables.TimeRange.Builder timeRangeBuilder =
         SqlScriptVariables.QueryLogsVariables.TimeRange.builder();
-    if (arguments.qryLogStartTime().isPresent()) {
-      willAddTimeRange = true;
+    // Because both incremental and recovery runs assume that the user-specified timeranges do not
+    // change between runs, the checkpoint time, if present, overwrites the user-specified start
+    // time.
+    if (checkpoint != null) {
       timeRangeBuilder.setStartTimestamp(
-          getTeradataTimestampFromInstant(arguments.qryLogStartTime().get()));
+          getTeradataTimestampFromInstant(checkpoint.lastSavedInstant().plusNanos(1000)));
+    } else {
+      arguments
+          .qryLogStartTime()
+          .ifPresent(
+              instant ->
+                  timeRangeBuilder.setStartTimestamp(getTeradataTimestampFromInstant(instant)));
     }
-    if (arguments.qryLogEndTime().isPresent()) {
-      willAddTimeRange = true;
-      timeRangeBuilder.setEndTimestamp(
-          getTeradataTimestampFromInstant(arguments.qryLogEndTime().get()));
-    }
-    if (willAddTimeRange) {
-      builder.setTimeRange(timeRangeBuilder.build());
-    }
+    arguments
+        .qryLogEndTime()
+        .ifPresent(
+            instant -> timeRangeBuilder.setEndTimestamp(getTeradataTimestampFromInstant(instant)));
+    builder.setTimeRange(timeRangeBuilder.build());
   }
 
   @Override
   public int run(Arguments arguments) throws SQLException, IOException {
     DataEntityManager dataEntityManager = dataEntityManagerFactory.apply(arguments.outputPath());
-
+    ImmutableMap<String, ChunkCheckpoint> checkpoints =
+        arguments.mode().equals(RunMode.NORMAL) || arguments.chunkRows() < 1
+            ? ImmutableMap.of()
+            : arguments
+                .prevRunPath()
+                .map(saveChecker::getScriptCheckPoints)
+                .orElse(ImmutableMap.of());
     SqlScriptVariables.QueryLogsVariables.Builder qryLogVarsBuilder =
         SqlScriptVariables.QueryLogsVariables.builder();
-    maybeAddTimeRange(qryLogVarsBuilder, arguments);
-
     for (String scriptName : getScriptNames(arguments)) {
       LOGGER.log(Level.INFO, "Start extracting {0}...", scriptName);
+      ChunkCheckpoint checkpoint = checkpoints.getOrDefault(scriptName, null);
+      maybeAddTimeRange(qryLogVarsBuilder, arguments, checkpoint);
       Connection connection =
           DriverManager.getConnection(
               arguments.dbConnectionAddress(), arguments.dbConnectionProperties());
@@ -129,7 +151,8 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
           sqlTemplateRenderer,
           scriptName,
           dataEntityManager,
-          arguments.chunkRows());
+          arguments.chunkRows(),
+          checkpoint == null ? 0 : checkpoint.lastSavedChunkNumber() + 1);
       connection.close();
       LOGGER.log(Level.INFO, "Finished extracting {0}.", scriptName);
     }

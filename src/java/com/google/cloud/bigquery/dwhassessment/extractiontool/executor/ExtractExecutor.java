@@ -31,6 +31,11 @@ import java.util.Properties;
 /** Executor for the extract action. */
 public interface ExtractExecutor {
 
+  enum RunMode {
+    NORMAL,
+    INCREMENTAL
+  }
+
   /** Arguments for the extract action. */
   @AutoValue
   abstract class Arguments {
@@ -42,6 +47,12 @@ public interface ExtractExecutor {
 
     /** The path to which to write the output. Must be a directory. */
     public abstract Path outputPath();
+
+    /** The path containing records from previous run(s). Must be a directory. */
+    public abstract Optional<Path> prevRunPath();
+
+    /** Supported modes: NORMAL, INCREMENTAL. */
+    public abstract RunMode mode();
 
     /** SQL scripts to run. */
     public abstract ImmutableList<String> sqlScripts();
@@ -76,6 +87,7 @@ public interface ExtractExecutor {
           .setDryRun(false)
           .setBaseDatabase("DBC")
           .setChunkRows(0)
+          .setMode(RunMode.NORMAL)
           .setScriptVariables(ImmutableMap.of())
           .setScriptBaseDatabase(ImmutableMap.of())
           .setSchemaFilters(ImmutableList.of())
@@ -90,6 +102,10 @@ public interface ExtractExecutor {
       public abstract Builder setDbConnectionAddress(String dbAddress);
 
       public abstract Builder setOutputPath(Path path);
+
+      public abstract Builder setPrevRunPath(Path path);
+
+      public abstract Builder setMode(RunMode mode);
 
       public abstract Builder setSqlScripts(List<String> scripts);
 

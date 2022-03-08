@@ -95,7 +95,7 @@ public final class ScriptManagerImplTest {
     baseStmt.close();
     connection.commit();
     scriptManager.executeScript(
-        connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager, 5000);
+        connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager, 5000, 0);
     Schema testSchema = scriptRunner.extractSchema(connection, baseScript, "default", "namespace");
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     DataFileReader<Record> reader =
@@ -113,7 +113,7 @@ public final class ScriptManagerImplTest {
     baseStmt.close();
     connection.commit();
     scriptManager.executeScript(
-        connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager, 5000);
+        connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager, 5000, 0);
 
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     DataFileReader<Record> reader =
@@ -139,7 +139,8 @@ public final class ScriptManagerImplTest {
                 sqlTemplateRenderer,
                 "not_existing_script_name",
                 dataEntityManager,
-                5000));
+                /*chunkRows=*/ 5000,
+                /*startingChunkNumber=*/ 0));
   }
 
   @Test
@@ -223,7 +224,8 @@ public final class ScriptManagerImplTest {
         sqlTemplateRenderer,
         "default_chunked",
         dataEntityManagerTmp,
-        3);
+        /*chunkRows=*/ 3,
+        /*startingChunkNumber=*/ 0);
 
     assertThat(
             Files.walk(dataEntityManagerTmp.getAbsolutePath(""))
@@ -258,7 +260,8 @@ public final class ScriptManagerImplTest {
         sqlTemplateRenderer,
         "default_chunked",
         dataEntityManagerTmp,
-        3);
+        /*chunkRows=*/ 3,
+        /*startingChunkNumber=*/ 0);
 
     // Validate result details for the first and the last chunks.
     DataFileReader<Record> readerForFirstChunk =
@@ -311,7 +314,8 @@ public final class ScriptManagerImplTest {
         sqlTemplateRenderer,
         "default_chunked",
         dataEntityManagerTmp,
-        2);
+        /*chunkRows=*/ 2,
+        /*startingChunkNumber=*/ 0);
 
     DataFileReader<Record> readerForFirstChunk =
         getAssertingReaderForAvroResults(
@@ -331,6 +335,41 @@ public final class ScriptManagerImplTest {
     assertThat(readerForSecondChunk.next().get(1))
         .isEqualTo(Instant.parse("2007-07-07T20:07:07.007002000Z").toEpochMilli());
     assertFalse(readerForSecondChunk.hasNext());
+  }
+
+  @Test
+  public void executeScript_writeChunked_withContinuingChunkNumber() throws Exception {
+    scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap, sortingColumnsMap);
+    Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_6");
+    DataEntityManager dataEntityManagerTmp = new FakeDataEntityManagerImpl("tmpTest");
+    Statement baseStmt = connection.createStatement();
+    baseStmt.execute(
+        "CREATE Table TestTable ("
+            + "ID INTEGER,"
+            + "TIMESTAMPS TIMESTAMP(6) WITH TIME ZONE"
+            + ")");
+    baseStmt.execute(
+        "INSERT INTO TestTable VALUES (4, TIMESTAMP '2007-07-07 20:07:07.007000' AT TIME ZONE"
+            + " INTERVAL '0:00' HOUR TO MINUTE)");
+    baseStmt.close();
+    connection.commit();
+
+    scriptManager.executeScript(
+        connection,
+        /*dryRun=*/ false,
+        sqlTemplateRenderer,
+        "default_chunked",
+        dataEntityManagerTmp,
+        /*chunkRows=*/ 2,
+        /*startingChunkNumber=*/ 7);
+
+    DataFileReader<Record> readerForFirstChunk =
+        getAssertingReaderForAvroResults(
+            dataEntityManagerTmp.getAbsolutePath(
+                "default_chunked-20070707T200707S007000-20070707T200707S007000_7.avro"));
+    assertThat(readerForFirstChunk.next().get(1))
+        .isEqualTo(Instant.parse("2007-07-07T20:07:07.007000000Z").toEpochMilli());
+    assertFalse(readerForFirstChunk.hasNext());
   }
 
   @Test
