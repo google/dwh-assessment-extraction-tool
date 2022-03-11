@@ -1,4 +1,5 @@
 *.sw[a-z]
 bazel-*
-
+integ-tests/integ-tests.iml
+integ-tests/.sw[a-z]
 .ijwb
