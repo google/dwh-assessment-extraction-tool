@@ -250,7 +250,13 @@ public final class ExtractSubcommand implements Callable<Integer> {
       defaultValue = "NORMAL")
   private RunMode mode;
 
-  @Option(names = "--need-querytext", description = "Whether to extract the query texts.")
+  @Option(
+      names = "--need-querytext",
+      description = {
+        "Whether to extract the query texts.",
+        "If false, fields containing query text will not be extracted;",
+        "the values for them in the result will all be the string '_'."
+      })
   private boolean needQueryText = true;
 
   @Option(
