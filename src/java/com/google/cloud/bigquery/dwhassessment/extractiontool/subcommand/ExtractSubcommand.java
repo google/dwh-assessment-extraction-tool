@@ -293,8 +293,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
   @Option(
       names = "--need-jdbc-schemas",
       negatable = true,
-      description = "Whether to extract schemas through JDBC. Default: ${DEFAULT-VALUE}"
-  )
+      description = "Whether to extract schemas through JDBC. Default: ${DEFAULT-VALUE}")
   private boolean needJdbcSchemas = true;
 
   @Option(
@@ -344,8 +343,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
       Path path = Paths.get(prevRunPathString);
       if (path.toString().endsWith(".zip")) {
         throw new ParameterException(
-            spec.commandLine(),
-            "Incremental mode is not supported for zipped records, yet.");
+            spec.commandLine(), "Incremental mode is not supported for zipped records, yet.");
       }
       if (!Files.isDirectory(path)) {
         throw new ParameterException(

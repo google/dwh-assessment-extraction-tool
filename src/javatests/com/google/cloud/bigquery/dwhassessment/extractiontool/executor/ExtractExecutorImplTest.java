@@ -19,8 +19,8 @@ import static com.google.cloud.bigquery.dwhassessment.extractiontool.executor.Ex
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -40,7 +40,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.re2j.Pattern;
 import java.io.ByteArrayOutputStream;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.time.Instant;
@@ -127,13 +126,13 @@ public final class ExtractExecutorImplTest {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of());
 
     assertThat(
-        executor.run(
-            ExtractExecutor.Arguments.builder()
-                .setDbConnectionProperties(properties)
-                .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
-                .setOutputPath(Paths.get("/tmp"))
-                .setNeedJdbcSchemas(false)
-                .build()))
+            executor.run(
+                ExtractExecutor.Arguments.builder()
+                    .setDbConnectionProperties(properties)
+                    .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
+                    .setOutputPath(Paths.get("/tmp"))
+                    .setNeedJdbcSchemas(false)
+                    .build()))
         .isEqualTo(0);
 
     verifyNoMoreInteractions(schemaManager);
@@ -146,12 +145,12 @@ public final class ExtractExecutorImplTest {
         .thenReturn(ImmutableSet.of());
 
     assertThat(
-        executor.run(
-            ExtractExecutor.Arguments.builder()
-                .setDbConnectionProperties(properties)
-                .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
-                .setOutputPath(Paths.get("/tmp"))
-                .build()))
+            executor.run(
+                ExtractExecutor.Arguments.builder()
+                    .setDbConnectionProperties(properties)
+                    .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
+                    .setOutputPath(Paths.get("/tmp"))
+                    .build()))
         .isEqualTo(0);
 
     verify(schemaManager).getSchemaKeys(any(Connection.class), eq(ImmutableList.of()));
