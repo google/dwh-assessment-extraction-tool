@@ -123,6 +123,42 @@ public final class ExtractExecutorImplTest {
   }
 
   @Test
+  public void run_skipJdbcSchemaExtraction_success() throws Exception {
+    when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of());
+
+    assertThat(
+        executor.run(
+            ExtractExecutor.Arguments.builder()
+                .setDbConnectionProperties(properties)
+                .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
+                .setOutputPath(Paths.get("/tmp"))
+                .setNeedJdbcSchemas(false)
+                .build()))
+        .isEqualTo(0);
+
+    verifyNoMoreInteractions(schemaManager);
+  }
+
+  @Test
+  public void run_extractJdbcSchemas_success() throws Exception {
+    when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of());
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
+
+    assertThat(
+        executor.run(
+            ExtractExecutor.Arguments.builder()
+                .setDbConnectionProperties(properties)
+                .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
+                .setOutputPath(Paths.get("/tmp"))
+                .build()))
+        .isEqualTo(0);
+
+    verify(schemaManager).getSchemaKeys(any(Connection.class), eq(ImmutableList.of()));
+    verifyNoMoreInteractions(schemaManager);
+  }
+
+  @Test
   public void run_incrementalMode_success() throws Exception {
     when(scriptManager.getAllScriptNames())
         .thenReturn(ImmutableSet.of("test_script_0", "test_script_1"));

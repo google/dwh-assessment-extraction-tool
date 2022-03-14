@@ -291,6 +291,13 @@ public final class ExtractSubcommand implements Callable<Integer> {
   }
 
   @Option(
+      names = "--need-jdbc-schemas",
+      negatable = true,
+      description = "Whether to extract schemas through JDBC. Default: ${DEFAULT-VALUE}"
+  )
+  private boolean needJdbcSchemas = true;
+
+  @Option(
       names = "--schema-filter",
       description = {
         "The schema filter to apply when extracting schemas from the database.",

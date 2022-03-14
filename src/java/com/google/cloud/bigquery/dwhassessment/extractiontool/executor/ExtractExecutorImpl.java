@@ -157,7 +157,9 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
       LOGGER.log(Level.INFO, "Finished extracting {0}.", scriptName);
     }
 
-    if (arguments.dryRun()) {
+    if (!arguments.needJdbcSchemas()) {
+      LOGGER.log(Level.INFO, "Skipping extracting schemas was requested.");
+    } else if (arguments.dryRun()) {
       LOGGER.log(Level.INFO, "Skipping extracting schemas because dry run was requested.");
     } else {
       LOGGER.log(Level.INFO, "Start extracting schemas");
