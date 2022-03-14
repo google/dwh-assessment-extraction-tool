@@ -250,6 +250,9 @@ public final class ExtractSubcommand implements Callable<Integer> {
       defaultValue = "NORMAL")
   private RunMode mode;
 
+  @Option(names = "--need-querytext", description = "Whether to extract the query texts.")
+  private boolean needQueryText = true;
+
   @Option(
       names = {"--prev-run-path"},
       description = {
@@ -322,6 +325,8 @@ public final class ExtractSubcommand implements Callable<Integer> {
   }
 
   private ExtractExecutor.Arguments getValidatedArguments() {
+    argumentsBuilder.setNeedQueryText(needQueryText);
+
     // prevRunPath is set only when the specified mode is not NORMAL.
     if (mode.equals(RunMode.INCREMENTAL)) {
       if (chunkRows < 1) {
@@ -337,8 +342,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
       Path path = Paths.get(prevRunPathString);
       if (path.toString().endsWith(".zip")) {
         throw new ParameterException(
-            spec.commandLine(),
-            "Incremental mode is not supported for zipped records, yet.");
+            spec.commandLine(), "Incremental mode is not supported for zipped records, yet.");
       }
       if (!Files.isDirectory(path)) {
         throw new ParameterException(

@@ -196,6 +196,40 @@ public final class ExtractExecutorImplTest {
   }
 
   @Test
+  public void run_noNeedQueryText_success() throws Exception {
+    when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("test_script"));
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
+    Arguments arguments =
+        Arguments.builder()
+            .setNeedQueryText(false)
+            .setDbConnectionProperties(properties)
+            .setDbConnectionAddress("jdbc:hsqldb:mem:my-animalclinic.example")
+            .setOutputPath(Paths.get("/tmp"))
+            .build();
+
+    assertThat(executor.run(arguments)).isEqualTo(0);
+
+    verify(scriptManager).getAllScriptNames();
+    verify(scriptManager)
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            argThat(
+                (SqlTemplateRenderer renderer) ->
+                    !renderer
+                        .getSqlScriptVariablesBuilder()
+                        .build()
+                        .getQueryLogsVariables()
+                        .getNeedQueryText()),
+            /*scriptName=*/ eq("test_script"),
+            eq(dataEntityManager),
+            eq(0),
+            eq(0));
+    verifyNoMoreInteractions(scriptManager);
+  }
+
+  @Test
   public void run_saveCheckerNotInvokedIfRunChunked() throws Exception {
     when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("test_script"));
     when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))

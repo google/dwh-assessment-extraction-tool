@@ -151,6 +151,36 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
+  public void call_successWithNoNeedQueryText() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:my-db1.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--need-querytext=false"))
+        .isEqualTo(0);
+
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+
+    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
+    assertThat(arguments.sqlScripts()).isEmpty();
+    assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.chunkRows()).isEqualTo(0);
+    assertThat(arguments.needQueryText()).isFalse();
+  }
+
+  @Test
   public void call_successWithSkipSqlScripts() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
