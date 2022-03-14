@@ -125,7 +125,7 @@ set +x
 #How many exported avro files
 exported_avro=$(ls "${EXPORT_PATH}" | wc -l)
 
-if ((exported_avro != 17)); then
+if ((exported_avro != 18)); then
   printf '%s\n' "ERROR! Not all avro files have been exported! ${exported_avro} exported" >&2  # write error message to stderr
   termInstance
   exit 1
