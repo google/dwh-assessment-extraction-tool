@@ -88,6 +88,7 @@ public final class ExtractSubcommandTest {
     assertThat(arguments.sqlScripts()).isEmpty();
     assertThat(arguments.skipSqlScripts()).isEmpty();
     assertThat(arguments.chunkRows()).isEqualTo(0);
+    assertThat(arguments.needQueryText()).isTrue();
   }
 
   @Test
@@ -151,9 +152,61 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
+  public void call_successWithNoNeedQueryText() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-noneedquerytext",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--need-querytext=false"))
+        .isEqualTo(0);
+
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+    assertThat(arguments.needQueryText()).isFalse();
+  }
+
+  @Test
+  public void call_successWithNegatedNeedQueryText() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-negatedneedquerytext",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--no-need-querytext"))
+        .isEqualTo(0);
+
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+    assertThat(arguments.needQueryText()).isFalse();
+  }
+
+  @Test
   public void call_successWithSkipSqlScripts() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
 
     assertThat(
             cmd.execute(
@@ -169,11 +222,8 @@ public final class ExtractSubcommandTest {
                 "one,two, three"))
         .isEqualTo(0);
 
-    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
-        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
-
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.sqlScripts()).isEmpty();
     assertThat(arguments.skipSqlScripts()).containsExactly("one", "two", "three").inOrder();
@@ -186,6 +236,8 @@ public final class ExtractSubcommandTest {
     CommandLine cmd =
         new CommandLine(new ExtractSubcommand(() -> executor, scriptManager))
             .registerConverter(SchemaFilter.class, SchemaFilters::parse);
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
 
     assertThat(
             cmd.execute(
@@ -201,11 +253,8 @@ public final class ExtractSubcommandTest {
                 "db:foo"))
         .isEqualTo(0);
 
-    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
-        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
-
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.sqlScripts()).isEmpty();
     assertThat(arguments.skipSqlScripts()).isEmpty();
@@ -218,6 +267,8 @@ public final class ExtractSubcommandTest {
   public void call_successWithTimeRangeStartDatetime() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
 
     assertThat(
             cmd.execute(
@@ -233,11 +284,8 @@ public final class ExtractSubcommandTest {
                 "2021-01-01T11:46:46.42134212"))
         .isEqualTo(0);
 
-    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
-        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
-
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.skipSqlScripts()).isEmpty();
     assertThat(arguments.schemaFilters()).isEmpty();
@@ -250,6 +298,8 @@ public final class ExtractSubcommandTest {
   public void call_successWithTimeRangeStartDate() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
 
     assertThat(
             cmd.execute(
@@ -265,11 +315,8 @@ public final class ExtractSubcommandTest {
                 "2021-01-01"))
         .isEqualTo(0);
 
-    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
-        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
-
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.skipSqlScripts()).isEmpty();
     assertThat(arguments.schemaFilters()).isEmpty();
@@ -281,6 +328,8 @@ public final class ExtractSubcommandTest {
   public void call_successWithEndTimeRangeCustomTimezone() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
 
     assertThat(
             cmd.execute(
@@ -298,11 +347,8 @@ public final class ExtractSubcommandTest {
                 "Europe/Warsaw"))
         .isEqualTo(0);
 
-    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
-        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
-
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.skipSqlScripts()).isEmpty();
     assertThat(arguments.schemaFilters()).isEmpty();
@@ -315,6 +361,8 @@ public final class ExtractSubcommandTest {
       throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
 
     assertThat(
             cmd.execute(
@@ -334,8 +382,6 @@ public final class ExtractSubcommandTest {
                 "Europe/Warsaw"))
         .isEqualTo(0);
 
-    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
-        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
 
@@ -352,6 +398,8 @@ public final class ExtractSubcommandTest {
       throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
 
     assertThat(
             cmd.execute(
@@ -371,11 +419,8 @@ public final class ExtractSubcommandTest {
                 "Europe/Warsaw"))
         .isEqualTo(0);
 
-    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
-        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
-
     assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
     assertThat(arguments.skipSqlScripts()).isEmpty();
     assertThat(arguments.schemaFilters()).isEmpty();
@@ -388,6 +433,8 @@ public final class ExtractSubcommandTest {
   public void call_successWithScriptBaseDb() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
 
     assertThat(
             cmd.execute(
@@ -403,11 +450,8 @@ public final class ExtractSubcommandTest {
                 "querylogs=Foo"))
         .isEqualTo(0);
 
-    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
-        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
-
     assertThat(arguments.scriptBaseDatabase()).containsExactly("querylogs", "Foo");
   }
 

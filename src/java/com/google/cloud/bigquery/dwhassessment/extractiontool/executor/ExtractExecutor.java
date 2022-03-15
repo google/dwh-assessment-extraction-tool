@@ -54,6 +54,9 @@ public interface ExtractExecutor {
     /** Supported modes: NORMAL, INCREMENTAL. */
     public abstract RunMode mode();
 
+    /** Whether to extract query texts. */
+    public abstract boolean needQueryText();
+
     /** SQL scripts to run. */
     public abstract ImmutableList<String> sqlScripts();
 
@@ -91,6 +94,7 @@ public interface ExtractExecutor {
           .setBaseDatabase("DBC")
           .setChunkRows(0)
           .setMode(RunMode.NORMAL)
+          .setNeedQueryText(true)
           .setScriptVariables(ImmutableMap.of())
           .setScriptBaseDatabase(ImmutableMap.of())
           .setNeedJdbcSchemas(true)
@@ -110,6 +114,8 @@ public interface ExtractExecutor {
       public abstract Builder setPrevRunPath(Path path);
 
       public abstract Builder setMode(RunMode mode);
+
+      public abstract Builder setNeedQueryText(boolean value);
 
       public abstract Builder setSqlScripts(List<String> scripts);
 

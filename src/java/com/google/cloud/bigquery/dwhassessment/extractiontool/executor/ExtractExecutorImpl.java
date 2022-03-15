@@ -135,7 +135,7 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
                 .map(saveChecker::getScriptCheckPoints)
                 .orElse(ImmutableMap.of());
     SqlScriptVariables.QueryLogsVariables.Builder qryLogVarsBuilder =
-        SqlScriptVariables.QueryLogsVariables.builder();
+        SqlScriptVariables.QueryLogsVariables.builder().setNeedQueryText(arguments.needQueryText());
     for (String scriptName : getScriptNames(arguments)) {
       LOGGER.log(Level.INFO, "Start extracting {0}...", scriptName);
       ChunkCheckpoint checkpoint = checkpoints.getOrDefault(scriptName, null);
@@ -168,6 +168,8 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
               arguments.dbConnectionAddress(), arguments.dbConnectionProperties())) {
         extractSchema(arguments.schemaFilters(), dataEntityManager, connection);
         LOGGER.log(Level.INFO, "Finish extracting schemas");
+      } catch (RuntimeException | SQLException | IOException e) {
+        LOGGER.log(Level.WARNING, "Encountered an error while extracting schemas", e);
       }
     }
 
