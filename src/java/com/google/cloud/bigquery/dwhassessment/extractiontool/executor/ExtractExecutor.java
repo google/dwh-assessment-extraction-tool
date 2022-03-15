@@ -66,6 +66,9 @@ public interface ExtractExecutor {
     /** SQL scripts to exclude (i.e., run the full catalog except for these scripts). */
     public abstract ImmutableList<String> skipSqlScripts();
 
+    /** Extract schemas via JDBC. */
+    public abstract boolean needJdbcSchemas();
+
     /** Filter to apply on schemas to extract */
     public abstract ImmutableList<SchemaFilter> schemaFilters();
 
@@ -94,6 +97,7 @@ public interface ExtractExecutor {
           .setNeedQueryText(true)
           .setScriptVariables(ImmutableMap.of())
           .setScriptBaseDatabase(ImmutableMap.of())
+          .setNeedJdbcSchemas(true)
           .setSchemaFilters(ImmutableList.of())
           .setSqlScripts(ImmutableList.of())
           .setSkipSqlScripts(ImmutableList.of());
@@ -119,6 +123,8 @@ public interface ExtractExecutor {
 
       public abstract Builder setScriptVariables(
           ImmutableMap<String, Map<String, String>> variables);
+
+      public abstract Builder setNeedJdbcSchemas(boolean needJdbcSchemas);
 
       public abstract Builder setSchemaFilters(List<SchemaFilter> schemaFilters);
 
