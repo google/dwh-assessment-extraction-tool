@@ -252,12 +252,16 @@ public final class ExtractSubcommand implements Callable<Integer> {
 
   @Option(
       names = "--need-querytext",
+      negatable = true,
       description = {
-        "Whether to extract the query texts.",
+        "Whether to extract the query texts. Default true.",
         "If false, fields containing query text will not be extracted;",
         "the values for them in the result will all be the string '_'."
       })
-  private boolean needQueryText = true;
+  // picocli has a quirky requirement that "when a negatable option is true by default, give it the
+  // negative name", otherwise it would not work. So we have to define the default behavior of
+  // needQueryText in the actual argument setter.
+  private Boolean needQueryText;
 
   @Option(
       names = {"--prev-run-path"},
@@ -331,8 +335,10 @@ public final class ExtractSubcommand implements Callable<Integer> {
   }
 
   private ExtractExecutor.Arguments getValidatedArguments() {
-    argumentsBuilder.setNeedQueryText(needQueryText);
-
+    argumentsBuilder.setNeedQueryText(true);
+    if (needQueryText != null) {
+      argumentsBuilder.setNeedQueryText(needQueryText);
+    }
     // prevRunPath is set only when the specified mode is not NORMAL.
     if (mode.equals(RunMode.INCREMENTAL)) {
       if (chunkRows < 1) {

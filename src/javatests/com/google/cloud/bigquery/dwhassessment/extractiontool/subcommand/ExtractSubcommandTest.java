@@ -88,6 +88,7 @@ public final class ExtractSubcommandTest {
     assertThat(arguments.sqlScripts()).isEmpty();
     assertThat(arguments.skipSqlScripts()).isEmpty();
     assertThat(arguments.chunkRows()).isEqualTo(0);
+    assertThat(arguments.needQueryText()).isTrue();
   }
 
   @Test
@@ -160,7 +161,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-db1.example",
+                "jdbc:hsqldb:mem:db-noneedquerytext",
                 "--db-user",
                 "my-username",
                 "--db-password",
@@ -168,6 +169,31 @@ public final class ExtractSubcommandTest {
                 "--output",
                 outputPath.toString(),
                 "--need-querytext=false"))
+        .isEqualTo(0);
+
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+    assertThat(arguments.needQueryText()).isFalse();
+  }
+
+  @Test
+  public void call_successWithNegatedNeedQueryText() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-negatedneedquerytext",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--no-need-querytext"))
         .isEqualTo(0);
 
     verify(executor).run(argumentsCaptor.capture());
@@ -320,7 +346,6 @@ public final class ExtractSubcommandTest {
                 "--time-zone",
                 "Europe/Warsaw"))
         .isEqualTo(0);
-
 
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
