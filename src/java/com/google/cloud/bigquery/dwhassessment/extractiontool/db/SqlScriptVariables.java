@@ -44,11 +44,16 @@ public abstract class SqlScriptVariables {
   public abstract static class QueryLogsVariables {
 
     public static Builder builder() {
-      return new AutoValue_SqlScriptVariables_QueryLogsVariables.Builder();
+      return new AutoValue_SqlScriptVariables_QueryLogsVariables.Builder().setNeedQueryText(true);
+    }
+
+    public abstract boolean needQueryText();
+    // Value accessor for handlebars.
+    public boolean getNeedQueryText() {
+      return needQueryText();
     }
 
     public abstract Optional<TimeRange> timeRange();
-
     // Value accessor for handlebars.
     public TimeRange getTimeRange() {
       if (timeRange().isPresent()) {
@@ -84,6 +89,9 @@ public abstract class SqlScriptVariables {
 
     @AutoValue.Builder
     public abstract static class Builder {
+
+      public abstract Builder setNeedQueryText(boolean value);
+
       public abstract Builder setTimeRange(TimeRange value);
 
       public abstract QueryLogsVariables build();

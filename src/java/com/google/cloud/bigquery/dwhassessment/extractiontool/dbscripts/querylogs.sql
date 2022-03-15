@@ -98,7 +98,7 @@ SELECT
   "QueryBand",
   "QueryID",
   "QueryRedriven",
-  "QueryText",
+  {{#if queryLogsVariables.needQueryText}}"QueryText"{{else}}'_' AS "QueryText"{{/if}},
   "ReDriveKind",
   "RemoteQuery",
   "ReqIOKB",

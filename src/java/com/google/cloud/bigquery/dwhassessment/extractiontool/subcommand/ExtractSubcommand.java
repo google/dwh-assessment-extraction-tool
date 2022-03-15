@@ -251,6 +251,19 @@ public final class ExtractSubcommand implements Callable<Integer> {
   private RunMode mode;
 
   @Option(
+      names = "--need-querytext",
+      negatable = true,
+      description = {
+        "Whether to extract the query texts. Default true.",
+        "If false, fields containing query text will not be extracted;",
+        "the values for them in the result will all be the string '_'."
+      })
+  // picocli has a quirky requirement that "when a negatable option is true by default, give it the
+  // negative name", otherwise it would not work. So we have to define the default behavior of
+  // needQueryText in the actual argument setter.
+  private Boolean needQueryText;
+
+  @Option(
       names = {"--prev-run-path"},
       description = {
         "Path containing records of previous run(s).",
@@ -322,6 +335,10 @@ public final class ExtractSubcommand implements Callable<Integer> {
   }
 
   private ExtractExecutor.Arguments getValidatedArguments() {
+    argumentsBuilder.setNeedQueryText(true);
+    if (needQueryText != null) {
+      argumentsBuilder.setNeedQueryText(needQueryText);
+    }
     // prevRunPath is set only when the specified mode is not NORMAL.
     if (mode.equals(RunMode.INCREMENTAL)) {
       if (chunkRows < 1) {
@@ -337,8 +354,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
       Path path = Paths.get(prevRunPathString);
       if (path.toString().endsWith(".zip")) {
         throw new ParameterException(
-            spec.commandLine(),
-            "Incremental mode is not supported for zipped records, yet.");
+            spec.commandLine(), "Incremental mode is not supported for zipped records, yet.");
       }
       if (!Files.isDirectory(path)) {
         throw new ParameterException(
