@@ -166,6 +166,8 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
               arguments.dbConnectionAddress(), arguments.dbConnectionProperties())) {
         extractSchema(arguments.schemaFilters(), dataEntityManager, connection);
         LOGGER.log(Level.INFO, "Finish extracting schemas");
+      } catch (RuntimeException | SQLException | IOException e) {
+        LOGGER.log(Level.WARNING, "Encountered an error while extracting schemas", e);
       }
     }
 
