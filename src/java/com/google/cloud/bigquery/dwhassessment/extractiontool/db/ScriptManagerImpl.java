@@ -80,6 +80,7 @@ public class ScriptManagerImpl implements ScriptManager {
       LOGGER.info(String.format("Should execute script '%s':\n%s", scriptName, script));
       return;
     }
+    LOGGER.info(String.format("Extracting schema"));
     /* TODO(xshang): figure out how to set schema name and namespace in the schema extraction. */
     Schema schema =
         scriptRunner.extractSchema(connection, script, scriptName, /* namespace= */ "namespace");
@@ -154,6 +155,7 @@ public class ScriptManagerImpl implements ScriptManager {
     try (ResultSetRecorder<GenericRecord> dumper =
         AvroResultSetRecorder.create(
             schema, dataEntityManager.getEntityOutputStream(scriptName + ".avro"))) {
+      LOGGER.info(String.format("Dumping data"));
       scriptRunner.executeScriptToAvro(connection, script, schema, dumper::add);
     } catch (IOException | SQLException e) {
       throw e;

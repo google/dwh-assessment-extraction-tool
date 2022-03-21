@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -161,6 +162,9 @@ public class AvroHelper {
       case Types.VARBINARY:
         fieldBuilder.type().optional().bytesType();
         break;
+      case Types.CLOB:
+        fieldBuilder.type().optional().stringType();
+        break;
       default:
         // TODO: support all other types specified in java.sql.Types.
         throw new UnsupportedOperationException(
@@ -198,6 +202,13 @@ public class AvroHelper {
         {
           return trimTrailingSpaces(row.getString(columnIndex));
         }
+      case Types.CLOB:
+      {
+        Clob clob = (Clob)row.getObject(columnIndex);
+        String value = clob.getSubString (1, (int)clob.length ());
+        clob.free();
+        return value;
+      }
       default:
         return row.getObject(columnIndex);
     }

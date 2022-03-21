@@ -29,7 +29,7 @@ SELECT
   "CheckpointNum",
   "ClientAddr",
   "ClientID",
-  "CollectTimeStamp" AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS "CollectTimeStamp",
+  "QryLogV"."CollectTimeStamp" AT TIME ZONE INTERVAL '0:00' HOUR TO MINUTE AS "CollectTimeStamp",
   "CPUDecayLevel",
   "DataCollectAlg",
   "DBQLStatus",
@@ -89,14 +89,14 @@ SELECT
   "ParserCPUTimeNorm",
   "ParserExpReq",
   "PersistentSpool",
-  "ProcID",
+  "QryLogV"."ProcID",
   "ProfileID",
   "ProfileName",
   "ProxyRole",
   "ProxyUser",
   "ProxyUserID",
   "QueryBand",
-  "QueryID",
+  "QryLogV"."QueryID",
   "QueryRedriven",
   "QueryText",
   "ReDriveKind",
@@ -139,9 +139,11 @@ SELECT
   "VHLogicalIOKB",
   "VHPhysIO",
   "VHPhysIOKB",
+  "QryLogSQLDocV"."SqlTextDoc" AS "TestField",
   "WarningOnly",
   "WDName"
 FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}"
+INNER JOIN "{{baseDatabase}}"."QryLogSQLDocV" ON "QryLogV"."QueryID" = "QryLogSQLDocV"."QueryID"
 {{#if queryLogsVariables.timeRange}}
 WHERE "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}"."StartTime"
   BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
