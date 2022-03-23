@@ -17,6 +17,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.parseRowToAvro;
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.common.annotations.VisibleForTesting;
@@ -45,6 +46,8 @@ import org.apache.avro.generic.GenericRecord;
 public class ScriptManagerImpl implements ScriptManager {
 
   private static final Logger LOGGER = Logger.getLogger(ScriptManagerImpl.class.getName());
+  private static final String AVRO_SUFFIX = ".avro";
+  private static final String TEMP_NOTATION = "_temp";
 
   private final ImmutableMap<String, Supplier<String>> scriptsMap;
   private final ImmutableMap<String, ImmutableList<String>> sortingColumnsMap;
@@ -114,7 +117,8 @@ public class ScriptManagerImpl implements ScriptManager {
     Timestamp currentTimestamp = resultSet.getTimestamp(labelColumn);
     String firstRowStamp = getUtcTimeStringFromTimestamp(currentTimestamp);
     String tempFileName =
-        String.format("%s-%s_%d_temp.avro", scriptName, firstRowStamp, chunkNumber);
+        String.format(
+            "%s-%s_%d%s%s", scriptName, firstRowStamp, chunkNumber, TEMP_NOTATION, AVRO_SUFFIX);
     try (ResultSetRecorder<GenericRecord> dumper =
         AvroResultSetRecorder.create(
             schema, dataEntityManager.getEntityOutputStream(tempFileName))) {
@@ -140,7 +144,8 @@ public class ScriptManagerImpl implements ScriptManager {
         dataEntityManager.getAbsolutePath(tempFileName),
         dataEntityManager.getAbsolutePath(
             String.format(
-                "%s-%s-%s_%d.avro", scriptName, firstRowStamp, lastRowStamp, chunkNumber)),
+                "%s-%s-%s_%d%s",
+                scriptName, firstRowStamp, lastRowStamp, chunkNumber, AVRO_SUFFIX)),
         ATOMIC_MOVE);
   }
 
@@ -151,7 +156,7 @@ public class ScriptManagerImpl implements ScriptManager {
       Schema schema,
       DataEntityManager dataEntityManager)
       throws SQLException, IOException {
-    String fileSuffix = dataEntityManager.isResumable() ? "_temp.avro" : ".avro";
+    String fileSuffix = dataEntityManager.isResumable() ? TEMP_NOTATION + AVRO_SUFFIX : AVRO_SUFFIX;
     try (ResultSetRecorder<GenericRecord> dumper =
         AvroResultSetRecorder.create(
             schema, dataEntityManager.getEntityOutputStream(scriptName + fileSuffix))) {
@@ -163,10 +168,20 @@ public class ScriptManagerImpl implements ScriptManager {
       throw new IllegalStateException("Got unexpected exception.", e);
     }
     if (dataEntityManager.isResumable()) {
-      Files.move(
-          dataEntityManager.getAbsolutePath(scriptName + fileSuffix),
-          dataEntityManager.getAbsolutePath(scriptName + ".avro"),
-          ATOMIC_MOVE);
+      // On the vast majority of systems, ATOMIC_MOVE overwrites existing files; however, the
+      // official documentation implies in some systems it might fail with IOException, so it is
+      // safer to check against it.
+      try {
+        Files.move(
+            dataEntityManager.getAbsolutePath(scriptName + fileSuffix),
+            dataEntityManager.getAbsolutePath(scriptName + AVRO_SUFFIX),
+            ATOMIC_MOVE);
+      } catch (IOException e) {
+        Files.move(
+            dataEntityManager.getAbsolutePath(scriptName + fileSuffix),
+            dataEntityManager.getAbsolutePath(scriptName + AVRO_SUFFIX),
+            REPLACE_EXISTING);
+      }
     }
   }
 
