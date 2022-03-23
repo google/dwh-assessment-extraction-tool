@@ -151,15 +151,22 @@ public class ScriptManagerImpl implements ScriptManager {
       Schema schema,
       DataEntityManager dataEntityManager)
       throws SQLException, IOException {
+    String fileSuffix = dataEntityManager.isResumable() ? "_temp.avro" : ".avro";
     try (ResultSetRecorder<GenericRecord> dumper =
         AvroResultSetRecorder.create(
-            schema, dataEntityManager.getEntityOutputStream(scriptName + ".avro"))) {
+            schema, dataEntityManager.getEntityOutputStream(scriptName + fileSuffix))) {
       scriptRunner.executeScriptToAvro(connection, script, schema, dumper::add);
     } catch (IOException | SQLException e) {
       throw e;
     } catch (Exception e) {
       // Cannot happen.
       throw new IllegalStateException("Got unexpected exception.", e);
+    }
+    if (dataEntityManager.isResumable()) {
+      Files.move(
+          dataEntityManager.getAbsolutePath(scriptName + fileSuffix),
+          dataEntityManager.getAbsolutePath(scriptName + ".avro"),
+          ATOMIC_MOVE);
     }
   }
 
