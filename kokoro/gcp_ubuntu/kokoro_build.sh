@@ -40,11 +40,11 @@ termInstance() {
   gcloud compute instances delete "${TD_HOST}" --zone us-central1-a --project="${GCP_PROJECT}" --quiet
 
   #Generate test report
-  cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests"
+  cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/teradata"
   mvn surefire-report:report-only -B -e
 
   #Rename Maven-surefire test reports for suitable for Sponge format
-  cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/target/surefire-reports/"
+  cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/teradata/target/surefire-reports/"
   for f in *.xml; do
     mv -- "$f" "${f%.xml}_sponge_log.xml"
   done
@@ -105,7 +105,7 @@ unzip ./dwh-assessment-extraction-tool.zip
 sleep 4m
 
 #Generate Test Data
-cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests"
+cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/teradata"
 mvn clean compile exec:java -e -B -Dtest="${FUNC_TESTS}"
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/bazel-bin/dist/dwh-assessment-extraction-tool"
@@ -122,7 +122,7 @@ set +x
     --qrylog-timerange-start "${START_DATE}" \
     --qrylog-timerange-end "${END_DATE}"
 
-#How many exported avro files
+#Extraction Tool Smoke test - Check exported avro files
 exported_avro=$(ls "${EXPORT_PATH}" | wc -l)
 
 if ((exported_avro != 18)); then
@@ -134,7 +134,7 @@ else
 fi
 
 #Execute integration tests
-cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests"
+cd "${KOKORO_ARTIFACTS_DIR}/github/dwh-assessment-extraction-tool/integ-tests/teradata"
 mvn clean test -B -e
 
 #delete instance after tests
