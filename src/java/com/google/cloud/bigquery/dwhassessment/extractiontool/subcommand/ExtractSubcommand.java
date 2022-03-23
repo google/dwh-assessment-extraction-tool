@@ -307,7 +307,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
       names = "--need-jdbc-schemas",
       negatable = true,
       description = "Whether to extract schemas through JDBC. Default: ${DEFAULT-VALUE}")
-  private boolean needJdbcSchemas = true;
+  private Boolean needJdbcSchemas;
 
   @Option(
       names = "--schema-filter",
@@ -341,9 +341,12 @@ public final class ExtractSubcommand implements Callable<Integer> {
   }
 
   private ExtractExecutor.Arguments getValidatedArguments() {
-    argumentsBuilder.setNeedQueryText(true);
+    argumentsBuilder.setNeedQueryText(true).setNeedJdbcSchemas(true);
     if (needQueryText != null) {
       argumentsBuilder.setNeedQueryText(needQueryText);
+    }
+    if (needJdbcSchemas != null) {
+      argumentsBuilder.setNeedJdbcSchemas(needJdbcSchemas);
     }
     // prevRunPath is set only when the specified mode is not NORMAL.
     if (mode.equals(RunMode.INCREMENTAL)) {
