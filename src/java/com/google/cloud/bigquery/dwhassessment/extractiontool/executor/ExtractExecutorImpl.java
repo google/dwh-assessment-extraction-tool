@@ -174,6 +174,7 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     }
 
     dataEntityManager.close();
+    LOGGER.log(Level.INFO, "Finished extraction.");
     return 0;
   }
 
