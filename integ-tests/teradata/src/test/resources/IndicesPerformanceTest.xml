@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Performance" verbose="1" data-provider-thread-count="5">
+  <test name="IndicesPerformanceTest">
+    <classes>
+      <class name="com.google.performance.IndicesPerformanceTest">
+        <methods>
+          <include name="indicesPerformanceTestWithStaticTable"/>
+        </methods>
+      </class>
+    </classes>
+  </test>
+</suite>

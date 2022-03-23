@@ -15,12 +15,16 @@
  */
 package com.google.testdata.utils;
 
+import static com.google.base.TestConstants.URL_DB;
 import static com.google.sql.SqlUtil.connectAndExecuteQueryAsUser;
 import static java.lang.String.format;
 import static java.lang.System.lineSeparator;
 
 import com.google.common.base.Joiner;
 import com.google.testdata.pojo.TestDataUser;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -44,29 +48,30 @@ public class PerformanceTestDataGeneratorQueryExecutor extends RecursiveAction {
     this.lastIndex = lastIndex;
   }
 
-  private void executeQueries(TestDataUser userData, List<String> queries) {
-    queries.forEach(
-        e -> {
-          try {
-            connectAndExecuteQueryAsUser(userData.getUsername(), userData.getPassword(), e);
-          } catch (SQLException ex) {
-            LOGGER.error(
-                format("Error on executing query for user %s%n%s", userData.getUsername(), ex));
-          }
-        });
-    LOGGER.info(
-        format(
-            "Queries executed by user %s%n%s",
-            userData.getUsername(), Joiner.on(lineSeparator()).join(queries)));
+  private void executeQueries(TestDataUser userData, List<String> queries) throws SQLException {
+    Connection connection = DriverManager.getConnection(URL_DB, userData.getUsername(), userData.getPassword());
+
+    for (String query : queries) {
+      try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        preparedStatement.execute();
+      } catch (SQLException e) {
+        LOGGER.error(format("Cannot execute query: %n%s%n", query));
+        throw e;
+      }
+    }
   }
 
   @Override
   protected void compute() {
     int length = lastIndex - startIndex;
-    int THRESHOLD = 1;
-    if (length <= THRESHOLD) {
+    int threshold = 1;
+    if (length <= threshold) {
       TestDataUser userData = (TestDataUser) performancePayload.keySet().toArray()[startIndex];
-      executeQueries(userData, performancePayload.get(userData));
+      try {
+        executeQueries(userData, performancePayload.get(userData));
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
       return;
     }
     PerformanceTestDataGeneratorQueryExecutor firstTaskBreakdown =

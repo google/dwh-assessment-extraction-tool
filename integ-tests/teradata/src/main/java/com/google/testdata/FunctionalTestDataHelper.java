@@ -17,6 +17,7 @@ package com.google.testdata;
 
 import static com.google.base.TestConstants.DB_NAME;
 import static com.google.base.TestConstants.SQL_TESTDATA_BASE_PATH;
+import static com.google.base.TestConstants.URL_DB;
 import static com.google.common.base.Suppliers.memoize;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.sql.SqlUtil.connectAndExecuteQueryAsUser;
@@ -30,15 +31,22 @@ import static com.google.testdata.TestDataHelper.getRandomRolename;
 import static com.google.testdata.TestDataHelper.getRandomTableName;
 import static com.google.testdata.TestDataHelper.getRandomUsername;
 import static java.lang.String.format;
+import static java.lang.System.currentTimeMillis;
 import static java.lang.System.lineSeparator;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.testdata.pojo.TestDataUser;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -99,6 +107,100 @@ public final class FunctionalTestDataHelper {
         format(
             "Generated %s new DB and Table pair(s):%n%s",
             sqlQueries.size() / 2, Joiner.on(lineSeparator()).join(sqlQueries)));
+  }
+
+  /**
+   // * @param connection DB connection parameter
+   * @param tablesCount Repetition count
+   */
+  public static void generateTables(String username, String password, String dbName, int tablesCount)
+      throws SQLException {
+
+    // final String createUserSql = getSql(SQL_TESTDATA_BASE_PATH + "users_data.sql");
+    // final String createDbSql = getSql(SQL_TESTDATA_BASE_PATH + "performance_data_1.sql");
+    // final String grantCreateTableSql = getSql(SQL_TESTDATA_BASE_PATH + "performance_data_2.sql");
+    final String createTableSql = getSql(SQL_TESTDATA_BASE_PATH + "columns_data_2.sql");
+
+    // final int SIZE = 2048 * tablesCount;
+    // String dbName = getRandomDbName();
+    // TestDataUser userData = new TestDataUser();
+
+    // String createUser = format(createUserSql, userData.getUsername(), userData.getPassword());
+    // String createDatabase = format(createDbSql, dbName, SIZE, SIZE, SIZE);
+    // String grantCreateTable = format(grantCreateTableSql, dbName, userData.getUsername());
+
+    long time = currentTimeMillis();
+    // executeQueries(connection, Arrays.asList(createUser, createDatabase, grantCreateTable));
+    // executeQueries(connection, Arrays.asList(createUser, createDatabase, grantCreateTable));
+    // LOGGER.info(format("Static requests execution: %s", (currentTimeMillis() - time) / 1000));
+
+    Connection connection = DriverManager.getConnection(URL_DB, username, password);
+    time = currentTimeMillis();
+    int iterations = tablesCount;
+    while (iterations > 0) {
+      String tableName = getRandomTableName();
+      // connectAndExecuteQueryAsUser(username, password, format(createTableSql, dbName, tableName));
+
+      try (PreparedStatement preparedStatement = connection.prepareStatement(format(createTableSql, dbName, tableName))) {
+        preparedStatement.execute();
+      } catch (SQLException e) {
+        LOGGER.error(format("Cannot execute query: %n%s%n", format(createTableSql, dbName, tableName)));
+        throw e;
+      }
+
+      if (iterations % 1000 == 0) {
+        LOGGER.info(format("Requests have been executed: %s", tablesCount - iterations));
+      }
+      iterations--;
+    }
+    LOGGER.info(format("Payload requests execution: %s", (currentTimeMillis() - time) / 1000));
+  }
+
+  /**
+   // * @param connection DB connection parameter
+   * @param tablesCount Repetition count
+   */
+  public static void generateTablesForDb(String username, String password, String dbName, int tablesCount)
+      throws SQLException {
+
+    // final String createUserSql = getSql(SQL_TESTDATA_BASE_PATH + "users_data.sql");
+    // final String createDbSql = getSql(SQL_TESTDATA_BASE_PATH + "performance_data_1.sql");
+    // final String grantCreateTableSql = getSql(SQL_TESTDATA_BASE_PATH + "performance_data_2.sql");
+    final String createTableSql = getSql(SQL_TESTDATA_BASE_PATH + "columns_data_2.sql");
+
+    // final int SIZE = 2048 * tablesCount;
+    // String dbName = getRandomDbName();
+    // TestDataUser userData = new TestDataUser();
+
+    // String createUser = format(createUserSql, userData.getUsername(), userData.getPassword());
+    // String createDatabase = format(createDbSql, dbName, SIZE, SIZE, SIZE);
+    // String grantCreateTable = format(grantCreateTableSql, dbName, userData.getUsername());
+
+    long time = currentTimeMillis();
+    // executeQueries(connection, Arrays.asList(createUser, createDatabase, grantCreateTable));
+    // executeQueries(connection, Arrays.asList(createUser, createDatabase, grantCreateTable));
+    // LOGGER.info(format("Static requests execution: %s", (currentTimeMillis() - time) / 1000));
+
+    Connection connection = DriverManager.getConnection(URL_DB, username, password);
+    time = currentTimeMillis();
+    int iterations = tablesCount;
+    while (iterations > 0) {
+      String tableName = getRandomTableName();
+      // connectAndExecuteQueryAsUser(username, password, format(createTableSql, dbName, tableName));
+
+      try (PreparedStatement preparedStatement = connection.prepareStatement(format(createTableSql, dbName, tableName))) {
+        preparedStatement.execute();
+      } catch (SQLException e) {
+        LOGGER.error(format("Cannot execute query: %n%s%n", format(createTableSql, dbName, tableName)));
+        throw e;
+      }
+
+      if (iterations % 1000 == 0) {
+        LOGGER.info(format("Requests have been executed: %s", tablesCount - iterations));
+      }
+      iterations--;
+    }
+    LOGGER.info(format("Payload requests execution: %s", (currentTimeMillis() - time) / 1000));
   }
 
   /**

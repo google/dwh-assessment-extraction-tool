@@ -17,6 +17,7 @@ package com.google.testdata;
 
 import static java.lang.String.format;
 import static java.lang.System.nanoTime;
+import static java.util.UUID.randomUUID;
 
 /** Common methods for Test Data Helpers. */
 public final class TestDataHelper {

@@ -21,6 +21,7 @@ import static com.google.sql.SqlUtil.getSql;
 import static com.google.testdata.TestDataHelper.getRandomDbName;
 import static com.google.testdata.TestDataHelper.getRandomTableName;
 import static java.lang.String.format;
+import static java.lang.System.currentTimeMillis;
 import static java.lang.System.lineSeparator;
 
 import com.google.common.base.Joiner;
@@ -47,8 +48,10 @@ public final class PerformanceTestDataHelper {
    * @param connection DB connection parameter
    * @param tablesCount Count of tables to generate
    */
-  public static void generateTables(Connection connection, int tablesCount) throws SQLException {
-    final int USER_COUNT = 5;
+  public static void generateTables(Connection connection, int tablesCount, int threadCount) throws SQLException {
+    LOGGER.info(format("Table count - %s; Thread count - %s", tablesCount, threadCount));
+
+    final int USER_COUNT = threadCount;
     final int TABLES_PER_USER = tablesCount / USER_COUNT;
     final int SIZE = 2048 * TABLES_PER_USER;
 
@@ -60,6 +63,7 @@ public final class PerformanceTestDataHelper {
     final String grantCreateTableSql = getSql(SQL_TESTDATA_BASE_PATH + "performance_data_2.sql");
     final String createTableSql = getSql(SQL_TESTDATA_BASE_PATH + "columns_data_2.sql");
 
+    long time = currentTimeMillis();
     for (int i = 0; i < USER_COUNT; i++) {
       List<String> queries = new ArrayList<>();
       TestDataUser userData = new TestDataUser();
@@ -77,15 +81,18 @@ public final class PerformanceTestDataHelper {
       }
       performancePayload.put(userData, queries);
     }
+    LOGGER.info(format("Precondition requests generation: %s", (currentTimeMillis() - time) / 1000));
 
+    LOGGER.info("Sending Create User and DBs requests");
+    time = currentTimeMillis();
     executeQueries(connection, preconditionQueries);
-    LOGGER.info(
-        format(
-            "Performance test precondition queries %n%s",
-            Joiner.on(lineSeparator()).join(preconditionQueries)));
+    LOGGER.info(format("Precondition requests execution: %s", (currentTimeMillis() - time) / 1000));
 
+    LOGGER.info("Sending Create Table requests");
+    time = currentTimeMillis();
     PerformanceTestDataGeneratorQueryExecutor performanceTasks =
         new PerformanceTestDataGeneratorQueryExecutor(performancePayload, 0, USER_COUNT);
     new ForkJoinPool().invoke(performanceTasks);
+    LOGGER.info(format("Payload requests execution: %s", (currentTimeMillis() - time) / 1000));
   }
 }

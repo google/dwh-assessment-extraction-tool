@@ -30,6 +30,6 @@ public class PerformanceTestDataGenerator {
     Connection connection = DriverManager.getConnection(URL_DB, USERNAME_DB, PASSWORD_DB);
 
     // Generate test data for indices.sql in multiple threads
-    PerformanceTestDataHelper.generateTables(connection, 10);
+    PerformanceTestDataHelper.generateTables(connection, 1000, 40);
   }
 }

@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CREATE SET TABLE
-  %s.%s, FALLBACK
-  (Test_Id     INTEGER)
-  UNIQUE PRIMARY INDEX (Test_Id);
+CREATE MULTISET TABLE
+  %s.%s, NO FALLBACK
+  (Test_Id     BYTEINT)
+  PRIMARY INDEX (Test_Id);
