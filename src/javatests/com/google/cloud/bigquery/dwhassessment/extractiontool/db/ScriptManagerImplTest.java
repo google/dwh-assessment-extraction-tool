@@ -19,6 +19,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.ScriptManagerImpl.getUtcTimeStringFromTimestamp;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityManager;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.FakeDataEntityManagerImpl;
@@ -50,6 +51,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+@SuppressWarnings("SqlNoDataSourceInspection")
 @RunWith(JUnit4.class)
 public final class ScriptManagerImplTest {
 
@@ -74,7 +76,6 @@ public final class ScriptManagerImplTest {
               .setBaseDatabase("test-db")
               .setQueryLogsVariables(SqlScriptVariables.QueryLogsVariables.builder().build()));
   private ScriptManager scriptManager;
-  private DataEntityManager dataEntityManager;
   private ByteArrayOutputStream outputStream;
   private ScriptRunner scriptRunner;
 
@@ -82,7 +83,6 @@ public final class ScriptManagerImplTest {
   public void setUp() {
     scriptRunner = new ScriptRunnerImpl();
     outputStream = new ByteArrayOutputStream();
-    dataEntityManager = new FakeDataEntityManagerImpl(outputStream);
   }
 
   @Test
@@ -94,8 +94,15 @@ public final class ScriptManagerImplTest {
     baseStmt.execute("INSERT INTO TestTable VALUES (0, 'name_0')");
     baseStmt.close();
     connection.commit();
+    DataEntityManager bareStreamDataEntityManager = new FakeDataEntityManagerImpl(outputStream);
     scriptManager.executeScript(
-        connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager, 5000, 0);
+        connection,
+        /*dryRun=*/ false,
+        sqlTemplateRenderer,
+        "default",
+        bareStreamDataEntityManager,
+        5000,
+        0);
     Schema testSchema = scriptRunner.extractSchema(connection, baseScript, "default", "namespace");
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     DataFileReader<Record> reader =
@@ -112,8 +119,15 @@ public final class ScriptManagerImplTest {
     baseStmt.execute("CREATE Table TestTable (" + "ID INTEGER," + "NAME VARCHAR(100)" + ")");
     baseStmt.close();
     connection.commit();
+    DataEntityManager bareStreamDataEntityManager = new FakeDataEntityManagerImpl(outputStream);
     scriptManager.executeScript(
-        connection, /*dryRun=*/ false, sqlTemplateRenderer, "default", dataEntityManager, 5000, 0);
+        connection,
+        /*dryRun=*/ false,
+        sqlTemplateRenderer,
+        "default",
+        bareStreamDataEntityManager,
+        5000,
+        0);
 
     DatumReader<Record> datumReader = new GenericDatumReader<>();
     DataFileReader<Record> reader =
@@ -130,6 +144,7 @@ public final class ScriptManagerImplTest {
     baseStmt.execute("INSERT INTO TestTable VALUES (0, 'name_0')");
     baseStmt.close();
     connection.commit();
+    DataEntityManager bareStreamDataEntityManager = new FakeDataEntityManagerImpl(outputStream);
     assertThrows(
         IllegalArgumentException.class,
         () ->
@@ -138,7 +153,7 @@ public final class ScriptManagerImplTest {
                 /*dryRun=*/ false,
                 sqlTemplateRenderer,
                 "not_existing_script_name",
-                dataEntityManager,
+                bareStreamDataEntityManager,
                 /*chunkRows=*/ 5000,
                 /*startingChunkNumber=*/ 0));
   }
@@ -202,6 +217,75 @@ public final class ScriptManagerImplTest {
     connection.commit();
   }
 
+  private DataFileReader<Record> getAssertingReaderForAvroResults(Path filePath)
+      throws IOException {
+    DatumReader<Record> datumReader = new GenericDatumReader<>();
+    return new DataFileReader<>(filePath.toFile(), datumReader);
+  }
+
+  private void assertRecordEqualsExpected(Record record, Integer id, String timestampUtc) {
+    assertThat(record.get(0)).isEqualTo(id);
+    assertThat(record.get(1)).isEqualTo(Instant.parse(timestampUtc).toEpochMilli());
+  }
+
+  @Test
+  public void executeScript_resumableRun_overwritingPreviousTempFiles() throws Exception {
+    scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap, sortingColumnsMap);
+    Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_resumetemp");
+    prepareDataWithSortingTimestamps(connection);
+    ImmutableList<String> expectedFiles = ImmutableList.of("default.avro");
+    DataEntityManager dataEntityManagerTmp = new FakeDataEntityManagerImpl("tmpTest");
+    Files.createFile(dataEntityManagerTmp.getAbsolutePath("").resolve("default_temp.avro"));
+
+    scriptManager.executeScript(
+        connection,
+        /*dryRun=*/ false,
+        sqlTemplateRenderer,
+        "default",
+        dataEntityManagerTmp,
+        /*chunkRows=*/ 0,
+        /*startingChunkNumber=*/ 0);
+
+    assertThat(
+            Files.walk(dataEntityManagerTmp.getAbsolutePath(""))
+                .filter(Files::isRegularFile)
+                .sorted()
+                .map(path -> path.getFileName().toString())
+                .collect(Collectors.toList()))
+        .isEqualTo(expectedFiles);
+  }
+
+  @Test
+  public void executeScript_resumableRun_overwritingPreviousFinishedFiles() throws Exception {
+    scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap, sortingColumnsMap);
+    Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:db_resumefinished");
+    prepareDataWithSortingTimestamps(connection);
+    ImmutableList<String> expectedFiles = ImmutableList.of("default.avro");
+    DataEntityManager dataEntityManagerTmp = new FakeDataEntityManagerImpl("tmpTest");
+    Files.createFile(dataEntityManagerTmp.getAbsolutePath("").resolve("default.avro"));
+
+    scriptManager.executeScript(
+        connection,
+        /*dryRun=*/ false,
+        sqlTemplateRenderer,
+        "default",
+        dataEntityManagerTmp,
+        /*chunkRows=*/ 0,
+        /*startingChunkNumber=*/ 0);
+
+    assertThat(
+            Files.walk(dataEntityManagerTmp.getAbsolutePath(""))
+                .filter(Files::isRegularFile)
+                .sorted()
+                .map(path -> path.getFileName().toString())
+                .collect(Collectors.toList()))
+        .isEqualTo(expectedFiles);
+    DataFileReader<Record> reader =
+        getAssertingReaderForAvroResults(dataEntityManagerTmp.getAbsolutePath("default.avro"));
+    // Assert that the old empty file was actually overwritten.
+    assertTrue(reader.hasNext());
+  }
+
   @Test
   public void executeScript_writeChunked_chunksAreLabeledCorrectly() throws Exception {
     scriptManager = new ScriptManagerImpl(scriptRunner, scriptsMap, sortingColumnsMap);
@@ -234,17 +318,6 @@ public final class ScriptManagerImplTest {
                 .map(path -> path.getFileName().toString())
                 .collect(Collectors.toList()))
         .isEqualTo(expectedFiles);
-  }
-
-  private DataFileReader<Record> getAssertingReaderForAvroResults(Path filePath)
-      throws IOException {
-    DatumReader<Record> datumReader = new GenericDatumReader<>();
-    return new DataFileReader<>(filePath.toFile(), datumReader);
-  }
-
-  private void assertRecordEqualsExpected(Record record, Integer id, String timestampUtc) {
-    assertThat(record.get(0)).isEqualTo(id);
-    assertThat(record.get(1)).isEqualTo(Instant.parse(timestampUtc).toEpochMilli());
   }
 
   @Test
