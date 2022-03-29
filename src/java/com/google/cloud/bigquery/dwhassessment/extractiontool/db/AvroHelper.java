@@ -27,6 +27,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
@@ -168,6 +173,33 @@ public class AvroHelper {
     }
   }
 
+  public static Timestamp getUnadjustedTimestamp(ResultSet row, String columnName)
+      throws SQLException {
+    Calendar cal = Calendar.getInstance();
+    Timestamp timestamp = row.getTimestamp(columnName, cal);
+    return unadjustTimestamp(timestamp, cal);
+  }
+
+  public static Timestamp getUnadjustedTimestamp(ResultSet row, int columnIndex)
+      throws SQLException {
+    Calendar cal = Calendar.getInstance();
+    Timestamp timestamp = row.getTimestamp(columnIndex, cal);
+    return unadjustTimestamp(timestamp, cal);
+  }
+
+  // Teradata's JDBC driver's ResultSet.getTimestamp() method disrespects both the TIMESTAMP WITH
+  // TIME ZONE and the user's will with some twisted zone-adjustment logic (see Receiving DATE,
+  // TIME, and TIMESTAMP Values from
+  // https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html).
+  // Unadjust it to make things right.
+  private static Timestamp unadjustTimestamp(Timestamp timestamp, Calendar cal) {
+    if (timestamp == null) {
+      return null;
+    }
+    return Timestamp.from(
+        ZonedDateTime.of(timestamp.toLocalDateTime(), cal.getTimeZone().toZoneId()).toInstant());
+  }
+
   private static Object getRowObject(ResultSetMetaData metaData, ResultSet row, int columnIndex)
       throws SQLException {
     switch (metaData.getColumnType(columnIndex)) {
@@ -185,7 +217,7 @@ public class AvroHelper {
       case Types.TIMESTAMP:
       case Types.TIMESTAMP_WITH_TIMEZONE:
         {
-          Timestamp timestamp = row.getTimestamp(columnIndex);
+          Timestamp timestamp = getUnadjustedTimestamp(row, columnIndex);
           return timestamp == null ? null : timestamp.toInstant().toEpochMilli();
         }
       case Types.BINARY:

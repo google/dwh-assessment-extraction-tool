@@ -15,6 +15,7 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
+import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.getUnadjustedTimestamp;
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.parseRowToAvro;
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -33,6 +34,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
 import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -114,7 +116,7 @@ public class ScriptManagerImpl implements ScriptManager {
       Integer chunkNumber)
       throws SQLException, IOException {
     Timestamp previousTimestamp = new Timestamp(0);
-    Timestamp currentTimestamp = resultSet.getTimestamp(labelColumn);
+    Timestamp currentTimestamp = getUnadjustedTimestamp(resultSet, labelColumn);
     String firstRowStamp = getUtcTimeStringFromTimestamp(currentTimestamp);
     String tempFileName =
         String.format(
@@ -131,7 +133,7 @@ public class ScriptManagerImpl implements ScriptManager {
         if (!resultSet.next()) {
           break;
         }
-        currentTimestamp = resultSet.getTimestamp(labelColumn);
+        currentTimestamp = getUnadjustedTimestamp(resultSet, labelColumn);
       }
     } catch (IOException | SQLException e) {
       throw e;
