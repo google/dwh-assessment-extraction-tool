@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.collectingAndThen;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.common.ChunkCheckpoint;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.re2j.Matcher;
 import com.google.re2j.Pattern;
@@ -40,6 +41,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 public class SaveCheckerImpl implements SaveChecker {
@@ -136,6 +138,17 @@ public class SaveCheckerImpl implements SaveChecker {
       }
     }
     return checkPointsMapBuilder.build();
+  }
+
+  @Override
+  public ImmutableSet<String> findScriptNamesWithFinishedRecords(
+      Path recordPath, Set<String> scriptsToCheck, String fileSuffix) {
+    if (scriptsToCheck == null || scriptsToCheck.isEmpty()) {
+      return ImmutableSet.of();
+    }
+    return scriptsToCheck.stream()
+        .filter(scriptName -> Files.exists(recordPath.resolve(scriptName + fileSuffix)))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   private static void validateSortedChunkSequence(List<Matcher> matchers) {

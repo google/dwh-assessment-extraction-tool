@@ -33,7 +33,8 @@ public interface ExtractExecutor {
 
   enum RunMode {
     NORMAL,
-    INCREMENTAL
+    INCREMENTAL,
+    RECOVERY
   }
 
   /** Arguments for the extract action. */
