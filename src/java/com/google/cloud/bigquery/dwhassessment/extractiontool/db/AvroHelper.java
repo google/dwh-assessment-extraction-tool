@@ -173,6 +173,16 @@ public class AvroHelper {
     }
   }
 
+  /**
+   * Retrieves TIMESTAMP from target column in a ResultSet row, and associate it with proper time
+   * zone information so that the resulted Timestamp correctly represents the logical equivalence of
+   * Instant representation in Java.
+   *
+   * @param row One row as ResultSet.
+   * @param columnName Name of the target column.
+   * @return Unadjusted true timestamp.
+   * @throws SQLException If JDBC fails to retrieve timestamp.
+   */
   public static Timestamp getUnadjustedTimestamp(ResultSet row, String columnName)
       throws SQLException {
     Calendar cal = Calendar.getInstance();
@@ -180,6 +190,16 @@ public class AvroHelper {
     return unadjustTimestamp(timestamp, cal);
   }
 
+  /**
+   * Retrieves TIMESTAMP from target column in a ResultSet row, and associate it with proper time
+   * zone information so that the resulted Timestamp correctly represents the logical equivalence of
+   * Instant representation in Java.
+   *
+   * @param row One row as ResultSet.
+   * @param columnIndex Index of the target column.
+   * @return Unadjusted true timestamp.
+   * @throws SQLException If JDBC fails to retrieve timestamp.
+   */
   public static Timestamp getUnadjustedTimestamp(ResultSet row, int columnIndex)
       throws SQLException {
     Calendar cal = Calendar.getInstance();
