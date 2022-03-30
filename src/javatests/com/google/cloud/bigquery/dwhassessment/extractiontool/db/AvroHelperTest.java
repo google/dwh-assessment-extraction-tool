@@ -18,8 +18,12 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.dumpResults;
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.getAvroSchema;
+import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.getUnadjustedTimestamp;
 import static com.google.cloud.bigquery.dwhassessment.extractiontool.db.AvroHelper.parseRowToAvro;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doAnswer;
 import static org.junit.Assert.assertThrows;
 
 import com.google.common.collect.ImmutableList;
@@ -28,7 +32,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.TimeZone;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.SeekableByteArrayInput;
@@ -176,5 +185,57 @@ public final class AvroHelperTest {
                 .set("NAME", "name_0")
                 .set("CHAR_COL", "  two  words")
                 .build());
+  }
+
+  @Test
+  public void getUnadjustedTimestampColumnIdCorrectnessTest() throws SQLException {
+    // For Teradata JDBC, TIMESTAMP WITh TIME ZONE with value "2021-01-01 00:00:00.111-9:00" will be
+    // returned as a timestamp "2021-01-01 00:00:00.111" and the input Calendar object's TimeZone
+    // set to "GMT-9:00". That Timestamp object then has an incorrect value (depending on the system
+    // time zone), whereas the correct value if represented in UTC time zone should be 2021-01-01
+    // 09:00:00.111+0:00."
+    Timestamp badAdjustedTimestamp = Timestamp.valueOf("2021-01-01 00:00:00.111");
+    TimeZone teradataTimestampTimeZone = TimeZone.getTimeZone("GMT-9:00");
+    Timestamp expectedUnadjustedTimestamp =
+        Timestamp.from(Instant.parse("2021-01-01T09:00:00.111Z"));
+    ResultSet mockTeradataResultSet = mock(ResultSet.class);
+    doAnswer(
+            invocation -> {
+              Calendar cal = invocation.getArgument(1);
+              cal.setTimeZone(teradataTimestampTimeZone);
+              return badAdjustedTimestamp;
+            })
+        .when(mockTeradataResultSet)
+        .getTimestamp(any(int.class), any(Calendar.class));
+
+    Timestamp gotTimestamp = getUnadjustedTimestamp(mockTeradataResultSet, 1);
+
+    assertThat(gotTimestamp).isEqualTo(expectedUnadjustedTimestamp);
+  }
+
+  @Test
+  public void getUnadjustedTimestampColumnNameCorrectnessTest() throws SQLException {
+    // For Teradata JDBC, TIMESTAMP WITh TIME ZONE with value "2021-01-01 00:00:00.111-9:00" will be
+    // returned as a timestamp "2021-01-01 00:00:00.111" and the input Calendar object's TimeZone
+    // set to "GMT-9:00". That Timestamp object then has an incorrect value (depending on the system
+    // time zone), whereas the correct value if represented in UTC time zone should be 2021-01-01
+    // 09:00:00.111+0:00."
+    Timestamp badAdjustedTimestamp = Timestamp.valueOf("2021-01-01 00:00:00.111");
+    TimeZone teradataTimestampTimeZone = TimeZone.getTimeZone("GMT-9:00");
+    Timestamp expectedUnadjustedTimestamp =
+        Timestamp.from(Instant.parse("2021-01-01T09:00:00.111Z"));
+    ResultSet mockTeradataResultSet = mock(ResultSet.class);
+    doAnswer(
+            invocation -> {
+              Calendar cal = invocation.getArgument(1);
+              cal.setTimeZone(teradataTimestampTimeZone);
+              return badAdjustedTimestamp;
+            })
+        .when(mockTeradataResultSet)
+        .getTimestamp(any(String.class), any(Calendar.class));
+
+    Timestamp gotTimestamp = getUnadjustedTimestamp(mockTeradataResultSet, "column1");
+
+    assertThat(gotTimestamp).isEqualTo(expectedUnadjustedTimestamp);
   }
 }
