@@ -15,13 +15,14 @@
  */
 package com.google.tdjdbc;
 
-
 import static com.google.base.TestConstants.TRAILING_SPACES_REGEX;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.Calendar;
 
 /**
  * A helper class for checking Null values returned by executing SELECT request against a database.
@@ -91,7 +92,11 @@ public final class JdbcUtil {
    * @return long or 0L if null.
    */
   public static long getTimestampNotNull(ResultSet rs, String column) throws SQLException {
-    Timestamp timestamp = rs.getTimestamp(column);
-    return rs.wasNull() ? 0L : timestamp.getTime();
+    Calendar cal = Calendar.getInstance();
+    Timestamp timestamp = rs.getTimestamp(column, cal);
+    if (rs.wasNull()) return 0L;
+    return Timestamp.from(
+            ZonedDateTime.of(timestamp.toLocalDateTime(), cal.getTimeZone().toZoneId()).toInstant())
+        .getTime();
   }
 }
