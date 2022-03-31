@@ -92,9 +92,11 @@ public final class JdbcUtil {
    * @return long or 0L if null.
    */
   public static long getTimestampNotNull(ResultSet rs, String column) throws SQLException {
-    Calendar cal = Calendar.getInstance();
+    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     Timestamp timestamp = rs.getTimestamp(column, cal);
-    if (rs.wasNull()) return 0L;
+    if (rs.wasNull()) {
+      return 0L;
+    }
     return Timestamp.from(
             ZonedDateTime.of(timestamp.toLocalDateTime(), cal.getTimeZone().toZoneId()).toInstant())
         .getTime();

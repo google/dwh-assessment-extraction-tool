@@ -36,6 +36,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.TimeZone;
 import org.apache.avro.Schema;
@@ -230,6 +231,31 @@ public final class AvroHelperTest {
               Calendar cal = invocation.getArgument(1);
               cal.setTimeZone(teradataTimestampTimeZone);
               return badAdjustedTimestamp;
+            })
+        .when(mockTeradataResultSet)
+        .getTimestamp(any(String.class), any(Calendar.class));
+
+    Timestamp gotTimestamp = getUnadjustedTimestamp(mockTeradataResultSet, "column1");
+
+    assertThat(gotTimestamp).isEqualTo(expectedUnadjustedTimestamp);
+  }
+
+  @Test
+  public void getUnadjustedTimestampColumnNameCorrectnessTest2() throws SQLException {
+    // For Teradata JDBC, TIMESTAMP without time zone info is returned as if it is the presentation
+    // if invoked in the current time zone. We don't like this - thus we dictate the default time
+    // zone to be UTC.
+    Timestamp localTimestamp = Timestamp.valueOf("2021-01-01 00:00:00.111");
+    Timestamp expectedUnadjustedTimestamp =
+        Timestamp.from(Instant.parse("2021-01-01T00:00:00.111Z"));
+    ResultSet mockTeradataResultSet = mock(ResultSet.class);
+    doAnswer(
+            invocation -> {
+              Calendar cal = invocation.getArgument(1);
+              TimeZone localTimeZone = cal.getTimeZone();
+              return Timestamp.from(
+                  ZonedDateTime.of(localTimestamp.toLocalDateTime(), localTimeZone.toZoneId())
+                      .toInstant());
             })
         .when(mockTeradataResultSet)
         .getTimestamp(any(String.class), any(Calendar.class));

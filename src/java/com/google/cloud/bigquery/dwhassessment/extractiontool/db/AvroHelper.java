@@ -29,6 +29,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
@@ -182,7 +183,12 @@ public class AvroHelper {
    */
   public static Timestamp getUnadjustedTimestamp(ResultSet row, String columnName)
       throws SQLException {
-    Calendar cal = Calendar.getInstance();
+    // Note that if target column is TIMESTAMP WITH TIME ZONE, the TimeZone of cal will be set to
+    // tht TIME ZONE value; if the target column is TIMESTAMP without time zone, the returned
+    // Timestamp object is associated with the input
+    // TimeZone of cal. We thus use default value "UTC" for TIMESTAMP columns, but let the TIMESTAMP
+    // WITH TIME ZONE columns return their TIME ZONE via cal.
+    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     Timestamp timestamp = row.getTimestamp(columnName, cal);
     return unadjustTimestamp(timestamp, cal);
   }
@@ -228,9 +234,6 @@ public class AvroHelper {
               : ByteBuffer.wrap(bigDecimal.toBigInteger().toByteArray());
         }
       case Types.DATE:
-        {
-          return row.getDate(columnIndex) == null ? null : row.getDate(columnIndex).getTime();
-        }
       case Types.TIMESTAMP:
       case Types.TIMESTAMP_WITH_TIMEZONE:
         {
