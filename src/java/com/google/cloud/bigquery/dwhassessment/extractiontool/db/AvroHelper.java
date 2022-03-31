@@ -27,6 +27,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.ZonedDateTime;
+import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
@@ -168,6 +171,63 @@ public class AvroHelper {
     }
   }
 
+  /**
+   * Retrieves TIMESTAMP from target column in a ResultSet row, and associate it with proper time
+   * zone information so that the resulted Timestamp correctly represents the logical equivalence of
+   * Instant representation in Java.
+   *
+   * @param row One row as ResultSet.
+   * @param columnName Name of the target column.
+   * @return Unadjusted true timestamp.
+   * @throws SQLException If JDBC fails to retrieve timestamp.
+   */
+  public static Timestamp getUnadjustedTimestamp(ResultSet row, String columnName)
+      throws SQLException {
+    // Note that if target column is TIMESTAMP WITH TIME ZONE, the TimeZone of cal will be set to
+    // tht TIME ZONE value; if the target column is TIMESTAMP without time zone, the returned
+    // Timestamp object is associated with the input
+    // TimeZone of cal. We thus use default value "UTC" for TIMESTAMP columns, but let the TIMESTAMP
+    // WITH TIME ZONE columns return their TIME ZONE via cal.
+    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    Timestamp timestamp = row.getTimestamp(columnName, cal);
+    return unadjustTimestamp(timestamp, cal);
+  }
+
+  /**
+   * Retrieves TIMESTAMP from target column in a ResultSet row, and associate it with proper time
+   * zone information so that the resulted Timestamp correctly represents the logical equivalence of
+   * Instant representation in Java.
+   *
+   * @param row One row as ResultSet.
+   * @param columnIndex Index of the target column.
+   * @return Unadjusted true timestamp.
+   * @throws SQLException If JDBC fails to retrieve timestamp.
+   */
+  public static Timestamp getUnadjustedTimestamp(ResultSet row, int columnIndex)
+      throws SQLException {
+    // Note that if target column is TIMESTAMP WITH TIME ZONE, the TimeZone of cal will be set to
+    // tht TIME ZONE value; if the target column is TIMESTAMP without time zone, the returned
+    // Timestamp object is associated with the input
+    // TimeZone of cal. We thus use default value "UTC" for TIMESTAMP columns, but let the TIMESTAMP
+    // WITH TIME ZONE columns return their TIME ZONE via cal.
+    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    Timestamp timestamp = row.getTimestamp(columnIndex, cal);
+    return unadjustTimestamp(timestamp, cal);
+  }
+
+  // Teradata's JDBC driver's ResultSet.getTimestamp() method disrespects both the TIMESTAMP WITH
+  // TIME ZONE and the user's will with some twisted zone-adjustment logic (see Receiving DATE,
+  // TIME, and TIMESTAMP Values from
+  // https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html).
+  // Unadjust it to make things right.
+  private static Timestamp unadjustTimestamp(Timestamp timestamp, Calendar cal) {
+    if (timestamp == null) {
+      return null;
+    }
+    return Timestamp.from(
+        ZonedDateTime.of(timestamp.toLocalDateTime(), cal.getTimeZone().toZoneId()).toInstant());
+  }
+
   private static Object getRowObject(ResultSetMetaData metaData, ResultSet row, int columnIndex)
       throws SQLException {
     switch (metaData.getColumnType(columnIndex)) {
@@ -179,13 +239,10 @@ public class AvroHelper {
               : ByteBuffer.wrap(bigDecimal.toBigInteger().toByteArray());
         }
       case Types.DATE:
-        {
-          return row.getDate(columnIndex) == null ? null : row.getDate(columnIndex).getTime();
-        }
       case Types.TIMESTAMP:
       case Types.TIMESTAMP_WITH_TIMEZONE:
         {
-          Timestamp timestamp = row.getTimestamp(columnIndex);
+          Timestamp timestamp = getUnadjustedTimestamp(row, columnIndex);
           return timestamp == null ? null : timestamp.toInstant().toEpochMilli();
         }
       case Types.BINARY:
