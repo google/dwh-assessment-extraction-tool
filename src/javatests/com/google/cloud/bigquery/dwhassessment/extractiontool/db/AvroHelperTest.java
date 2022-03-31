@@ -189,7 +189,8 @@ public final class AvroHelperTest {
   }
 
   @Test
-  public void getUnadjustedTimestampColumnIdCorrectnessTest() throws SQLException {
+  public void getUnadjustedTimestamp_byColumnIdFromTimestampWithTimeZone_correct()
+      throws SQLException {
     // For Teradata JDBC, TIMESTAMP WITh TIME ZONE with value "2021-01-01 00:00:00.111-9:00" will be
     // returned as a timestamp "2021-01-01 00:00:00.111" and the input Calendar object's TimeZone
     // set to "GMT-9:00". That Timestamp object then has an incorrect value (depending on the system
@@ -215,7 +216,8 @@ public final class AvroHelperTest {
   }
 
   @Test
-  public void getUnadjustedTimestampColumnNameCorrectnessTest() throws SQLException {
+  public void getUnadjustedTimestamp_byColumnNameFromTimestampWithTimeZone_correct()
+      throws SQLException {
     // For Teradata JDBC, TIMESTAMP WITh TIME ZONE with value "2021-01-01 00:00:00.111-9:00" will be
     // returned as a timestamp "2021-01-01 00:00:00.111" and the input Calendar object's TimeZone
     // set to "GMT-9:00". That Timestamp object then has an incorrect value (depending on the system
@@ -241,7 +243,8 @@ public final class AvroHelperTest {
   }
 
   @Test
-  public void getUnadjustedTimestampColumnNameCorrectnessTest2() throws SQLException {
+  public void getUnadjustedTimestamp_byColumnNameFromTimestampNoTimeZone_correct()
+      throws SQLException {
     // For Teradata JDBC, TIMESTAMP without time zone info is returned as if it is the presentation
     // if invoked in the current time zone. We don't like this - thus we dictate the default time
     // zone to be UTC.

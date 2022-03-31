@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 /**
  * A helper class for checking Null values returned by executing SELECT request against a database.
