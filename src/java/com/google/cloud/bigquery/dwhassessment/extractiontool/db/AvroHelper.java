@@ -205,7 +205,12 @@ public class AvroHelper {
    */
   public static Timestamp getUnadjustedTimestamp(ResultSet row, int columnIndex)
       throws SQLException {
-    Calendar cal = Calendar.getInstance();
+    // Note that if target column is TIMESTAMP WITH TIME ZONE, the TimeZone of cal will be set to
+    // tht TIME ZONE value; if the target column is TIMESTAMP without time zone, the returned
+    // Timestamp object is associated with the input
+    // TimeZone of cal. We thus use default value "UTC" for TIMESTAMP columns, but let the TIMESTAMP
+    // WITH TIME ZONE columns return their TIME ZONE via cal.
+    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     Timestamp timestamp = row.getTimestamp(columnIndex, cal);
     return unadjustTimestamp(timestamp, cal);
   }
