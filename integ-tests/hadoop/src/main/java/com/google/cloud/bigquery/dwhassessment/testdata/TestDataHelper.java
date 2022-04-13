@@ -17,11 +17,12 @@ package com.google.cloud.bigquery.dwhassessment.testdata;
 
 import static com.google.cloud.bigquery.dwhassessment.base.Constants.DB_SCHEMAS_FILE;
 import static com.google.cloud.bigquery.dwhassessment.base.Constants.SCHEMAS_PATH;
+import static com.google.cloud.bigquery.dwhassessment.base.Constants.SQL_TEST_DATA_BASE_PATH;
 import static java.lang.String.format;
 import static java.lang.System.lineSeparator;
 import static java.lang.System.nanoTime;
 
-import com.google.cloud.bigquery.dwhassessment.base.Constants;
+import com.google.cloud.bigquery.dwhassessment.pojo.TestData;
 import com.google.cloud.bigquery.dwhassessment.sql.SqlHelper;
 import com.google.common.base.Joiner;
 import java.io.BufferedWriter;
@@ -52,24 +53,47 @@ public final class TestDataHelper {
    */
   public static void generateDbWithTables(Connection connection, int tableCount)
       throws SQLException, IOException {
-    String createDb = SqlHelper.getSql(Constants.SQL_TEST_DATA_BASE_PATH + "create_db.sql");
-    String createTable = SqlHelper.getSql(Constants.SQL_TEST_DATA_BASE_PATH + "create_table.sql");
+    String createDb = SqlHelper.getSql(SQL_TEST_DATA_BASE_PATH + "create_db.sql");
+    String createTable = SqlHelper.getSql(SQL_TEST_DATA_BASE_PATH + "create_table.sql");
+    String populateData = SqlHelper.getSql(SQL_TEST_DATA_BASE_PATH + "populate_data.sql");
 
     String dbName = getRandomDbName();
     List<String> queryList = new ArrayList<>();
 
-    String createDbQuery = String.format(createDb, dbName);
+    String createDbQuery = format(createDb, dbName);
     queryList.add(createDbQuery);
     for (int i = 0; i < tableCount; i++) {
       String tableName = getRandomTableName();
-      String createTableQuery = String.format(createTable, dbName, tableName);
+      String createTableQuery = format(createTable, dbName, tableName);
       queryList.add(createTableQuery);
+      TestData testData1 = new TestData();
+      String populateData1 =
+          format(
+              populateData,
+              dbName,
+              tableName,
+              testData1.getState(),
+              testData1.getId(),
+              testData1.getName(),
+              testData1.getDescription());
+      queryList.add(populateData1);
+      TestData testData2 = new TestData();
+      String populateData2 =
+          format(
+              populateData,
+              dbName,
+              tableName,
+              testData2.getState(),
+              testData2.getId(),
+              testData2.getName(),
+              testData2.getDescription());
+      queryList.add(populateData2);
     }
 
     SqlHelper.executeQueries(connection, queryList);
 
     LOGGER.info(
-        String.format(
+        format(
             "Generated %s new constraints:%n%s",
             queryList.size(), Joiner.on(lineSeparator()).join(queryList)));
 
@@ -77,7 +101,7 @@ public final class TestDataHelper {
     if (schemas.isEmpty()) {
       writeToSchemaFile(dbName);
     } else {
-      writeToSchemaFile(String.format("%s,%s", schemas, dbName));
+      writeToSchemaFile(format("%s,%s", schemas, dbName));
     }
   }
 

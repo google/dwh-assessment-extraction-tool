@@ -16,15 +16,13 @@
 package com.google.cloud.bigquery.dwhassessment.dumper;
 
 import com.google.cloud.bigquery.dwhassessment.base.Constants;
-import com.google.common.collect.ImmutableSet;
 import com.google.cloud.bigquery.dwhassessment.proto.HiveSchema.Schema;
+import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.util.JsonFormat;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.slf4j.Logger;

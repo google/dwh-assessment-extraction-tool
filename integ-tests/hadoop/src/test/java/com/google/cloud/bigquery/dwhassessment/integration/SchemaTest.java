@@ -15,11 +15,13 @@
  */
 package com.google.cloud.bigquery.dwhassessment.integration;
 
+import static com.google.cloud.bigquery.dwhassessment.base.Constants.SQL_TEST_DATA_BASE_PATH;
 import static java.lang.String.format;
 
 import com.google.cloud.bigquery.dwhassessment.base.Constants;
 import com.google.cloud.bigquery.dwhassessment.base.TestBase;
 import com.google.cloud.bigquery.dwhassessment.dumper.DumperUtils;
+import com.google.cloud.bigquery.dwhassessment.proto.HiveSchema.Partition;
 import com.google.cloud.bigquery.dwhassessment.proto.HiveSchema.Schema;
 import com.google.cloud.bigquery.dwhassessment.sql.SqlHelper;
 import com.google.cloud.bigquery.dwhassessment.testdata.TestDataHelper;
@@ -30,11 +32,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.BeforeClass;
@@ -46,10 +46,12 @@ public class SchemaTest extends TestBase {
 
   private static Connection connection;
   private static final Logger LOGGER = LoggerFactory.getLogger(SchemaTest.class);
-  private static final String GET_TABLES_QUERY =
-      Constants.SQL_TEST_DATA_BASE_PATH + "get_tables.sql";
-  private static final String GET_SCHEME_QUERY =
-      Constants.SQL_TEST_DATA_BASE_PATH + "get_table_schema.sql";
+  private static final String GET_TABLES_QUERY = SQL_TEST_DATA_BASE_PATH + "get_tables.sql";
+  private static final String GET_SCHEMA = SQL_TEST_DATA_BASE_PATH + "get_table_schema.sql";
+  private static final String GET_PARTITION_FIELDS =
+      SQL_TEST_DATA_BASE_PATH + "get_partitions_fields.sql";
+  private static final String GET_PARTITION_INFO =
+      SQL_TEST_DATA_BASE_PATH + "get_partition_info.sql";
   private static final String SQL_ERROR_MESSAGE = "Cannot execute query %n%s%n";
 
   @BeforeClass
@@ -71,33 +73,73 @@ public class SchemaTest extends TestBase {
   }
 
   private ImmutableSet<Schema> getSchemas(Map<String, Set<String>> dbTables) throws SQLException {
-    List<Schema> hiveList = new ArrayList<>();
+    ImmutableSet.Builder<Schema> schemaSetBuilder = ImmutableSet.builder();
     for (String db : dbTables.keySet()) {
       for (String tbl : dbTables.get(db)) {
-        String query = String.format(SqlHelper.getSql(GET_SCHEME_QUERY), db, tbl);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-          ResultSet rs = preparedStatement.executeQuery();
-          Schema.Builder schemaBuilder = Schema.newBuilder();
-          schemaBuilder.setName(tbl);
-          while (rs.next()) {
-            SqlHelper.parseSchemaRow(rs, schemaBuilder);
-          }
-          Schema buildSchema = schemaBuilder.build();
-          hiveList.add(buildSchema);
-        } catch (SQLException e) {
-          LOGGER.info(format(SQL_ERROR_MESSAGE, query), e);
-          throw e;
-        }
+        Schema.Builder schemaBuilder = Schema.newBuilder();
+        getSchemaInformation(db, tbl, schemaBuilder);
+        getPartitionInformation(db, tbl, schemaBuilder);
+        schemaSetBuilder.add(schemaBuilder.build());
       }
     }
-    return ImmutableSet.<Schema>builder().addAll(hiveList).build();
+    return schemaSetBuilder.build();
+  }
+
+  private void getPartitionInformation(String db, String tbl, Schema.Builder schemaBuilder)
+      throws SQLException {
+    ImmutableSet<String> partitions = getPartitionsFields(db, tbl);
+    for (String partition : partitions) {
+      Partition.Builder partitionBuilder = Partition.newBuilder();
+      partitionBuilder.setName("state=" + partition);
+      String getPartitionInfoQuery =
+          format(SqlHelper.getSql(GET_PARTITION_INFO), db, tbl, partition);
+      try (PreparedStatement preparedStatement =
+          connection.prepareStatement(getPartitionInfoQuery)) {
+        ResultSet rs = preparedStatement.executeQuery();
+        while (rs.next()) {
+          SqlHelper.parsePartitionInfoRow(rs, partitionBuilder);
+        }
+        schemaBuilder.addPartitions(partitionBuilder.build());
+      }
+    }
+  }
+
+  private ImmutableSet<String> getPartitionsFields(String db, String tbl) throws SQLException {
+    ImmutableSet.Builder<String> fieldsSetBuilder = ImmutableSet.builder();
+    String getPartitionFieldsQuery = format(SqlHelper.getSql(GET_PARTITION_FIELDS), db, tbl);
+    try (PreparedStatement preparedStatement =
+        connection.prepareStatement(getPartitionFieldsQuery)) {
+      ResultSet rs = preparedStatement.executeQuery();
+      while (rs.next()) {
+        fieldsSetBuilder.add(rs.getString("state"));
+      }
+    } catch (SQLException e) {
+      LOGGER.info(format(SQL_ERROR_MESSAGE, getPartitionFieldsQuery), e);
+      throw e;
+    }
+    return fieldsSetBuilder.build();
+  }
+
+  private void getSchemaInformation(String db, String tbl, Schema.Builder schemaBuilder)
+      throws SQLException {
+    String getSchemaQuery = format(SqlHelper.getSql(GET_SCHEMA), db, tbl);
+    try (PreparedStatement preparedStatement = connection.prepareStatement(getSchemaQuery)) {
+      ResultSet rs = preparedStatement.executeQuery();
+      schemaBuilder.setName(tbl);
+      while (rs.next()) {
+        SqlHelper.parseSchemaRow(rs, schemaBuilder);
+      }
+    } catch (SQLException e) {
+      LOGGER.info(format(SQL_ERROR_MESSAGE, getSchemaQuery), e);
+      throw e;
+    }
   }
 
   private Map<String, Set<String>> getTables(Set<String> dbList) throws SQLException {
     Map<String, Set<String>> dbTables = new HashMap<>();
     for (String db : dbList) {
-      String query = String.format(SqlHelper.getSql(GET_TABLES_QUERY), db);
-      try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+      String getTablesQuery = format(SqlHelper.getSql(GET_TABLES_QUERY), db);
+      try (PreparedStatement preparedStatement = connection.prepareStatement(getTablesQuery)) {
         ResultSet rs = preparedStatement.executeQuery();
         Set<String> tables = new HashSet<>();
         while (rs.next()) {
@@ -105,7 +147,7 @@ public class SchemaTest extends TestBase {
         }
         dbTables.put(db, tables);
       } catch (SQLException e) {
-        LOGGER.info(format(SQL_ERROR_MESSAGE, query), e);
+        LOGGER.info(format(SQL_ERROR_MESSAGE, getTablesQuery), e);
         throw e;
       }
     }

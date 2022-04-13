@@ -12,10 +12,4 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CREATE TABLE IF NOT EXISTS %s.%s (
- id int,
- name string,
- description string)
- PARTITIONED BY(state string)
- ROW FORMAT DELIMITED
- FIELDS TERMINATED BY ','
+SELECT DISTINCT state FROM %s.%s
