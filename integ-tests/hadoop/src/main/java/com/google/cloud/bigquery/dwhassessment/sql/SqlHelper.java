@@ -19,6 +19,7 @@ import static java.lang.String.format;
 import static org.apache.commons.io.FileUtils.readFileToString;
 
 import com.google.cloud.bigquery.dwhassessment.proto.HiveSchema.Field;
+import com.google.cloud.bigquery.dwhassessment.proto.HiveSchema.Partition;
 import com.google.cloud.bigquery.dwhassessment.proto.HiveSchema.Schema;
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +41,7 @@ public final class SqlHelper {
   private static final DateTimeFormatter DATE_TIME_FORMATTER =
       DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy");
   private static final String DB_FIELD_PATTERN = "^[a-z]+$";
+  private static boolean parsingPartitionFields = false;
 
   private SqlHelper() {}
 
@@ -105,11 +107,30 @@ public final class SqlHelper {
       case "Location:":
         schemaBuilder.setLocation(rs.getString(dataType).trim());
         break;
+      case "# Partition Information":
+        parsingPartitionFields = true;
+        break;
+      case "# Detailed Table Information":
+        parsingPartitionFields = false;
       default:
-        if (!colName.isEmpty() && colName.matches(DB_FIELD_PATTERN)) {
+        if (!colName.isEmpty() && colName.matches(DB_FIELD_PATTERN) && !parsingPartitionFields) {
           schemaBuilder.addFields(
               Field.newBuilder().setName(colName).setType(rs.getString(dataType)).build());
+        } else if (!colName.isEmpty()
+            && colName.matches(DB_FIELD_PATTERN)
+            && parsingPartitionFields) {
+          schemaBuilder.addPartitionKeys(
+              Field.newBuilder().setName(colName).setType(rs.getString(dataType)).build());
         }
+    }
+  }
+
+  public static void parsePartitionInfoRow(ResultSet rs, Partition.Builder partitionBuilder)
+      throws SQLException {
+    final String dataType = "data_type";
+    final String colName = rs.getString("col_name").trim();
+    if (colName.equals("Location:")) {
+      partitionBuilder.setLocation(rs.getString(dataType).trim());
     }
   }
 }
