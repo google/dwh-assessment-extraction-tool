@@ -30,6 +30,8 @@
     <hive.version>3.1.2</hive.version>
     <slf4j.version>2.0.0-alpha5</slf4j.version>
     <os-maven-plugin.version>1.7.0</os-maven-plugin.version>
+    <protobuf-maven.version>0.6.1</protobuf-maven.version>
+    <protobuf.version>3.19.4</protobuf.version>
     <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
   </properties>
 
@@ -58,6 +60,18 @@
       <version>${gson.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${protobuf.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java-util</artifactId>
+      <version>${protobuf.version}</version>
+    </dependency>
+
   </dependencies>
 
 
@@ -70,6 +84,38 @@
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>${os-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>detect</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>${protobuf-maven.version}</version>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>test-compile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
         </configuration>
       </plugin>
 
@@ -100,7 +146,7 @@
         </executions>
         <configuration>
           <includePluginDependencies>true</includePluginDependencies>
-          <mainClass>com.google.testdata.TestDataGenerator</mainClass>
+          <mainClass>com.google.cloud.bigquery.dwhassessment.testdata.TestDataGenerator</mainClass>
         </configuration>
       </plugin>
     </plugins>

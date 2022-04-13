@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.testdata;
+package com.google.cloud.bigquery.dwhassessment.testdata;
 
-import static com.google.base.Constants.PASSWORD_DB;
-import static com.google.base.Constants.URL_DB;
-import static com.google.base.Constants.USERNAME_DB;
-
+import com.google.cloud.bigquery.dwhassessment.base.Constants;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Functional test data generation class. */
 public class TestDataGenerator {
 
-  public static void main(String[] args) throws SQLException {
-    Connection connection = DriverManager.getConnection(URL_DB, USERNAME_DB, PASSWORD_DB);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestDataGenerator.class);
+
+  public static void main(String[] args) throws SQLException, IOException {
+    Connection connection =
+        DriverManager.getConnection(Constants.URL_DB, Constants.USERNAME_DB, Constants.PASSWORD_DB);
 
     // Generates db with tables
     TestDataHelper.generateDbWithTables(connection, 5);
