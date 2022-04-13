@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.base;
+package com.google.cloud.bigquery.dwhassessment.base;
 
 import static java.lang.String.format;
 import static java.lang.System.getenv;
@@ -23,11 +23,15 @@ public final class Constants {
 
   public static final String HIVE_HOST = getenv("HIVE_HOST");
   public static final String DB_NAME = "default";
-  public static final String USERNAME_DB = getenv("HIVE_USR");;
+  public static final String USERNAME_DB = getenv("HIVE_USR");
   public static final String PASSWORD_DB = getenv("HIVE_PSW");
   public static final String URL_DB = format("jdbc:hive2://%s:10000/%s", HIVE_HOST, DB_NAME);
-
-  public static final String SQL_TEST_DATA_BASE_PATH = "src/main/java/com/google/sql/";
+  public static final String SQL_TEST_DATA_BASE_PATH =
+      "src/main/java/com/google/cloud/bigquery/dwhassessment/sql/";
+  public static final String EXPORT_PATH = getenv("HADOOP_EXPORT_PATH");
+  public static final String SCHEMA_FILE = "tables.jsonl";
+  public static final String DB_SCHEMAS_FILE = "schemas.txt";
+  public static final String SCHEMAS_PATH = System.getProperty("user.dir") + "/target/";
 
   private Constants() {}
 }
