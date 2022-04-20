@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import picocli.CommandLine.Command;
@@ -124,7 +125,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
 
   @Option(
       names = "--script-base-db",
-      split=",",
+      split = ",",
       description = "Overwrite the base database for a specific script.")
   private void scriptBaseDatabase(Map<String, String> scriptBaseDatabase) {
     ImmutableSet<String> allScriptNames = ImmutableSet.copyOf(scriptManager.getAllScriptNames());
@@ -303,6 +304,14 @@ public final class ExtractSubcommand implements Callable<Integer> {
       }
     }
     argumentsBuilder.setSkipSqlScripts(skipSqlScripts);
+  }
+
+  @Option(
+      names = "--qrylog-users",
+      split = ",\\s*",
+      description = {"If specified, only retrieves query logs by users with those UserName(s)."})
+  void setFilterUsers(Set<String> users) {
+    argumentsBuilder.setQryLogUsers(users);
   }
 
   @Option(

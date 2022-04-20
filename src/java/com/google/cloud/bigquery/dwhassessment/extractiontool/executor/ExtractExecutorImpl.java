@@ -135,7 +135,9 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
                 .map(saveChecker::getScriptCheckPoints)
                 .orElse(ImmutableMap.of());
     SqlScriptVariables.QueryLogsVariables.Builder qryLogVarsBuilder =
-        SqlScriptVariables.QueryLogsVariables.builder().setNeedQueryText(arguments.needQueryText());
+        SqlScriptVariables.QueryLogsVariables.builder()
+            .setNeedQueryText(arguments.needQueryText())
+            .setUsers(arguments.qryLogUsers());
     for (String scriptName : getScriptNames(arguments)) {
       LOGGER.log(Level.INFO, "Start extracting {0}...", scriptName);
       ChunkCheckpoint checkpoint = checkpoints.getOrDefault(scriptName, null);

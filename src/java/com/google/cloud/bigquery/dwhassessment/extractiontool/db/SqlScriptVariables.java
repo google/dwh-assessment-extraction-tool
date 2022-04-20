@@ -17,10 +17,12 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @AutoValue
 public abstract class SqlScriptVariables {
@@ -44,7 +46,9 @@ public abstract class SqlScriptVariables {
   public abstract static class QueryLogsVariables {
 
     public static Builder builder() {
-      return new AutoValue_SqlScriptVariables_QueryLogsVariables.Builder().setNeedQueryText(true);
+      return new AutoValue_SqlScriptVariables_QueryLogsVariables.Builder()
+          .setNeedQueryText(true)
+          .setUsers(ImmutableSet.of());
     }
 
     public abstract boolean needQueryText();
@@ -60,6 +64,12 @@ public abstract class SqlScriptVariables {
         return timeRange().get();
       }
       return null;
+    }
+
+    public abstract Set<String> users();
+    // Value accessor for handlebars.
+    public Set<String> getUsers() {
+      return users();
     }
 
     @AutoValue
@@ -93,6 +103,8 @@ public abstract class SqlScriptVariables {
       public abstract Builder setNeedQueryText(boolean value);
 
       public abstract Builder setTimeRange(TimeRange value);
+
+      public abstract Builder setUsers(Set<String> value);
 
       public abstract QueryLogsVariables build();
     }

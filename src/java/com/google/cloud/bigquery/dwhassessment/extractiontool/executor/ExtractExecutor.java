@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 /** Executor for the extract action. */
 public interface ExtractExecutor {
@@ -88,6 +89,8 @@ public interface ExtractExecutor {
 
     public abstract Optional<Instant> qryLogEndTime();
 
+    public abstract Set<String> qryLogUsers();
+
     public static Builder builder() {
       return new AutoValue_ExtractExecutor_Arguments.Builder()
           .setDryRun(false)
@@ -140,6 +143,8 @@ public interface ExtractExecutor {
       public abstract Builder setQryLogStartTime(Instant timestampInUtc);
 
       public abstract Builder setQryLogEndTime(Instant timestampInUtc);
+
+      public abstract Builder setQryLogUsers(Set<String> value);
 
       public abstract Arguments build();
     }
