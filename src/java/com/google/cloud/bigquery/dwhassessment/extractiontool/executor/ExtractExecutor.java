@@ -19,6 +19,7 @@ import com.google.auto.value.AutoValue;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -103,7 +104,8 @@ public interface ExtractExecutor {
           .setNeedJdbcSchemas(true)
           .setSchemaFilters(ImmutableList.of())
           .setSqlScripts(ImmutableList.of())
-          .setSkipSqlScripts(ImmutableList.of());
+          .setSkipSqlScripts(ImmutableList.of())
+          .setQryLogUsers(ImmutableSet.of());
     }
 
     @AutoValue.Builder
