@@ -32,7 +32,6 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityM
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -57,6 +56,7 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
   private static final DateTimeFormatter TERADATA_TIME_FORMATTER =
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]xxx").withZone(ZoneOffset.UTC);
+  private static final String AVRO_EXTENSION = "avro";
 
   private static final Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
 
@@ -134,18 +134,6 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
     // Determine the scripts to run.
     ImmutableSet<String> requestedScripts = getRequestedScripts(arguments);
-    if (arguments.mode() == RunMode.RECOVERY) {
-      ImmutableSet<String> finishedScripts =
-          saveChecker.findScriptNamesWithFinishedRecords(
-              arguments.prevRunPath().get(), requestedScripts, ".avro");
-      LOGGER.log(
-          Level.INFO,
-          String.format(
-              "RECOVERY mode - those scripts are probably finished already and will not be run:"
-                  + " %s.",
-              finishedScripts.isEmpty() ? "(none)" : String.join(", ", finishedScripts)));
-      requestedScripts = Sets.difference(requestedScripts, finishedScripts).immutableCopy();
-    }
 
     ImmutableMap<String, ChunkCheckpoint> checkpoints =
         arguments.mode().equals(RunMode.NORMAL) || arguments.chunkRows() < 1
@@ -229,10 +217,25 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     validateScriptNames("skip-sql-scripts", allScriptNames, arguments.skipSqlScripts());
     validateScriptNames("sql-scripts", allScriptNames, arguments.sqlScripts());
 
-    return arguments.sqlScripts().isEmpty()
-        ? Sets.difference(allScriptNames, ImmutableSet.copyOf(arguments.skipSqlScripts()))
-            .immutableCopy()
-        : ImmutableSet.copyOf(arguments.sqlScripts());
+    ImmutableSet<String> requestedScripts =
+        arguments.sqlScripts().isEmpty()
+            ? Sets.difference(allScriptNames, ImmutableSet.copyOf(arguments.skipSqlScripts()))
+                .immutableCopy()
+            : ImmutableSet.copyOf(arguments.sqlScripts());
+    if (arguments.mode() == RunMode.RECOVERY) {
+      ImmutableSet<String> finishedScripts =
+          saveChecker.getNamesOfFinishedScripts(
+              arguments.prevRunPath().get(), requestedScripts, AVRO_EXTENSION);
+      requestedScripts = Sets.difference(requestedScripts, finishedScripts).immutableCopy();
+      LOGGER.log(
+          Level.INFO,
+          String.format(
+              "RECOVERY mode -\n  scripts that are probably finished already and will not be run:"
+                  + " %s;\n  scripts that will be run: %s.",
+              finishedScripts.isEmpty() ? "(none)" : String.join(", ", finishedScripts),
+              requestedScripts.isEmpty() ? "(none)" : String.join(", ", requestedScripts)));
+    }
+    return requestedScripts;
   }
 
   private void maybeRunSchemaQueries(Arguments arguments, DataEntityManager dataEntityManager) {

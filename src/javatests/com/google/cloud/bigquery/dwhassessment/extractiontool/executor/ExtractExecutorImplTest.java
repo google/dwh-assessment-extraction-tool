@@ -45,7 +45,6 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.time.Instant;
 import java.util.Properties;
-import java.util.Set;
 import org.apache.avro.Schema;
 import org.junit.Before;
 import org.junit.Test;
@@ -259,7 +258,7 @@ public final class ExtractExecutorImplTest {
     when(scriptManager.getAllScriptNames()).thenReturn(targetScripts);
     when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
         .thenReturn(ImmutableSet.of());
-    when(saveChecker.findScriptNamesWithFinishedRecords(
+    when(saveChecker.getNamesOfFinishedScripts(
             any(Path.class), eq(targetScripts), any(String.class)))
         .thenReturn(ImmutableSet.of("script_with_record"));
     Arguments arguments =
@@ -284,10 +283,8 @@ public final class ExtractExecutorImplTest {
             eq(dataEntityManager),
             eq(0),
             eq(0));
-    verifyNoMoreInteractions(scriptManager);
     verify(saveChecker)
-        .findScriptNamesWithFinishedRecords(
-            eq(Paths.get("test_path")), eq(targetScripts), eq(".avro"));
+        .getNamesOfFinishedScripts(eq(Paths.get("test_path")), eq(targetScripts), eq(".avro"));
     verifyNoMoreInteractions(saveChecker);
   }
 
@@ -307,7 +304,7 @@ public final class ExtractExecutorImplTest {
                     .setLastSavedChunkNumber(1)
                     .setLastSavedInstant(testInstant0)
                     .build()));
-    when(saveChecker.findScriptNamesWithFinishedRecords(
+    when(saveChecker.getNamesOfFinishedScripts(
             any(Path.class), eq(targetScripts), any(String.class)))
         .thenReturn(ImmutableSet.of("script_with_record"));
     Arguments arguments =
@@ -332,12 +329,9 @@ public final class ExtractExecutorImplTest {
             eq(dataEntityManager),
             eq(5000),
             eq(1 + 1));
-    verifyNoMoreInteractions(scriptManager);
     verify(saveChecker).getScriptCheckPoints(Paths.get("test_path"));
     verify(saveChecker)
-        .findScriptNamesWithFinishedRecords(
-            eq(Paths.get("test_path")), eq(targetScripts), eq(".avro"));
-    verifyNoMoreInteractions(saveChecker);
+        .getNamesOfFinishedScripts(eq(Paths.get("test_path")), eq(targetScripts), eq(".avro"));
   }
 
   @Test
@@ -637,6 +631,28 @@ public final class ExtractExecutorImplTest {
     assertThat(e)
         .hasMessageThat()
         .contains("Got unknown SQL scripts for skip-sql-scripts: four, five");
+  }
+
+  @Test
+  public void run_failOnMissingPrevRunPathForIncrementalRun() {
+    when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one"));
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
+
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                executor.run(
+                    ExtractExecutor.Arguments.builder()
+                        .setDbConnectionProperties(properties)
+                        .setDbConnectionAddress("jdbc:hsqldb:mem:prevrunmissing.test")
+                        .setMode(RunMode.INCREMENTAL)
+                        .setOutputPath(Paths.get("/tmp"))
+                        .build()));
+    assertThat(e)
+        .hasMessageThat()
+        .contains("Value prevRunPath is not defined while the mode is not NORMAL");
   }
 
   @Test

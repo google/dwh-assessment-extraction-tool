@@ -353,7 +353,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
       default:
         throw new ParameterException(spec.commandLine(), "Unknown mode specified.");
     }
-    setOutputPath();
+    validateAndSetOutputPath();
     argumentsBuilder.setMode(mode).setChunkRows(chunkRows);
 
     try {
@@ -389,20 +389,16 @@ public final class ExtractSubcommand implements Callable<Integer> {
     return arguments;
   }
 
-  private void setOutputPath() {
+  private void validateAndSetOutputPath() {
     Path path = Paths.get(outputPathString);
-    if (path.toString().endsWith(".zip")) {
-      if (!Files.isDirectory(path.getParent())) {
-        throw new ParameterException(
-            spec.commandLine(),
-            String.format("Parent path of --output '%s' is not a directory.", path.getParent()));
-      }
-    } else {
-      if (!Files.isDirectory(path)) {
-        throw new ParameterException(
-            spec.commandLine(),
-            String.format("--output must specify a directory, but '%s' is not a directory.", path));
-      }
+    if (path.toString().endsWith(".zip") && !Files.isDirectory(path.getParent())) {
+      throw new ParameterException(
+          spec.commandLine(),
+          String.format("Parent path of --output '%s' is not a directory.", path.getParent()));
+    } else if (!Files.isDirectory(path)) {
+      throw new ParameterException(
+          spec.commandLine(),
+          String.format("--output must specify a directory, but '%s' is not a directory.", path));
     }
     argumentsBuilder.setOutputPath(path);
   }

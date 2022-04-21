@@ -34,15 +34,15 @@ public interface SaveChecker {
   ImmutableMap<String, ChunkCheckpoint> getScriptCheckPoints(Path path);
 
   /**
-   * Returns a set containing the names of the scripts whose corresponding finished records have
-   * been found in the target path. It usually means that these scripts have finished successfully
-   * during a previous run.
+   * Given a set of scripts, returns the names of those that have finished successfully during a
+   * previous run. The "finishedness" is inferred from the names of the files present in the target
+   * path.
    *
    * @param recordPath Target path containing records from the previous run(s).
    * @param scriptsToCheck The scripts whose records to look for.
-   * @param fileSuffix The ending string of the record files.
+   * @param fileExtension The extension of the record files (not including ".").
    * @return The set containing the names of the scripts.
    */
-  ImmutableSet<String> findScriptNamesWithFinishedRecords(
-      Path recordPath, Set<String> scriptsToCheck, String fileSuffix);
+  ImmutableSet<String> getNamesOfFinishedScripts(
+      Path recordPath, Set<String> scriptsToCheck, String fileExtension);
 }

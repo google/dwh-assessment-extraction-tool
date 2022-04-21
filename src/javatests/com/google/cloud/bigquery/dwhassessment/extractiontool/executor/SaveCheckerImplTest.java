@@ -47,21 +47,32 @@ public class SaveCheckerImplTest {
   }
 
   @Test
-  public void findFinishedRecords_onlyReturnsCorrectOnes() throws IOException {
+  public void getFinishedScripts_onlyReturnsCorrectOnes() throws IOException {
     ImmutableSet<String> scriptsToCheck =
         ImmutableSet.of("script_with_record", "good_script_no_record");
-    Files.createFile(tmpDir.resolve("script_with_record.goodsuffix"));
+    Files.createFile(tmpDir.resolve("script_with_record.goodextension"));
     Files.createFile(
         tmpDir.resolve(
-            "good_script_no_record-20140707T170707S000007-20140707T170707S000008_0.goodsuffix"));
-    Files.createFile(tmpDir.resolve("good_script_no_record.badsuffix"));
-    Files.createFile(tmpDir.resolve("good_script_no_record_temp.goodsuffix"));
-    Files.createFile(tmpDir.resolve("script_not_in_set.goodsuffix"));
+            "good_script_no_record-20140707T170707S000007-20140707T170707S000008_0.goodextension"));
+    Files.createFile(tmpDir.resolve("good_script_no_record.badextension"));
+    Files.createFile(tmpDir.resolve("good_script_no_record_temp.goodextension"));
+    Files.createFile(tmpDir.resolve("script_not_in_set.goodextension"));
 
     ImmutableSet<String> scriptsWithRecords =
-        saveChecker.findScriptNamesWithFinishedRecords(tmpDir, scriptsToCheck, ".goodsuffix");
+        saveChecker.getNamesOfFinishedScripts(tmpDir, scriptsToCheck, "goodextension");
 
     assertThat(scriptsWithRecords).isEqualTo(ImmutableSet.of("script_with_record"));
+  }
+
+  @Test
+  public void getFinishedScripts_emptyInputEmptyOutput() throws IOException {
+    ImmutableSet<String> scriptsToCheck = ImmutableSet.of();
+    Files.createFile(tmpDir.resolve("script_with_record.goodextension"));
+
+    ImmutableSet<String> scriptsWithRecords =
+        saveChecker.getNamesOfFinishedScripts(tmpDir, scriptsToCheck, "goodextension");
+
+    assertThat(scriptsWithRecords).isEqualTo(ImmutableSet.of());
   }
 
   @Test

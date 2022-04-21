@@ -141,13 +141,10 @@ public class SaveCheckerImpl implements SaveChecker {
   }
 
   @Override
-  public ImmutableSet<String> findScriptNamesWithFinishedRecords(
-      Path recordPath, Set<String> scriptsToCheck, String fileSuffix) {
-    if (scriptsToCheck == null || scriptsToCheck.isEmpty()) {
-      return ImmutableSet.of();
-    }
+  public ImmutableSet<String> getNamesOfFinishedScripts(
+      Path recordPath, Set<String> scriptsToCheck, String fileExtension) {
     return scriptsToCheck.stream()
-        .filter(scriptName -> Files.exists(recordPath.resolve(scriptName + fileSuffix)))
+        .filter(scriptName -> Files.exists(recordPath.resolve(scriptName + "." + fileExtension)))
         .collect(ImmutableSet.toImmutableSet());
   }
 
