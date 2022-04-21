@@ -489,7 +489,7 @@ public final class ExtractSubcommandTest {
     assertThat(
             cmd.execute(
                 "--db-address",
-                "jdbc:hsqldb:mem:my-db11.example",
+                "jdbc:hsqldb:mem:db-script-base.example",
                 "--db-user",
                 "my-username",
                 "--db-password",
@@ -497,12 +497,43 @@ public final class ExtractSubcommandTest {
                 "--output",
                 outputPath.toString(),
                 "--script-base-db",
-                "querylogs=Foo"))
+                "one=Foo,two=Bar"))
         .isEqualTo(0);
 
     verify(executor).run(argumentsCaptor.capture());
     ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
-    assertThat(arguments.scriptBaseDatabase()).containsExactly("querylogs", "Foo");
+    assertThat(arguments.scriptBaseDatabase()).containsExactly("one", "Foo", "two", "Bar");
+  }
+
+  @Test
+  public void call_successWithScriptVars() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-script-var.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--script-vars",
+                "one.foo=Bar,one.foo1=Bar1,two.foo=Bar2"))
+        .isEqualTo(0);
+
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+    assertThat(arguments.scriptVariables())
+        .containsExactly(
+            "one",
+            ImmutableMap.of("foo", "Bar", "foo1", "Bar1"),
+            "two",
+            ImmutableMap.of("foo", "Bar2"));
   }
 
   @Test

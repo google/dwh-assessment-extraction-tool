@@ -124,6 +124,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
 
   @Option(
       names = "--script-base-db",
+      split=",",
       description = "Overwrite the base database for a specific script.")
   private void scriptBaseDatabase(Map<String, String> scriptBaseDatabase) {
     ImmutableSet<String> allScriptNames = ImmutableSet.copyOf(scriptManager.getAllScriptNames());
@@ -138,6 +139,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
 
   @Option(
       names = "--script-vars",
+      split = ",",
       description = {
         "Provide optional script variables. The variable a for a script b is set to value v",
         "like this: a.b=v"
