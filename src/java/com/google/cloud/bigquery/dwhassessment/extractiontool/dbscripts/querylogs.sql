@@ -141,15 +141,8 @@ SELECT
   "VHPhysIOKB",
   "WarningOnly",
   "WDName"
-FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}"
-{{#if queryLogsVariables.timeRange}}
-  WHERE "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}"."StartTime"
-  BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
-{{/if}}
-{{#if queryLogsVariables.users}}
-  {{#if queryLogsVariables.timeRange}}AND{{else}}WHERE{{/if}}
-  "UserName" IN ({{#each queryLogsVariables.users}}'{{this}}'{{#unless @last}},{{/unless}}{{/each}})
-{{/if}}
+FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}" AS "QLV"
+{{#whereClauseForQuerylogs queryLogsVariables}}{{/whereClauseForQuerylogs}}
 {{#if sortingColumns}}
   ORDER BY {{#each sortingColumns}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}} ASC NULLS FIRST
 {{/if}}

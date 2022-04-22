@@ -17,8 +17,13 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.HandlebarsException;
+import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.Template;
+import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables.QueryLogsVariables;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SqlTemplateRendererImpl implements SqlTemplateRenderer {
 
@@ -27,6 +32,32 @@ public class SqlTemplateRendererImpl implements SqlTemplateRenderer {
 
   public SqlTemplateRendererImpl(SqlScriptVariables.Builder sqlScriptVariablesBuilder) {
     this.sqlScriptVariablesBuilder = sqlScriptVariablesBuilder;
+    handlebars.registerHelper(
+        "whereClauseForQuerylogs",
+        (Helper<QueryLogsVariables>)
+            (queryLogsVariables, options) -> {
+              List<String> rangeClauses = new ArrayList<>();
+              queryLogsVariables
+                  .timeRange()
+                  .ifPresent(
+                      timeRange -> {
+                        rangeClauses.add(
+                            String.format(
+                                "\"QLV\".\"StartTime\" BETWEEN TIMESTAMP '%s' AND TIMESTAMP '%s'",
+                                timeRange.getStartTimestamp(), timeRange.getEndTimestamp()));
+                      });
+              if (!queryLogsVariables.users().isEmpty()) {
+                rangeClauses.add(
+                    String.format(
+                        "\"QLV\".\"UserName\" IN %s",
+                        queryLogsVariables.users().stream()
+                            .collect(Collectors.joining("','", "('", "')"))));
+              }
+              if (!rangeClauses.isEmpty()) {
+                return String.format("\nWHERE\n%s", String.join("\nAND\n", rangeClauses));
+              }
+              return "";
+            });
   }
 
   @Override

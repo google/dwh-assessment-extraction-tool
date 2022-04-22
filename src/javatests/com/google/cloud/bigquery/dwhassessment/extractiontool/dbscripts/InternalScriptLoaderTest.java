@@ -414,7 +414,7 @@ public class InternalScriptLoaderTest {
                 .setBaseDatabase("DBC")
                 .setQueryLogsVariables(
                     SqlScriptVariables.QueryLogsVariables.builder()
-                        .setUsers(ImmutableSet.of("user1"))
+                        .setUsers(ImmutableSet.of("user1", "user_nonexistent"))
                         .build()));
     String sqlScript = getScript(scriptName, sqlTemplateRendererWithTimeRange);
     Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
@@ -453,6 +453,7 @@ public class InternalScriptLoaderTest {
             .set("StartTime", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
             .set("FirstRespTime", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
             .set("FirstStepTime", Instant.parse("2021-07-01T18:15:09Z").toEpochMilli())
+            .set("UserName", "user0")
             .set("QueryText", "_")
             .build();
     GenericRecord expectedQueryLogsRecord2 =
@@ -464,6 +465,7 @@ public class InternalScriptLoaderTest {
             .set("StartTime", Instant.parse("2021-07-01T23:23:46Z").toEpochMilli())
             .set("FirstRespTime", Instant.parse("2021-07-01T23:23:47Z").toEpochMilli())
             .set("FirstStepTime", Instant.parse("2021-07-01T23:23:48Z").toEpochMilli())
+            .set("UserName", "user1")
             .set("QueryText", "_")
             .build();
 
