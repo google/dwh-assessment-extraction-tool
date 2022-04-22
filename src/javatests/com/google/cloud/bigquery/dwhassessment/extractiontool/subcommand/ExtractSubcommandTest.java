@@ -506,6 +506,32 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
+  public void call_successWithQryLogUserFilter() throws IOException, SQLException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-qrylog-user.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--qrylog-users",
+                "one,two"))
+        .isEqualTo(0);
+
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+    assertThat(arguments.qryLogUsers()).containsExactly("one", "two");
+  }
+
+  @Test
   public void call_successWithScriptVars() throws IOException, SQLException {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));

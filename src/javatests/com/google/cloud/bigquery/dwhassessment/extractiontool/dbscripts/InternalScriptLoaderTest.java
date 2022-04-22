@@ -22,6 +22,7 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariab
 import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.FakeDataEntityManagerImpl;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.faketd.TeradataSimulator;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -346,6 +347,7 @@ public class InternalScriptLoaderTest {
             .set("StartTime", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
             .set("FirstRespTime", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
             .set("FirstStepTime", Instant.parse("2021-07-01T18:15:09Z").toEpochMilli())
+            .set("UserName", "user0")
             .build();
 
     GenericRecord expectedQueryLogsRecord2 =
@@ -357,6 +359,7 @@ public class InternalScriptLoaderTest {
             .set("StartTime", Instant.parse("2021-07-01T23:23:46Z").toEpochMilli())
             .set("FirstRespTime", Instant.parse("2021-07-01T23:23:47Z").toEpochMilli())
             .set("FirstStepTime", Instant.parse("2021-07-01T23:23:48Z").toEpochMilli())
+            .set("UserName", "user1")
             .build();
 
     assertThat(records).containsExactly(expectedQueryLogsRecord1, expectedQueryLogsRecord2);
@@ -394,6 +397,37 @@ public class InternalScriptLoaderTest {
             .set("StartTime", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
             .set("FirstRespTime", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
             .set("FirstStepTime", Instant.parse("2021-07-01T18:15:09Z").toEpochMilli())
+            .set("UserName", "user0")
+            .build();
+
+    ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
+
+    assertThat(records).containsExactly(expectedQueryLogsRecord1);
+  }
+
+  @Test
+  public void loadScripts_queryLogs_with_userFilter() throws SQLException {
+    String scriptName = "querylogs";
+    SqlTemplateRenderer sqlTemplateRendererWithTimeRange =
+        new SqlTemplateRendererImpl(
+            SqlScriptVariables.builder()
+                .setBaseDatabase("DBC")
+                .setQueryLogsVariables(
+                    SqlScriptVariables.QueryLogsVariables.builder()
+                        .setUsers(ImmutableSet.of("user1", "user_nonexistent"))
+                        .build()));
+    String sqlScript = getScript(scriptName, sqlTemplateRendererWithTimeRange);
+    Schema schema = scriptRunner.extractSchema(connection, sqlScript, scriptName, "namespace");
+    GenericRecord expectedQueryLogsRecord1 =
+        baseExpectedQueryLogsRecordBuilder(schema)
+            .set("ProcID", ByteBuffer.wrap(BigInteger.valueOf(2).toByteArray()))
+            .set("LogonDateTime", Instant.parse("2021-07-01T23:23:46Z").toEpochMilli())
+            .set("CollectTimeStamp", Instant.parse("2021-07-01T23:20:20Z").toEpochMilli())
+            .set("QueryID", ByteBuffer.wrap(BigInteger.valueOf(124).toByteArray()))
+            .set("StartTime", Instant.parse("2021-07-01T23:23:46Z").toEpochMilli())
+            .set("FirstRespTime", Instant.parse("2021-07-01T23:23:47Z").toEpochMilli())
+            .set("FirstStepTime", Instant.parse("2021-07-01T23:23:48Z").toEpochMilli())
+            .set("UserName", "user1")
             .build();
 
     ImmutableList<GenericRecord> records = executeScriptToAvro(sqlScript, schema);
@@ -419,6 +453,7 @@ public class InternalScriptLoaderTest {
             .set("StartTime", Instant.parse("2021-07-01T18:15:06Z").toEpochMilli())
             .set("FirstRespTime", Instant.parse("2021-07-01T18:15:08Z").toEpochMilli())
             .set("FirstStepTime", Instant.parse("2021-07-01T18:15:09Z").toEpochMilli())
+            .set("UserName", "user0")
             .set("QueryText", "_")
             .build();
     GenericRecord expectedQueryLogsRecord2 =
@@ -430,6 +465,7 @@ public class InternalScriptLoaderTest {
             .set("StartTime", Instant.parse("2021-07-01T23:23:46Z").toEpochMilli())
             .set("FirstRespTime", Instant.parse("2021-07-01T23:23:47Z").toEpochMilli())
             .set("FirstStepTime", Instant.parse("2021-07-01T23:23:48Z").toEpochMilli())
+            .set("UserName", "user1")
             .set("QueryText", "_")
             .build();
 

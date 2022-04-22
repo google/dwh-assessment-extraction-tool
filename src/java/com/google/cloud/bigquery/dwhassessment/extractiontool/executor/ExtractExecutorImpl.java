@@ -145,7 +145,7 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
       ChunkCheckpoint checkpoint = checkpoints.getOrDefault(scriptName, null);
       SqlScriptVariables.QueryLogsVariables.Builder qryLogVarsBuilder =
           SqlScriptVariables.QueryLogsVariables.builder()
-              .setNeedQueryText(arguments.needQueryText());
+              .setNeedQueryText(arguments.needQueryText()).setUsers(arguments.qryLogUsers());
       maybeAddTimeRange(qryLogVarsBuilder, arguments, checkpoint);
       Connection connection =
           DriverManager.getConnection(

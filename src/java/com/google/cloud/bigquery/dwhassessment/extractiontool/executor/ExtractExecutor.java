@@ -19,6 +19,7 @@ import com.google.auto.value.AutoValue;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SchemaFilter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 /** Executor for the extract action. */
 public interface ExtractExecutor {
@@ -89,6 +91,8 @@ public interface ExtractExecutor {
 
     public abstract Optional<Instant> qryLogEndTime();
 
+    public abstract Set<String> qryLogUsers();
+
     public static Builder builder() {
       return new AutoValue_ExtractExecutor_Arguments.Builder()
           .setDryRun(false)
@@ -101,7 +105,8 @@ public interface ExtractExecutor {
           .setNeedJdbcSchemas(true)
           .setSchemaFilters(ImmutableList.of())
           .setSqlScripts(ImmutableList.of())
-          .setSkipSqlScripts(ImmutableList.of());
+          .setSkipSqlScripts(ImmutableList.of())
+          .setQryLogUsers(ImmutableSet.of());
     }
 
     @AutoValue.Builder
@@ -141,6 +146,8 @@ public interface ExtractExecutor {
       public abstract Builder setQryLogStartTime(Instant timestampInUtc);
 
       public abstract Builder setQryLogEndTime(Instant timestampInUtc);
+
+      public abstract Builder setQryLogUsers(Set<String> value);
 
       public abstract Arguments build();
     }
