@@ -36,6 +36,7 @@ public class SqlTemplateRendererImpl implements SqlTemplateRenderer {
         "whereClauseForQuerylogs",
         (Helper<QueryLogsVariables>)
             (queryLogsVariables, options) -> {
+              String qryLogVAlias = options.param(0);
               List<String> whereClauses = new ArrayList<>();
               queryLogsVariables
                   .timeRange()
@@ -43,13 +44,16 @@ public class SqlTemplateRendererImpl implements SqlTemplateRenderer {
                       timeRange -> {
                         whereClauses.add(
                             String.format(
-                                "\"QLV\".\"StartTime\" BETWEEN TIMESTAMP '%s' AND TIMESTAMP '%s'",
-                                timeRange.getStartTimestamp(), timeRange.getEndTimestamp()));
+                                "\"%s\".\"StartTime\" BETWEEN TIMESTAMP '%s' AND TIMESTAMP '%s'",
+                                qryLogVAlias,
+                                timeRange.getStartTimestamp(),
+                                timeRange.getEndTimestamp()));
                       });
               if (!queryLogsVariables.users().isEmpty()) {
                 whereClauses.add(
                     String.format(
-                        "\"QLV\".\"UserName\" IN %s",
+                        "\"%s\".\"UserName\" IN %s",
+                        qryLogVAlias,
                         queryLogsVariables.users().stream()
                             .collect(Collectors.joining("','", "('", "')"))));
               }

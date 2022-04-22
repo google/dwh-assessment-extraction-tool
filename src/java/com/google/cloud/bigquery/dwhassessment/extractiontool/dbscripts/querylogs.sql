@@ -142,7 +142,7 @@ SELECT
   "WarningOnly",
   "WDName"
 FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}" AS "QLV"
-{{#whereClauseForQuerylogs queryLogsVariables}}{{/whereClauseForQuerylogs}}
+{{#whereClauseForQuerylogs queryLogsVariables "QLV"}}{{/whereClauseForQuerylogs}}
 {{#if sortingColumns}}
   ORDER BY {{#each sortingColumns}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}} ASC NULLS FIRST
 {{/if}}
