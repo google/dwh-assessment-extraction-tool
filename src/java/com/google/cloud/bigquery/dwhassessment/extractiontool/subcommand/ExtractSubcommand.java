@@ -301,7 +301,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
 
   @Option(
       names = "--qrylog-users",
-      split = ",\\s*",
+      split = ",",
       description = {"If specified, only retrieves query logs by users with those UserName(s)."})
   void setFilterUsers(Set<String> users) {
     argumentsBuilder.setQryLogUsers(users);
