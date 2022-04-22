@@ -35,8 +35,8 @@ public interface SaveChecker {
 
   /**
    * Given a set of scripts, returns the names of those that have finished successfully during a
-   * previous run. The "finishedness" is inferred from the names of the files present in the target
-   * path.
+   * previous run. Infers whether a script is finished from the names of the files present in the
+   * target path.
    *
    * @param recordPath Target path containing records from the previous run(s).
    * @param scriptsToCheck The scripts whose records to look for.

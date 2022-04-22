@@ -284,7 +284,7 @@ public final class ExtractExecutorImplTest {
             eq(0),
             eq(0));
     verify(saveChecker)
-        .getNamesOfFinishedScripts(eq(Paths.get("test_path")), eq(targetScripts), eq(".avro"));
+        .getNamesOfFinishedScripts(eq(Paths.get("test_path")), eq(targetScripts), eq("avro"));
     verifyNoMoreInteractions(saveChecker);
   }
 
@@ -331,7 +331,7 @@ public final class ExtractExecutorImplTest {
             eq(1 + 1));
     verify(saveChecker).getScriptCheckPoints(Paths.get("test_path"));
     verify(saveChecker)
-        .getNamesOfFinishedScripts(eq(Paths.get("test_path")), eq(targetScripts), eq(".avro"));
+        .getNamesOfFinishedScripts(eq(Paths.get("test_path")), eq(targetScripts), eq("avro"));
   }
 
   @Test
