@@ -221,23 +221,7 @@ public final class ExtractSubcommand implements Callable<Integer> {
         "The output is written into a ZIP file if the output path ends in '.zip'.",
         "Otherwise, the output path must be an existing directory."
       })
-  void setOutputPath(String pathString) {
-    Path path = Paths.get(pathString);
-    if (path.toString().endsWith(".zip")) {
-      if (!Files.isDirectory(path.getParent())) {
-        throw new ParameterException(
-            spec.commandLine(),
-            String.format("Parent path of --output '%s' is not a directory.", path.getParent()));
-      }
-    } else {
-      if (!Files.isDirectory(path)) {
-        throw new ParameterException(
-            spec.commandLine(),
-            String.format("--output must specify a directory, but '%s' is not a directory.", path));
-      }
-    }
-    argumentsBuilder.setOutputPath(path);
-  }
+  private String outputPathString;
 
   @Option(
       names = "--run-mode",
@@ -247,7 +231,16 @@ public final class ExtractSubcommand implements Callable<Integer> {
         "  Continue from a previous successful run for script supporting chunked mode.",
         "  Scripts not supporting chunked mode will be run as normal.",
         "  It is the user's duty to ensure that user-specified time range remains the same as the"
-            + " previous run(s)."
+            + " previous run(s).",
+        "RECOVERY:",
+        "  Resume a previously interrupted run.",
+        "  For scripts producing non-chunked records, file names corresponding to"
+            + " '<scriptname>.avro' are regarded as finished; for scripts producing chunked"
+            + " records, will continue in the same way as in INCREMENTAL mode.",
+        "  If --prev-run-path is unspecified, will treat the output path as the previous run path.",
+        "  Note: Database changes made between the original and recovery runs for the finished"
+            + " scripts may not be captured; if the time gap between the two runs is long,"
+            + " recommend using INCREMENTAL mode instead.",
       },
       defaultValue = "NORMAL")
   private RunMode mode;
@@ -350,31 +343,19 @@ public final class ExtractSubcommand implements Callable<Integer> {
     if (needJdbcSchemas != null) {
       argumentsBuilder.setNeedJdbcSchemas(needJdbcSchemas);
     }
-    // prevRunPath is set only when the specified mode is not NORMAL.
-    if (mode.equals(RunMode.INCREMENTAL)) {
-      if (chunkRows < 1) {
-        throw new ParameterException(
-            spec.commandLine(),
-            "Non-normal run modes require chunked processing. Set --rows-per-chunk to a positive"
-                + " integer to enable chunked processing.");
-      }
-      if (prevRunPathString == null) {
-        throw new ParameterException(
-            spec.commandLine(), "--run-mode is not NORMAL but --prev-run-path is unspecified.");
-      }
-      Path path = Paths.get(prevRunPathString);
-      if (path.toString().endsWith(".zip")) {
-        throw new ParameterException(
-            spec.commandLine(), "Incremental mode is not supported for zipped records, yet.");
-      }
-      if (!Files.isDirectory(path)) {
-        throw new ParameterException(
-            spec.commandLine(),
-            String.format(
-                "--prev-run-path must specify a directory, but '%s' is not a directory.", path));
-      }
-      argumentsBuilder.setPrevRunPath(path);
+    switch (mode) {
+      case INCREMENTAL:
+        validateAndSetPrevRunPathIncrementalMode();
+        break;
+      case RECOVERY:
+        validateAndSetPrevRunPathRecoveryMode();
+        break;
+      case NORMAL:
+        break;
+      default:
+        throw new ParameterException(spec.commandLine(), "Unknown mode specified.");
     }
+    validateAndSetOutputPath();
     argumentsBuilder.setMode(mode).setChunkRows(chunkRows);
 
     try {
@@ -408,6 +389,60 @@ public final class ExtractSubcommand implements Callable<Integer> {
           "The options --sql-scripts and --skip-sql-scripts are mutually exclusive.");
     }
     return arguments;
+  }
+
+  private void validateAndSetOutputPath() {
+    Path path = Paths.get(outputPathString);
+    if (path.toString().endsWith(".zip") && !Files.isDirectory(path.getParent())) {
+      throw new ParameterException(
+          spec.commandLine(),
+          String.format("Parent path of --output '%s' is not a directory.", path.getParent()));
+    } else if (!Files.isDirectory(path)) {
+      throw new ParameterException(
+          spec.commandLine(),
+          String.format("--output must specify a directory, but '%s' is not a directory.", path));
+    }
+    argumentsBuilder.setOutputPath(path);
+  }
+
+  private void validateAndSetPrevRunPathIncrementalMode() {
+    if (chunkRows < 1) {
+      throw new ParameterException(
+          spec.commandLine(),
+          "Non-normal run modes require chunked processing. Set --rows-per-chunk to a positive"
+              + " integer to enable chunked processing.");
+    }
+    if (prevRunPathString == null) {
+      throw new ParameterException(
+          spec.commandLine(), "--run-mode is not NORMAL but --prev-run-path is unspecified.");
+    }
+    if (prevRunPathString.endsWith(".zip")) {
+      throw new ParameterException(
+          spec.commandLine(), "Incremental mode is not supported for zipped records, yet.");
+    }
+    Path path = Paths.get(prevRunPathString);
+    if (!Files.isDirectory(path)) {
+      throw new ParameterException(
+          spec.commandLine(),
+          String.format(
+              "--prev-run-path must specify a directory, but '%s' is not a directory.", path));
+    }
+    argumentsBuilder.setPrevRunPath(path);
+  }
+
+  private void validateAndSetPrevRunPathRecoveryMode() {
+    String pathString = prevRunPathString == null ? outputPathString : prevRunPathString;
+    if (pathString.endsWith(".zip")) {
+      throw new ParameterException(
+          spec.commandLine(), "Recovery mode is not supported for zipped records, yet.");
+    }
+    Path path = Paths.get(pathString);
+    if (!Files.isDirectory(path)) {
+      throw new ParameterException(
+          spec.commandLine(),
+          String.format("The path '%s' you specified is not a directory.", path));
+    }
+    argumentsBuilder.setPrevRunPath(path);
   }
 
   @Override

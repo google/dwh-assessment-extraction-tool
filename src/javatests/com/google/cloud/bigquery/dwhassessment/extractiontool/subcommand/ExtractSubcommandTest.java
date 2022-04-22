@@ -573,6 +573,76 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
+  public void call_successWithRecoveryMode() throws SQLException, IOException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-recovery-success.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--run-mode",
+                "RECOVERY",
+                "--rows-per-chunk",
+                "5000",
+                "--prev-run-path",
+                prevRunPath.toString()))
+        .isEqualTo(0);
+
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
+    assertThat(arguments.prevRunPath().orElse(Paths.get("")).toString())
+        .isEqualTo(prevRunPath.toString());
+    assertThat(arguments.sqlScripts()).isEmpty();
+    assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.chunkRows()).isEqualTo(5000);
+    assertThat(arguments.mode()).isEqualTo(RunMode.RECOVERY);
+  }
+
+  @Test
+  public void call_successWithRecoveryModeButNoPrevRunPath() throws SQLException, IOException {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    ArgumentCaptor<ExtractExecutor.Arguments> argumentsCaptor =
+        ArgumentCaptor.forClass(ExtractExecutor.Arguments.class);
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-recovery-noprevrun-success.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--run-mode",
+                "RECOVERY",
+                "--rows-per-chunk",
+                "5000"))
+        .isEqualTo(0);
+
+    verify(executor).run(argumentsCaptor.capture());
+    ExtractExecutor.Arguments arguments = argumentsCaptor.getValue();
+    assertThat(arguments.outputPath().toString()).isEqualTo(outputPath.toString());
+    assertThat(arguments.prevRunPath().orElse(Paths.get("")).toString())
+        .isEqualTo(outputPath.toString());
+    assertThat(arguments.sqlScripts()).isEmpty();
+    assertThat(arguments.skipSqlScripts()).isEmpty();
+    assertThat(arguments.chunkRows()).isEqualTo(5000);
+    assertThat(arguments.mode()).isEqualTo(RunMode.RECOVERY);
+  }
+
+  @Test
   public void call_failOnDefiningSqlScriptsAndSkipSqlScripts() {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
@@ -787,7 +857,33 @@ public final class ExtractSubcommandTest {
   }
 
   @Test
-  public void call_failOnIncorrectPrevRunPath() {
+  public void call_failOnRecoveryModeWithZip() {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    StringWriter writer = new StringWriter();
+    cmd.setErr(new PrintWriter(writer));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-rec-fail-zip.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                "/path/ending/with.zip",
+                "--run-mode",
+                "RECOVERY",
+                "--rows-per-chunk",
+                "5000"))
+        .isEqualTo(2);
+    assertThat(writer.toString())
+        .contains("Recovery mode is not supported for zipped records, yet.");
+  }
+
+  @Test
+  public void call_incrementalModeFailOnIncorrectPrevRunPath() {
     ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
     CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
     StringWriter writer = new StringWriter();
@@ -815,6 +911,35 @@ public final class ExtractSubcommandTest {
             String.format(
                 "--prev-run-path must specify a directory, but '%s' is not a directory.",
                 "/does/not/exist"));
+  }
+
+  @Test
+  public void call_recoveryModeFailOnIncorrectPrevRunPath() {
+    ExtractExecutor executor = Mockito.mock(ExtractExecutor.class);
+    CommandLine cmd = new CommandLine(new ExtractSubcommand(() -> executor, scriptManager));
+    StringWriter writer = new StringWriter();
+    cmd.setErr(new PrintWriter(writer));
+
+    assertThat(
+            cmd.execute(
+                "--db-address",
+                "jdbc:hsqldb:mem:db-rec-fail-wrong-path.example",
+                "--db-user",
+                "my-username",
+                "--db-password",
+                "my0password",
+                "--output",
+                outputPath.toString(),
+                "--run-mode",
+                "RECOVERY",
+                "--rows-per-chunk",
+                "5000",
+                "--prev-run-path",
+                "/does/not/exist"))
+        .isEqualTo(2);
+    assertThat(writer.toString())
+        .contains(
+            String.format("The path '%s' you specified is not a directory.", "/does/not/exist"));
   }
 
   @Test

@@ -40,6 +40,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.re2j.Pattern;
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.time.Instant;
@@ -184,7 +185,7 @@ public final class ExtractExecutorImplTest {
         .thenReturn(ImmutableSet.of());
     Instant testInstant0 = Instant.parse("2007-07-07T20:07:07.007000000Z");
     Instant testInstant1 = Instant.parse("2017-07-07T20:07:07.007000000Z");
-    when(saveChecker.getScriptCheckPoints(Paths.get("test_path")))
+    when(saveChecker.getScriptCheckPoints(any(Path.class)))
         .thenReturn(
             ImmutableMap.of(
                 "test_script_0",
@@ -247,6 +248,90 @@ public final class ExtractExecutorImplTest {
             eq(5000),
             eq(5 + 1));
     verifyNoMoreInteractions(scriptManager);
+    verify(saveChecker).getScriptCheckPoints(Paths.get("test_path"));
+    verifyNoMoreInteractions(saveChecker);
+  }
+
+  @Test
+  public void run_recoveryModeNoChunk_success() throws Exception {
+    ImmutableSet<String> targetScripts = ImmutableSet.of("script_no_record", "script_with_record");
+    when(scriptManager.getAllScriptNames()).thenReturn(targetScripts);
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
+    when(saveChecker.getNamesOfFinishedScripts(
+            any(Path.class), eq(targetScripts), any(String.class)))
+        .thenReturn(ImmutableSet.of("script_with_record"));
+    Arguments arguments =
+        Arguments.builder()
+            .setDbConnectionProperties(properties)
+            .setDbConnectionAddress("jdbc:hsqldb:mem:recovery-mode-no-chunk.example")
+            .setOutputPath(Paths.get("/tmp"))
+            .setMode(RunMode.RECOVERY)
+            .setChunkRows(0)
+            .setPrevRunPath(Paths.get("test_path"))
+            .build();
+
+    assertThat(executor.run(arguments)).isEqualTo(0);
+
+    verify(scriptManager).getAllScriptNames();
+    verify(scriptManager)
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            any(SqlTemplateRenderer.class),
+            /*scriptName=*/ eq("script_no_record"),
+            eq(dataEntityManager),
+            eq(0),
+            eq(0));
+    verify(saveChecker)
+        .getNamesOfFinishedScripts(eq(Paths.get("test_path")), eq(targetScripts), eq("avro"));
+    verifyNoMoreInteractions(saveChecker);
+  }
+
+  @Test
+  public void run_recoveryModeChunked_success() throws Exception {
+    ImmutableSet<String> targetScripts =
+        ImmutableSet.of("script_chunk_record", "script_with_record");
+    when(scriptManager.getAllScriptNames()).thenReturn(targetScripts);
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
+    Instant testInstant0 = Instant.parse("2007-07-07T20:07:07.007000000Z");
+    when(saveChecker.getScriptCheckPoints(any(Path.class)))
+        .thenReturn(
+            ImmutableMap.of(
+                "script_chunk_record",
+                ChunkCheckpoint.builder()
+                    .setLastSavedChunkNumber(1)
+                    .setLastSavedInstant(testInstant0)
+                    .build()));
+    when(saveChecker.getNamesOfFinishedScripts(
+            any(Path.class), eq(targetScripts), any(String.class)))
+        .thenReturn(ImmutableSet.of("script_with_record"));
+    Arguments arguments =
+        Arguments.builder()
+            .setDbConnectionProperties(properties)
+            .setDbConnectionAddress("jdbc:hsqldb:mem:recovery-mode-chunked.example")
+            .setOutputPath(Paths.get("/tmp"))
+            .setMode(RunMode.RECOVERY)
+            .setChunkRows(5000)
+            .setPrevRunPath(Paths.get("test_path"))
+            .build();
+
+    assertThat(executor.run(arguments)).isEqualTo(0);
+
+    verify(scriptManager).getAllScriptNames();
+    verify(scriptManager)
+        .executeScript(
+            any(Connection.class),
+            /*dryRun=*/ eq(false),
+            any(SqlTemplateRenderer.class),
+            /*scriptName=*/ eq("script_chunk_record"),
+            eq(dataEntityManager),
+            eq(5000),
+            eq(1 + 1));
+    verify(saveChecker).getScriptCheckPoints(Paths.get("test_path"));
+    verify(saveChecker)
+        .getNamesOfFinishedScripts(eq(Paths.get("test_path")), eq(targetScripts), eq("avro"));
   }
 
   @Test
@@ -546,6 +631,28 @@ public final class ExtractExecutorImplTest {
     assertThat(e)
         .hasMessageThat()
         .contains("Got unknown SQL scripts for skip-sql-scripts: four, five");
+  }
+
+  @Test
+  public void run_failOnMissingPrevRunPathForIncrementalRun() {
+    when(scriptManager.getAllScriptNames()).thenReturn(ImmutableSet.of("one"));
+    when(schemaManager.getSchemaKeys(any(Connection.class), eq(ImmutableList.of())))
+        .thenReturn(ImmutableSet.of());
+
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                executor.run(
+                    ExtractExecutor.Arguments.builder()
+                        .setDbConnectionProperties(properties)
+                        .setDbConnectionAddress("jdbc:hsqldb:mem:prevrunmissing.test")
+                        .setMode(RunMode.INCREMENTAL)
+                        .setOutputPath(Paths.get("/tmp"))
+                        .build()));
+    assertThat(e)
+        .hasMessageThat()
+        .contains("Value prevRunPath is not defined while the mode is not NORMAL");
   }
 
   @Test

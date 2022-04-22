@@ -32,7 +32,6 @@ import com.google.cloud.bigquery.dwhassessment.extractiontool.dumper.DataEntityM
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -57,6 +56,7 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
   private static final DateTimeFormatter TERADATA_TIME_FORMATTER =
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]xxx").withZone(ZoneOffset.UTC);
+  private static final String AVRO_EXTENSION = "avro";
 
   private static final Logger LOGGER = Logger.getLogger(ExtractExecutorImpl.class.getName());
 
@@ -126,19 +126,26 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
 
   @Override
   public int run(Arguments arguments) throws SQLException, IOException {
+    Preconditions.checkArgument(
+        arguments.mode().equals(RunMode.NORMAL) || arguments.prevRunPath().isPresent(),
+        "Value prevRunPath is not defined while the mode is not NORMAL; this should not happen.");
+
     DataEntityManager dataEntityManager = dataEntityManagerFactory.apply(arguments.outputPath());
+
+    // Determine the scripts to run.
+    ImmutableSet<String> requestedScripts = getRequestedScripts(arguments);
+
     ImmutableMap<String, ChunkCheckpoint> checkpoints =
         arguments.mode().equals(RunMode.NORMAL) || arguments.chunkRows() < 1
             ? ImmutableMap.of()
-            : arguments
-                .prevRunPath()
-                .map(saveChecker::getScriptCheckPoints)
-                .orElse(ImmutableMap.of());
-    SqlScriptVariables.QueryLogsVariables.Builder qryLogVarsBuilder =
-        SqlScriptVariables.QueryLogsVariables.builder().setNeedQueryText(arguments.needQueryText());
-    for (String scriptName : getScriptNames(arguments)) {
+            : saveChecker.getScriptCheckPoints(arguments.prevRunPath().get());
+
+    for (String scriptName : requestedScripts) {
       LOGGER.log(Level.INFO, "Start extracting {0}...", scriptName);
       ChunkCheckpoint checkpoint = checkpoints.getOrDefault(scriptName, null);
+      SqlScriptVariables.QueryLogsVariables.Builder qryLogVarsBuilder =
+          SqlScriptVariables.QueryLogsVariables.builder()
+              .setNeedQueryText(arguments.needQueryText());
       maybeAddTimeRange(qryLogVarsBuilder, arguments, checkpoint);
       Connection connection =
           DriverManager.getConnection(
@@ -157,21 +164,7 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
       LOGGER.log(Level.INFO, "Finished extracting {0}.", scriptName);
     }
 
-    if (!arguments.needJdbcSchemas()) {
-      LOGGER.log(Level.INFO, "Skipping extracting schemas was requested.");
-    } else if (arguments.dryRun()) {
-      LOGGER.log(Level.INFO, "Skipping extracting schemas because dry run was requested.");
-    } else {
-      LOGGER.log(Level.INFO, "Start extracting schemas");
-      try (Connection connection =
-          DriverManager.getConnection(
-              arguments.dbConnectionAddress(), arguments.dbConnectionProperties())) {
-        extractSchema(arguments.schemaFilters(), dataEntityManager, connection);
-        LOGGER.log(Level.INFO, "Finish extracting schemas");
-      } catch (RuntimeException | SQLException | IOException e) {
-        LOGGER.log(Level.WARNING, "Encountered an error while extracting schemas", e);
-      }
-    }
+    maybeRunSchemaQueries(arguments, dataEntityManager);
 
     dataEntityManager.close();
     LOGGER.log(Level.INFO, "Finished extraction.");
@@ -218,15 +211,49 @@ public final class ExtractExecutorImpl implements ExtractExecutor {
     dumpResults(recordBuilder.build(), outputStream, schema);
   }
 
-  private ImmutableCollection<String> getScriptNames(Arguments arguments) {
+  private ImmutableSet<String> getRequestedScripts(Arguments arguments) {
     ImmutableSet<String> allScriptNames = scriptManager.getAllScriptNames();
 
     validateScriptNames("skip-sql-scripts", allScriptNames, arguments.skipSqlScripts());
     validateScriptNames("sql-scripts", allScriptNames, arguments.sqlScripts());
 
-    return arguments.sqlScripts().isEmpty()
-        ? Sets.difference(allScriptNames, ImmutableSet.copyOf(arguments.skipSqlScripts()))
-            .immutableCopy()
-        : arguments.sqlScripts();
+    ImmutableSet<String> requestedScripts =
+        arguments.sqlScripts().isEmpty()
+            ? Sets.difference(allScriptNames, ImmutableSet.copyOf(arguments.skipSqlScripts()))
+                .immutableCopy()
+            : ImmutableSet.copyOf(arguments.sqlScripts());
+    if (arguments.mode() == RunMode.RECOVERY) {
+      ImmutableSet<String> finishedScripts =
+          saveChecker.getNamesOfFinishedScripts(
+              arguments.prevRunPath().get(), requestedScripts, AVRO_EXTENSION);
+      requestedScripts = Sets.difference(requestedScripts, finishedScripts).immutableCopy();
+      LOGGER.log(
+          Level.INFO,
+          String.format(
+              "RECOVERY mode -\n  scripts that are probably finished already and will not be run:"
+                  + " %s;\n  scripts that will be run: %s.",
+              finishedScripts.isEmpty() ? "(none)" : String.join(", ", finishedScripts),
+              requestedScripts.isEmpty() ? "(none)" : String.join(", ", requestedScripts)));
+    }
+    return requestedScripts;
+  }
+
+  private void maybeRunSchemaQueries(Arguments arguments, DataEntityManager dataEntityManager) {
+
+    if (!arguments.needJdbcSchemas()) {
+      LOGGER.log(Level.INFO, "Skipping extracting schemas was requested.");
+    } else if (arguments.dryRun()) {
+      LOGGER.log(Level.INFO, "Skipping extracting schemas because dry run was requested.");
+    } else {
+      LOGGER.log(Level.INFO, "Start extracting schemas");
+      try (Connection connection =
+          DriverManager.getConnection(
+              arguments.dbConnectionAddress(), arguments.dbConnectionProperties())) {
+        extractSchema(arguments.schemaFilters(), dataEntityManager, connection);
+        LOGGER.log(Level.INFO, "Finish extracting schemas");
+      } catch (RuntimeException | SQLException | IOException e) {
+        LOGGER.log(Level.WARNING, "Encountered an error while extracting schemas", e);
+      }
+    }
   }
 }

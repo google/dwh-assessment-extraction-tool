@@ -17,7 +17,9 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.executor;
 
 import com.google.cloud.bigquery.dwhassessment.extractiontool.common.ChunkCheckpoint;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.nio.file.Path;
+import java.util.Set;
 
 /**
  * Interface to retrieve information used for selecting which scripts and time-ranges to query in
@@ -30,4 +32,17 @@ public interface SaveChecker {
    * @return The <scriptName, chunkCheckPoint> map indicating where the new run should start from.
    */
   ImmutableMap<String, ChunkCheckpoint> getScriptCheckPoints(Path path);
+
+  /**
+   * Given a set of scripts, returns the names of those that have finished successfully during a
+   * previous run. Infers whether a script is finished from the names of the files present in the
+   * target path.
+   *
+   * @param recordPath Target path containing records from the previous run(s).
+   * @param scriptsToCheck The scripts whose records to look for.
+   * @param fileExtension The extension of the record files (not including ".").
+   * @return The set containing the names of the scripts.
+   */
+  ImmutableSet<String> getNamesOfFinishedScripts(
+      Path recordPath, Set<String> scriptsToCheck, String fileExtension);
 }
