@@ -24,7 +24,7 @@ SELECT
   "InconsistencyFlag",
   "CreatorName",
   "CreateTimeStamp"
-FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}All_RI_ParentsV{{/if}}"
+FROM {{#getTableName "All_RI_ParentsV"}}{{/getTableName}}
 WHERE
   "ParentDB" NOT IN (
     'dbc', 'SYSJDBC', 'TD_SYSGPL', 'SYSLIB', 'SYSSPATIAL', 'TD_SYSXML',

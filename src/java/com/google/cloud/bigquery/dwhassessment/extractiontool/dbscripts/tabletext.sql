@@ -18,7 +18,7 @@ SELECT
   "TableKind",
   "RequestText",
   "LineNo"
-FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}TableTextV{{/if}}"
+FROM {{#getTableName "TableTextV"}}{{/getTableName}}
 WHERE
   "TableKind" IN ('T', 'O', 'A', 'E', 'P', 'M', 'R', 'B', 'V') AND
   "DatabaseName" NOT IN (

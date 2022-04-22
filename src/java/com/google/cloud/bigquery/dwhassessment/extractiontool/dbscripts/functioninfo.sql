@@ -40,4 +40,4 @@ SELECT
   "RefQueryband",
   "ExecMapName",
   "ExecMapColocName"
-FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}FunctionsV{{/if}}"
+FROM {{#getTableName "FunctionsV"}}{{/getTableName}}

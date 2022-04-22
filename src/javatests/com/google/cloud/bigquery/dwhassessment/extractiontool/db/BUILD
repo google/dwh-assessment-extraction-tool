@@ -21,6 +21,7 @@ java_library(
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
         "//src/javatests/com/google/cloud/bigquery/dwhassessment/extractiontool/dumper:dumpertesting",
+        "@maven//:com_github_jknack_handlebars",
         "@maven//:com_google_guava_guava_30_1_1_jre",
         "@maven//:com_google_re2j_re2j",
         "@maven//:com_google_truth_truth",
@@ -96,5 +97,14 @@ java_test(
     runtime_deps = [
         ":tests",
         "@maven//:org_hsqldb_hsqldb",
+    ],
+)
+
+java_test(
+    name = "HandlebarsHelpersTest",
+    size = "small",
+    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.db.HandlebarsHelpersTest",
+    runtime_deps = [
+        ":tests",
     ],
 )

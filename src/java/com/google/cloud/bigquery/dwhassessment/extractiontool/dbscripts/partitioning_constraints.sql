@@ -31,4 +31,4 @@ SELECT
   "MaxCombinedPartitions",
   "PartitioningLevels",
   "ColumnPartitioningLevel"
-FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}PartitioningConstraintsV{{/if}}"
+FROM {{#getTableName "PartitioningConstraintsV"}}{{/getTableName}}
