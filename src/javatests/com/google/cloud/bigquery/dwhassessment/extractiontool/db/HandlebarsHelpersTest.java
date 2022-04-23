@@ -266,6 +266,22 @@ public final class HandlebarsHelpersTest {
   }
 
   @Test
+  public void getTableName_charactersEscape_success() {
+    Options options =
+        getOptions(
+            SqlScriptVariables.builder()
+                .setQueryLogsVariables(QueryLogsVariables.builder().build())
+                .build(),
+            new Object[] {});
+
+    // Act
+    CharSequence result = getTableName("\"testTableName\"", options);
+
+    // Assert
+    assertThat(result).isEqualTo("\"DBC\".\"&quot;testTableName&quot;\"");
+  }
+
+  @Test
   public void getTableName_noDatabaseOverride_success() {
     Options options =
         getOptions(

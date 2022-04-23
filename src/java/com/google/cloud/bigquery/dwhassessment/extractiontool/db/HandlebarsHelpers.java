@@ -18,6 +18,7 @@ package com.google.cloud.bigquery.dwhassessment.extractiontool.db;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.github.jknack.handlebars.Options;
+import com.github.jknack.handlebars.internal.text.StringEscapeUtils;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables.QueryLogsVariables;
 import com.google.cloud.bigquery.dwhassessment.extractiontool.db.SqlScriptVariables.QueryLogsVariables.TimeRange;
 import java.util.ArrayList;
@@ -96,6 +97,6 @@ public final class HandlebarsHelpers {
   }
 
   private static String wrapInQuotes(String input) {
-    return String.format("\"%s\"", input);
+    return String.format("\"%s\"", StringEscapeUtils.escapeHtml4(input));
   }
 }
