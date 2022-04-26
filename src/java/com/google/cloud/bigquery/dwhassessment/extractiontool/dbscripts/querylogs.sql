@@ -141,7 +141,7 @@ SELECT
   "VHPhysIOKB",
   "WarningOnly",
   "WDName"
-FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogV{{/if}}" AS "QLV"
+FROM {{#getTableName "QryLogV"}}{{/getTableName}} AS "QLV"
 {{#whereClauseForQuerylogs queryLogsVariables "QLV"}}{{/whereClauseForQuerylogs}}
 {{#if sortingColumns}}
   ORDER BY {{#each sortingColumns}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}} ASC NULLS FIRST

@@ -19,8 +19,5 @@ SELECT
   "{{#if vars.columnNameRowNumber}}{{vars.columnNameRowNumber}}{{else}}SqlRowNo{{/if}}" AS "SqlRowNo",
   "{{#if vars.columnNameQueryID}}{{vars.columnNameQueryID}}{{else}}QueryID{{/if}}" AS "QueryID",
   {{#if queryLogsVariables.needQueryText}}"{{#if vars.columnNameQueryText}}{{vars.columnNameQueryText}}{{else}}SqlTextInfo{{/if}}"{{else}}'_'{{/if}} AS "SqlText"
-FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogSQLV{{/if}}"
-{{#if queryLogsVariables.timeRange}}
-WHERE "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}QryLogSQLV{{/if}}"."CollectTimeStamp"
-  BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
-{{/if}}
+FROM {{#getTableName "QryLogSQLV"}}{{/getTableName}} AS "SQLV"
+{{#whereClauseWithTimeRange queryLogsVariables "SQLV" "CollectTimeStamp"}}{{/whereClauseWithTimeRange}}

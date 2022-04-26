@@ -24,8 +24,5 @@ SELECT
   "ObjectType",
   "FreqofUse",
   "TypeofUse"
-FROM "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}DBQLObjTbl{{/if}}"
-{{#if queryLogsVariables.timeRange}}
-WHERE "{{baseDatabase}}"."{{#if vars.tableName}}{{vars.tableName}}{{else}}DBQLObjTbl{{/if}}"."CollectTimeStamp"
-  BETWEEN TIMESTAMP '{{queryLogsVariables.timeRange.startTimestamp}}' AND TIMESTAMP '{{queryLogsVariables.timeRange.endTimestamp}}'
-{{/if}}
+FROM {{#getTableName "DBQLObjTbl"}}{{/getTableName}} AS "QRF"
+{{#whereClauseWithTimeRange queryLogsVariables "QRF" "CollectTimeStamp"}}{{/whereClauseWithTimeRange}}
