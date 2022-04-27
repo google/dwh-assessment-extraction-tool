@@ -64,6 +64,13 @@ case $key in
     shift # past argument
     shift # past value
     ;;
+    --)
+    shift
+    break 2
+    ;;
+    *)
+    echo "Unknown parameter $1."
+    exit 1
 esac
 done
 
@@ -96,7 +103,9 @@ if [[ -n "${SKIP_SQL_SCRIPTS}" ]]; then
     args+=( --skip-sql-scripts "${SKIP_SQL_SCRIPTS}" )
 fi
 
+args+=($@)
+
 CLASSPATH="$(dirname "$0")/ExtractionTool_deploy.jar:${TERAJDBC4_JAR}"
-java -cp "${CLASSPATH}" \
+echo java -cp "${CLASSPATH}" \
   com/google/cloud/bigquery/dwhassessment/extractiontool/ExtractionTool \
   td-extract "${args[@]}"
