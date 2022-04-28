@@ -30,7 +30,7 @@ the Extraction tool binary (i.e., ExtractionTool_deploy.jar) and its run script.
 
 **Step 3:** Create a folder for output files and run the Extraction tool:
 ```bash
-./run-td-extract.sh -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user>
+./dwh-assessment-execution-tool.sh --db-address <database address> --output <output path> --db-user <db user>
 ```
 
 **Optional parameters:**
@@ -63,6 +63,8 @@ the Extraction tool binary (i.e., ExtractionTool_deploy.jar) and its run script.
 - [Click to view the scripts.](src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dbscripts)
 
 `--skip-sql-scripts` The list of scripts to skip. By default, all available scripts will be executed.
+
+For other extra 
 
 **Step 4:** The extraction process may take from a few minutes to hours to finish,
 depending on the amount of data in your database. Share the output files with

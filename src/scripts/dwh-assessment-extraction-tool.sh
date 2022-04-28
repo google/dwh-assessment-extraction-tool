@@ -17,7 +17,7 @@
 #
 # Example: dwh-assessment-extraction-tool.sh --help
 
-CLASSPATH="$(dirname "$0")/ExtractionTool_deploy.jar:${CLASSPATH}"
+CLASSPATH="$(dirname "$0")/ExtractionTool_deploy.jar:$(dirname "$0")/terajdbc4.jar:${CLASSPATH}"
 
 exec java -cp "${CLASSPATH}" \
   com/google/cloud/bigquery/dwhassessment/extractiontool/ExtractionTool \
