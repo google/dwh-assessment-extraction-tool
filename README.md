@@ -30,14 +30,14 @@ the Extraction tool binary (i.e., ExtractionTool_deploy.jar) and its run script.
 
 **Step 3:** Create a folder for output files and run the Extraction tool:
 
-Option 1: basic run:
 ```bash
 ./run-td-extract.sh -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user>
 ```
-Option 2: compatible with the full set of optional parameters (See **Optional parameters** section):
+You can also append "--" to specify optional parameters, as
 ```bash
-./dwh-assessment-execution-tool.sh --db-address <database address> --output <output path> --db-user <db user>
+./run-td-extract.sh -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user> -- --<optional parameter> <parameter value>
 ```
+See **Optional parameters** section for details about those parameters.
 
 **Optional Parameters:**
 
@@ -70,7 +70,7 @@ Option 2: compatible with the full set of optional parameters (See **Optional pa
 
 `--skip-sql-scripts` The list of scripts to skip. By default, all available scripts will be executed.
 
-For additional options, please run
+For additional options to control running, apply filtering, skip schema extraction, etc., please run
 ```bash
 ./dwh-assessment-extraction-tool.sh td-extract -h
 ```
