@@ -29,9 +29,16 @@ message Schema {
   string owner = 6;
   string location = 7;
   repeated Field fields = 8;
+  repeated Field partitionKeys = 9;
+  repeated Partition partitions =10;
 }
 
 message Field {
   string name = 1;
   string type = 2;
+}
+
+message Partition {
+  string name = 1;
+  string location = 2;
 }

@@ -33,6 +33,6 @@ public class TestDataGenerator {
         DriverManager.getConnection(Constants.URL_DB, Constants.USERNAME_DB, Constants.PASSWORD_DB);
 
     // Generates db with tables
-    TestDataHelper.generateDbWithTables(connection, 5);
+    TestDataHelper.generateDbWithTables(connection, 3);
   }
 }
