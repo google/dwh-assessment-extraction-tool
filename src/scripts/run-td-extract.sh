@@ -106,6 +106,6 @@ fi
 args+=($@)
 
 CLASSPATH="$(dirname "$0")/ExtractionTool_deploy.jar:${TERAJDBC4_JAR}"
-echo java -cp "${CLASSPATH}" \
+java -cp "${CLASSPATH}" \
   com/google/cloud/bigquery/dwhassessment/extractiontool/ExtractionTool \
   td-extract "${args[@]}"
