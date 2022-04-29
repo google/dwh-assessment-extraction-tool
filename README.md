@@ -29,11 +29,17 @@ the Extraction tool binary (i.e., ExtractionTool_deploy.jar) and its run script.
 **Step 2:** Download [Teradata JDBC driver](https://downloads.teradata.com/download/connectivity/jdbc-driver) into the same directory with the Extraction tool binary.
 
 **Step 3:** Create a folder for output files and run the Extraction tool:
+
+Option 1: basic run:
 ```bash
 ./run-td-extract.sh -j <terajdbc4.jar> --db-address <database address> --output <output path> --db-user <db user>
 ```
+Option 2: compatible with the full set of optional parameters (See **Optional parameters** section):
+```bash
+./dwh-assessment-execution-tool.sh --db-address <database address> --output <output path> --db-user <db user>
+```
 
-**Optional parameters:**
+**Optional Parameters:**
 
 `--schema-filter`  The schema filter to apply when extracting schemas from the database. By default, all schemas will be extracted.
 - Example usage: `--schema-filter db:(abc|def),table:public_.`
@@ -63,6 +69,11 @@ the Extraction tool binary (i.e., ExtractionTool_deploy.jar) and its run script.
 - [Click to view the scripts.](src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/dbscripts)
 
 `--skip-sql-scripts` The list of scripts to skip. By default, all available scripts will be executed.
+
+For additional options, please run
+```bash
+./dwh-assessment-extraction-tool.sh td-extract -h
+```
 
 **Step 4:** The extraction process may take from a few minutes to hours to finish,
 depending on the amount of data in your database. Share the output files with
