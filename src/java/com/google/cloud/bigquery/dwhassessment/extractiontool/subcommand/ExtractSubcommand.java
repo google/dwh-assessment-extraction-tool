@@ -181,7 +181,10 @@ public final class ExtractSubcommand implements Callable<Integer> {
         "The format is 'yyyy-mm-dd[Thh:mm:ss[.n...]]'. Example: '2007-12-03T10:15:30.233333'.",
         "If only the date part is specified, then time defaults to 00:00:00.00 of the given date.",
         "If --run-mode is INCREMENTAL, this will be overwritten by the timestamp of the latest"
-            + " record."
+            + " record.",
+        "Note that this also applies to sql_logs script but on a timestamp that is similar but can"
+            + " be seconds later than that of querylogs, so you may find extra results from"
+            + " sql_logs near the beginning of the time range compared to querylogs."
       })
   private String startTimeString;
 
@@ -190,7 +193,10 @@ public final class ExtractSubcommand implements Callable<Integer> {
       description = {
         "The local end of the time range for the query logs to retrieve.",
         "The format is 'yyyy-mm-dd[Thh:mm:ss[.n...]]'. Example: '2007-12-03T10:15:30.233333'.",
-        "If only the date part is specified, then time defaults to 00:00:00.00 of the given date."
+        "If only the date part is specified, then time defaults to 00:00:00.00 of the given date.",
+        "Note that this also applies to sql_logs script but on a timestamp that is similar but can"
+            + " be seconds later than that of querylogs, so some results near the end of the time"
+            + " range may be missing from sql_logs."
       })
   private String endTimeString;
 
