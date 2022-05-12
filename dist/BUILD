@@ -1,14 +1,23 @@
+load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_pkg//:pkg.bzl", "pkg_zip")
 
-pkg_zip(
-    name = "dwh-assessment-extraction-tool",
+pkg_files(
+    name = "tool_files",
     srcs = [
         "//:LICENSE",
-        "//:NOTICE.txt",
         "//:README.md",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool:ExtractionTool_deploy.jar",
         "//src/scripts:dwh-assessment-extraction-tool",
         "//src/scripts:run-td-extract",
+    ],
+    prefix = "",
+)
+
+pkg_zip(
+    name = "dwh-assessment-extraction-tool",
+    srcs = [
+        ":tool_files",
+        "//third_party:third_party_files",
     ],
     package_dir = "dwh-assessment-extraction-tool",
 )

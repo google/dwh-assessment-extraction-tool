@@ -11,20 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
+load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_pkg//:pkg.bzl", "pkg_zip")
 
 package(default_visibility = ["//src:internal"])
 
-java_library(
-    name = "subcommand",
-    srcs = glob(["*.java"]),
-    resources = ["//third_party:third_party_dependencies"],
-    deps = [
-        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
-        "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
-        "@maven//:com_fasterxml_jackson_core_jackson_databind_2_12_2",
-        "@maven//:com_google_guava_guava_30_1_1_jre",
-        "@maven//:com_google_re2j_re2j",
-        "@maven//:info_picocli_picocli",
-    ],
+filegroup(
+    name = "third_party_dependencies",
+    srcs = glob(
+        ["**/*"],
+        exclude = ["BUILD"],
+    ),
+)
+
+pkg_files(
+    name = "third_party_files",
+    srcs = glob(
+        ["**/*"],
+        exclude = ["BUILD"],
+    ),
+    prefix = "third_party",
+    strip_prefix = strip_prefix.from_pkg(),
 )

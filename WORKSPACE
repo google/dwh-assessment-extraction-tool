@@ -31,6 +31,7 @@ maven_install(
         "org.hsqldb:sqltool:2.6.0",
         "org.mockito:mockito-core:3.11.1",
         "org.slf4j:slf4j-jdk14:1.7.32",
+        "com.fasterxml.jackson.core:jackson-databind:2.12.2",
     ],
     fetch_sources = True,
     repositories = [
@@ -43,10 +44,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_pkg",
-    sha256 = "353b20e8b093d42dd16889c7f918750fb8701c485ac6cceb69a5236500507c27",
+    sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.5.0/rules_pkg-0.5.0.tar.gz",
-        "https://github.com/bazelbuild/rules_pkg/releases/download/0.5.0/rules_pkg-0.5.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.7.0/rules_pkg-0.7.0.tar.gz",
+        "https://github.com/bazelbuild/rules_pkg/releases/download/0.7.0/rules_pkg-0.7.0.tar.gz",
     ],
 )
 
