@@ -40,24 +40,18 @@ public class AboutSubcommand implements Callable<Integer> {
   @Override
   public Integer call() throws IOException, SQLException {
     System.out.println("Data Warehouse Assessment Extraction Client");
+    System.out.println("Copyright 2021 Google LLC");
     System.out.println();
     System.out.println(
         "This tool allows to extract meta information from a data warehouse that allows");
     System.out.println("to make an assessment for migration.");
     System.out.println();
-    System.out.println("Data Warehouse Assessment Extraction Client");
-    System.out.println("Copyright 2021 Google LLC");
-    System.out.println();
     List<String> dependencyNames =
-        Resources.readLines(
-            AboutSubcommand.class.getResource("/third_party/dependency-list.txt"), UTF_8);
+        Resources.readLines(getThirdPartyResource("dependency-list.txt"), UTF_8);
     for (String dependencyName : dependencyNames) {
       Dependency dependency =
           objectMapper.readValue(
-              Resources.toString(
-                  AboutSubcommand.class.getResource(
-                      "/third_party/" + dependencyName + "/meta.json"),
-                  UTF_8),
+              Resources.toString(getThirdPartyResource(dependencyName + "/meta.json"), UTF_8),
               Dependency.class);
       System.out.println(
           "------------------------------------------------------------------------");
@@ -70,11 +64,13 @@ public class AboutSubcommand implements Callable<Integer> {
       }
       System.out.println();
       System.out.println(
-          Resources.toString(
-              AboutSubcommand.class.getResource("/third_party/" + dependencyName + "/LICENSE"),
-              UTF_8));
+          Resources.toString(getThirdPartyResource(dependencyName + "/LICENSE"), UTF_8));
     }
     return 0;
+  }
+
+  private URL getThirdPartyResource(String path) {
+    return Resources.getResource(AboutSubcommand.class, "/third_party/" + path);
   }
 
   private static class Dependency {

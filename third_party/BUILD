@@ -33,3 +33,13 @@ pkg_files(
     prefix = "third_party",
     strip_prefix = strip_prefix.from_pkg(),
 )
+
+genrule(
+    name = "generate_third_party_dependency_list",
+    srcs = glob(
+        ["**/*"],
+        exclude = ["BUILD"],
+    ),
+    outs = ["dependency-list.txt"],
+    cmd = "(ls third_party) > $@",
+)

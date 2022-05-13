@@ -18,7 +18,10 @@ package(default_visibility = ["//src:internal"])
 java_library(
     name = "subcommand",
     srcs = glob(["*.java"]),
-    resources = ["//third_party:third_party_dependencies"],
+    resources = [
+        "//third_party:generate_third_party_dependency_list",
+        "//third_party:third_party_dependencies",
+    ],
     deps = [
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
