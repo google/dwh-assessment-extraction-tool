@@ -39,3 +39,12 @@ java_test(
         ":tests",
     ],
 )
+
+java_test(
+    name = "AboutSubcommandTest",
+    size = "small",
+    test_class = "com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand.AboutSubcommandTest",
+    runtime_deps = [
+        ":tests",
+    ],
+)
