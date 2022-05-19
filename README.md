@@ -19,6 +19,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+## Building 
+
 ## Extraction tool user guide
 The extraction tool is currently intended for approved users that are engaging
 with GCP technical sales teams.
