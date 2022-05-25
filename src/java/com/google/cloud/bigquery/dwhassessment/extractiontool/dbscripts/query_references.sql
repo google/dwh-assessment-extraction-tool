@@ -26,3 +26,6 @@ SELECT
   "TypeofUse"
 FROM {{#getTableName "DBQLObjTbl"}}{{/getTableName}} AS "QRF"
 {{#whereClauseWithTimeRange queryLogsVariables "QRF" "CollectTimeStamp"}}{{/whereClauseWithTimeRange}}
+{{#if sortingColumns}}
+ORDER BY {{#each sortingColumns}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}} ASC NULLS FIRST
+{{/if}}
