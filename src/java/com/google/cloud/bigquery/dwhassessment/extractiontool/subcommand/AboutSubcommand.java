@@ -15,10 +15,15 @@
  */
 package com.google.cloud.bigquery.dwhassessment.extractiontool.subcommand;
 
-import com.google.common.io.CharStreams;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.net.URL;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
@@ -30,20 +35,47 @@ public class AboutSubcommand implements Callable<Integer> {
       usageHelp = true)
   private boolean help;
 
+  private ObjectMapper objectMapper = new ObjectMapper();
+
   @Override
   public Integer call() throws IOException, SQLException {
     System.out.println("Data Warehouse Assessment Extraction Client");
+    System.out.println("Copyright 2021 Google LLC");
     System.out.println();
     System.out.println(
         "This tool allows to extract meta information from a data warehouse that allows");
     System.out.println("to make an assessment for migration.");
     System.out.println();
-    try (InputStreamReader reader =
-        new InputStreamReader(this.getClass().getResource("/NOTICE.txt").openStream())) {
-      for (String s : CharStreams.readLines(reader)) {
-        System.out.println(s);
+    List<String> dependencyNames =
+        Resources.readLines(getThirdPartyResource("dependency-list.txt"), UTF_8);
+    for (String dependencyName : dependencyNames) {
+      Dependency dependency =
+          objectMapper.readValue(
+              Resources.toString(getThirdPartyResource(dependencyName + "/meta.json"), UTF_8),
+              Dependency.class);
+      System.out.println(
+          "------------------------------------------------------------------------");
+      System.out.println(
+          "This project includes software from " + dependency.projectName + " project.");
+      System.out.println();
+      System.out.println(dependency.projectUrl);
+      if (!Objects.equals(dependency.projectUrl, dependency.repositoryUrl)) {
+        System.out.println(dependency.repositoryUrl);
       }
+      System.out.println();
+      System.out.println(
+          Resources.toString(getThirdPartyResource(dependencyName + "/LICENSE"), UTF_8));
     }
     return 0;
+  }
+
+  private URL getThirdPartyResource(String path) {
+    return Resources.getResource(AboutSubcommand.class, "/third_party/" + path);
+  }
+
+  private static class Dependency {
+    public String projectName;
+    public String projectUrl;
+    public String repositoryUrl;
   }
 }

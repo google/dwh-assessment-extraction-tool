@@ -19,11 +19,13 @@ java_library(
     name = "subcommand",
     srcs = glob(["*.java"]),
     resources = [
-        "//:NOTICE.txt",
+        "//third_party:generate_third_party_dependency_list",
+        "//third_party:third_party_dependencies",
     ],
     deps = [
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/db",
         "//src/java/com/google/cloud/bigquery/dwhassessment/extractiontool/executor",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind_2_12_2",
         "@maven//:com_google_guava_guava_30_1_1_jre",
         "@maven//:com_google_re2j_re2j",
         "@maven//:info_picocli_picocli",

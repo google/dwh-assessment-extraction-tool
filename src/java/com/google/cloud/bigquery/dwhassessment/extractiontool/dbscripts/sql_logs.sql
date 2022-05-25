@@ -21,3 +21,6 @@ SELECT
   {{#if queryLogsVariables.needQueryText}}"{{#if vars.columnNameQueryText}}{{vars.columnNameQueryText}}{{else}}SqlTextInfo{{/if}}"{{else}}'_'{{/if}} AS "SqlText"
 FROM {{#getTableName "QryLogSQLV"}}{{/getTableName}} AS "SQLV"
 {{#whereClauseWithTimeRange queryLogsVariables "SQLV" "CollectTimeStamp"}}{{/whereClauseWithTimeRange}}
+{{#if sortingColumns}}
+ORDER BY {{#each sortingColumns}}"{{this}}"{{#unless @last}},{{/unless}}{{/each}} ASC NULLS FIRST
+{{/if}}

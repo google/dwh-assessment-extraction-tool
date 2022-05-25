@@ -19,6 +19,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+## Building 
+Install bazel:
+
+```
+sudo apt-get update
+sudo apt-get install bazel
+```
+
+Build an executable of the extraction client:
+
+Make sure the
+[teradata driver jar file terajdbc4.jar](https://downloads.teradata.com/download/connectivity/jdbc-driver)
+is in the same directory of the ExtractionTool_deploy.jar. 
+
+Run the extraction tool with the teradata driver
+
+```
+java -cp ExtractionTool_deploy.jar:terajdbc4.jar com/google/cloud/bigquery/dwhassessment/extractiontool/ExtractionTool td-extract --db-address jdbc:teradata://localhost/DBS_PORT=1025,DATABASE=dbc --output tmp  --db-user dbc --db-password dbc --schema-filter db:dbc --skip-sql-scripts users
+```
+
+
 ## Extraction tool user guide
 The extraction tool is currently intended for approved users that are engaging
 with GCP technical sales teams.
