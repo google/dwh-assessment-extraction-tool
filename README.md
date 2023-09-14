@@ -1,6 +1,6 @@
 # [deprecated] Data Warehouse Assessment Extraction Client
 
-> This repository is no longer maintained. Assessment Extraction Client has been moved to the [dwh-migration-tools](https://github.com/google/dwh-migration-tools) repository as part of BigQuery Migration tools. Please follow the BigQuery Migration Assessment [documentation](https://cloud.google.com/bigquery/docs/migration-assessment) for more details on how to use a new tool.
+> This repository is no longer maintained. Assessment Extraction Client has been moved to the [dwh-migration-tools](https://github.com/google/dwh-migration-tools) repository as part of BigQuery Migration Service. Please follow the BigQuery Migration Assessment [documentation](https://cloud.google.com/bigquery/docs/migration-assessment) for more details on how to use a new tool.
 
 This tool allows to extract meta information from a data warehouse that allows
 to make an assessment for migration.
